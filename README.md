@@ -1,6 +1,7 @@
 # patronage22-java-szczecin
 
 ##Building and running the app
+
 ###Docker 
 ```bash
 docker build -t retroboard .
