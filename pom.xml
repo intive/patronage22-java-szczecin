@@ -15,7 +15,7 @@
 	<description>Patronage 2022 - Java Szczecin - Retrospective board tool</description>
 	<properties>
 		<java.version>11</java.version>
-		<flyway.configFiles>src/main/resources/flyway.conf</flyway.configFiles>
+		<flyway.configFiles>src/main/java/com/intive/patronage22/szczecin/retroboard/configuration/flyway.conf</flyway.configFiles>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -47,16 +47,11 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-
-
-		<!-- https://mvnrepository.com/artifact/org.flywaydb/flyway-maven-plugin -->
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-maven-plugin</artifactId>
