@@ -3,3 +3,4 @@ CREATE TABLE IF NOT EXISTS Test(
     name varchar(20),
     email varchar (50)
 );
+INSERT INTO Test values(1, 'John', 'johndoe@example.com');
