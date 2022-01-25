@@ -1,8 +1,8 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
-
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDTO;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,13 +18,11 @@ import static org.springframework.http.HttpStatus.OK;
 @RestController
 @RequestMapping("/boards")
 public class BoardController {
+    private final BoardService boardService;
 
-
-private final BoardService boardService;
-
-@GetMapping
-    public ResponseEntity<List<BoardDTO>> getBoards(){
-        final List<BoardDTO> boards = boardService.mockBoardData();
+    @GetMapping
+    public ResponseEntity<List<BoardDto>> getBoards() {
+        final List<BoardDto> boards = boardService.mockBoardData();
         return ResponseEntity.status(OK).body(boards);
 
     }

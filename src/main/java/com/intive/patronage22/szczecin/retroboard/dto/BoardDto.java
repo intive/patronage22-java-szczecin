@@ -9,13 +9,11 @@ import lombok.Value;
 @Value
 @Getter
 @RequiredArgsConstructor
-public class BoardDTO {
-    public enum State {
-        CREATED, VOTING, ACTIONS
-    }
+public class BoardDto {
+
 
     String id;
-    State state;
+    EnumStateDto state;
     String name;
 
 

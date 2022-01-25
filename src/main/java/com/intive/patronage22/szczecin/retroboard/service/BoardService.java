@@ -1,28 +1,24 @@
 package com.intive.patronage22.szczecin.retroboard.service;
-
-
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDTO;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Service
-@RequiredArgsConstructor
 public class BoardService {
 
 
-    public List<BoardDTO> mockBoardData (){
-        final List<BoardDTO> boardDTOS = new ArrayList<>();
+    public List<BoardDto> mockBoardData() {
+        final List<BoardDto> boardDTOS = new ArrayList<>();
 
 
+        boardDTOS.add(new BoardDto("1a", EnumStateDto.CREATED, "RETRO 1"));
+        boardDTOS.add(new BoardDto("2a", EnumStateDto.VOTING, "RETRO 2"));
 
-
-            boardDTOS.add(new BoardDTO("1a", BoardDTO.State.CREATED,"RETRO 1"));
-            boardDTOS.add(new BoardDTO("2a", BoardDTO.State.VOTING,"RETRO 2"));
-
-return boardDTOS;
+        return boardDTOS;
 
 
     }
