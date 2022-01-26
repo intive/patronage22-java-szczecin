@@ -16,6 +16,15 @@
 	<properties>
 		<java.version>11</java.version>
 	</properties>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.7</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 <!--		<dependency>-->
 <!--			<groupId>org.springframework.boot</groupId>-->
@@ -49,7 +58,6 @@
 		<dependency>
 			<groupId>org.jacoco</groupId>
 			<artifactId>jacoco-maven-plugin</artifactId>
-			<version>0.8.7</version>
 		</dependency>
 	</dependencies>
 
@@ -106,7 +114,7 @@
 										<limit>
 											<counter>LINE</counter>
 											<value>COVEREDRATIO</value>
-											<minimum>0.5</minimum>
+											<minimum>0.3</minimum>
 										</limit>
 									</limits>
 								</rule>
