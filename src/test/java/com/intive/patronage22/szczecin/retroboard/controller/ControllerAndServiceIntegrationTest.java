@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class ControllerAndServiceIntegrationTest {
     @Autowired
     private MockMvc mvc;
-
+    
     @SpyBean
     private BoardService service;
 
@@ -30,6 +30,6 @@ public class ControllerAndServiceIntegrationTest {
         mvc.perform(MockMvcRequestBuilders
                         .get("/boards"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(3)));
+                .andExpect(jsonPath("$.*", hasSize(2)));
     }
 }
