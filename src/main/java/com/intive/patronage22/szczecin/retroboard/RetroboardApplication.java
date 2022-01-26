@@ -9,5 +9,4 @@ public class RetroboardApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RetroboardApplication.class, args);
 	}
-
 }
