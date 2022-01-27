@@ -7,3 +7,8 @@
 docker build -t retroboard .
 docker run -p 8080:8080 --rm -it retroboard:latest
 ```
+
+### Accessing Swagger UI
+```
+http://localhost:8080/swagger-ui/index.html
+```
