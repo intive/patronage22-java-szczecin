@@ -1,27 +1,25 @@
 package com.intive.patronage22.szczecin.retroboard.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Size;
+import javax.persistence.Table;
 import java.io.Serializable;
 
-@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Entity
+@Table
 public class User implements Serializable {
     @Id
-    @NotBlank
-    @Size(max = 128)
+    @Column(length = 128, nullable = false, unique = true)
     private String uid;
 
-    @Size(max = 64)
+    @Column(length = 64)
     private String name;
 }

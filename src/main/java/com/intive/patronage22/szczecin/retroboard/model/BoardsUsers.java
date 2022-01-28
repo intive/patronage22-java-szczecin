@@ -1,18 +1,17 @@
 package com.intive.patronage22.szczecin.retroboard.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
 
-@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Entity
+@Table
 public class BoardsUsers implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
