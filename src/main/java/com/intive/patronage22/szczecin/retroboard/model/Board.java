@@ -5,6 +5,8 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Builder
 @NoArgsConstructor
@@ -26,4 +28,12 @@ public class Board implements Serializable {
 
     @OneToOne
     private User creator;
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "BoardUsers",
+            joinColumns = {@JoinColumn(name = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "uid")}
+    )
+    private Set<User> users = new HashSet<>();
 }

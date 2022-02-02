@@ -2,11 +2,10 @@ package com.intive.patronage22.szczecin.retroboard.model;
 
 import lombok.*;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 @Builder
 @NoArgsConstructor
@@ -22,4 +21,7 @@ public class User implements Serializable {
 
     @Column(length = 64)
     private String name;
+
+    @ManyToMany(mappedBy = "users")
+    private Set<Board> userBoards = new HashSet<>();
 }
