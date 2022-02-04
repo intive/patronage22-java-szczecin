@@ -8,22 +8,21 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Entity
-@Table
+@Table(name = "Board")
 public class Board implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(length = 32, nullable = false)
+    @Column(name = "name", length = 32, nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Enumerated
     private EnumStateDto state;
 
     @OneToOne

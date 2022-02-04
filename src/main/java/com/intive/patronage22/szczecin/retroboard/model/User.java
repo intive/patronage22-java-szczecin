@@ -7,19 +7,18 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Entity
-@Table
+@Table(name = "User")
 public class User implements Serializable {
     @Id
-    @Column(length = 128, nullable = false, unique = true)
+    @Column(name = "uid", length = 128, nullable = false, unique = true)
     private String uid;
 
-    @Column(length = 64)
+    @Column(name = "name", length = 64)
     private String name;
 
     @ManyToMany(mappedBy = "users")
