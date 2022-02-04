@@ -23,7 +23,7 @@ public class Board implements Serializable {
     private String name;
 
     @Enumerated
-    private EnumStateDto state;
+    private EnumStateDto state = EnumStateDto.CREATED;
 
     @OneToOne
     private User creator;
