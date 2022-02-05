@@ -5,17 +5,22 @@ import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/boards")
 public class BoardController {
+
     private final BoardService boardService;
 
     @GetMapping
@@ -23,5 +28,11 @@ public class BoardController {
         final List<BoardDto> boards = boardService.mockBoardData();
 
         return ResponseEntity.status(OK).body(boards);
+    }
+
+    @ResponseStatus(CREATED)
+    @PostMapping
+    public BoardDto creatNewBoard(@RequestParam String userId) {
+        return null;
     }
 }
