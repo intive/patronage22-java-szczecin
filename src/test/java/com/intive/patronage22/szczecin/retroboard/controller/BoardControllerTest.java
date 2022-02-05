@@ -67,7 +67,7 @@ public class BoardControllerTest {
 
         User user2 = makeUser("ghi","Test user 2");
         userRepository.save(user2);
-        
+
         User user3 = makeUser("jkl","Test user 3");
         userRepository.save(user3);
 
