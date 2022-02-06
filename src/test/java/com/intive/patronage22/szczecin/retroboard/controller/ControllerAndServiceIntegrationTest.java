@@ -26,7 +26,6 @@ public class ControllerAndServiceIntegrationTest {
     @Test
     public void statusIsOk_TwoObjectsReturned() throws Exception {
 
-        final BoardService boardService = new BoardService();
         mvc.perform(MockMvcRequestBuilders
                         .get("/boards"))
                 .andExpect(status().isOk())
