@@ -3,6 +3,8 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardNameDTO;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +35,10 @@ public class BoardController {
     }
 
     // INSERT INTO USER VALUES ('uid1', 'John');
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Fetch successful"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
     @ResponseStatus(CREATED)
     @PostMapping
     public BoardDto createNewBoard(@RequestParam String userId,
