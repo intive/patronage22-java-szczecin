@@ -1,2 +1,3 @@
-INSERT INTO User values('uid1', 'John');
+INSERT INTO User VALUES ('uid1', 'John');
+
 DROP TABLE IF EXISTS Test;
