@@ -1,11 +1,13 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardNameDTO;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -30,9 +32,12 @@ public class BoardController {
         return ResponseEntity.status(OK).body(boards);
     }
 
+    // INSERT INTO USER VALUES ('uid1', 'John');
     @ResponseStatus(CREATED)
     @PostMapping
-    public BoardDto creatNewBoard(@RequestParam String userId) {
-        return null;
+    public BoardDto createNewBoard(@RequestParam String userId,
+                                   @RequestBody BoardNameDTO nameBoard) {
+
+        return boardService.saveBoardForUserId(nameBoard.getName(), userId);
     }
 }

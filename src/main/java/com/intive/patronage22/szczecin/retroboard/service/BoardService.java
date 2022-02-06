@@ -1,6 +1,5 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCreateDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
@@ -10,6 +9,7 @@ import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,11 +29,12 @@ public class BoardService {
         return boardDTOS;
     }
 
-    public BoardDto saveBoard(BoardCreateDto boardName, String userId) {
+    @Transactional
+    public BoardDto saveBoardForUserId(String boardName, String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        Board newBoard = new Board(boardName.getName(), user);
+        Board newBoard = new Board(boardName, user);
         Board save = boardRepository.save(newBoard);
         return BoardDto.mapToDto(save);
     }
