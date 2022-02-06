@@ -36,7 +36,7 @@ public class BoardController {
 
     // INSERT INTO USER VALUES ('uid1', 'John');
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Fetch successful"),
+            @ApiResponse(responseCode = "201", description = "Creation successful"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @ResponseStatus(CREATED)
