@@ -23,6 +23,7 @@ public class Board implements Serializable {
     private String name;
 
     @Enumerated
+    @Column(name = "state", nullable = false)
     private EnumStateDto state = EnumStateDto.CREATED;
 
     @OneToOne

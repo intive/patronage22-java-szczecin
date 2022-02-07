@@ -1,19 +1,19 @@
 package com.intive.patronage22.szczecin.retroboard.service;
+
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-
-@Transactional
 @Service
 public class BoardService {
     @Autowired
@@ -21,22 +21,13 @@ public class BoardService {
 
     private final ModelMapper modelMapper = new ModelMapper();
 
-    public List<BoardDto> mockBoardData() {
-        final List<BoardDto> boardDTOS = new ArrayList<>();
-
-
-        boardDTOS.add(new BoardDto(1, EnumStateDto.CREATED, "RETRO 1"));
-        boardDTOS.add(new BoardDto(2, EnumStateDto.VOTING, "RETRO 2"));
-
-        return boardDTOS;
-
-
-    }
-
+    @Transactional
     public List<BoardDto> getUserBoards(String uid) {
         User u = userRepository.findById(uid).orElse(null);
         if (u == null)
-            return null;
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "No such user!");
         List<BoardDto> boards = new ArrayList<>();
         for (Board board : u.getUserBoards()) {
             BoardDto boardDto = modelMapper.map(board, BoardDto.class);

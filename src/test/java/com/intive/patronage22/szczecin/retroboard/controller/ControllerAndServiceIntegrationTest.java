@@ -11,9 +11,9 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -29,12 +29,9 @@ public class ControllerAndServiceIntegrationTest {
     @MockBean private UserRepository userRepository;
 
     @Test
-    public void statusIsOk_TwoObjectsReturned() throws Exception {
-
-        final BoardService boardService = new BoardService();
-        mvc.perform(MockMvcRequestBuilders
-                        .get("/boards"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(2)));
+    public void whenNoUserGiven_thenNotFoundStatus() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/boards?userId=")).
+                andExpect(status().isNotFound()).
+                andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
     }
 }
