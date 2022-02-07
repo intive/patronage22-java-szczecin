@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS Test(
-    id INTEGER NOT NULL  PRIMARY KEY AUTO_INCREMENT,
+CREATE TABLE IF NOT EXISTS test (
+    id INTEGER NOT NULL  PRIMARY KEY,
     name varchar(20),
     email varchar (50)
 );
-INSERT INTO Test values(1, 'John', 'johndoe@example.com');
+INSERT INTO test values(1, 'John', 'johndoe@example.com');

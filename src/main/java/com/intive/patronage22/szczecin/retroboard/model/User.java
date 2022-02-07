@@ -12,7 +12,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "User")
+@Table(name = "users")
 public class User implements Serializable {
     @Id
     @Column(name = "uid", length = 128, nullable = false, unique = true)
