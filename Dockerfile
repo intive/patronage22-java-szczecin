@@ -6,6 +6,7 @@ COPY .mvn/ .mvn
 COPY mvnw ./
 RUN chmod +x mvnw
 COPY pom.xml ./
+COPY checkstyle.xml ./
 COPY src ./src
 COPY .env ./
 RUN ./mvnw clean package
