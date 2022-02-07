@@ -34,12 +34,12 @@ public class BoardController {
         return ResponseEntity.status(OK).body(boards);
     }
 
+    @PostMapping
+    @ResponseStatus(CREATED)
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Creation successful"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    @ResponseStatus(CREATED)
-    @PostMapping
     public BoardDto createNewBoardForUserId(@RequestParam String userId,
                                             @RequestBody BoardNameDTO nameBoard) {
 
