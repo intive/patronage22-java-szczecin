@@ -9,7 +9,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 
 @Configuration
@@ -33,14 +37,16 @@ public class FirebaseConfiguration {
                 json.addProperty("private_key", clientPrivateKeyPkcs8);
                 json.addProperty("client_email", clientEmail);
                 json.addProperty("client_id", clientId);
-                //replaceAll because apparently during creating json object it's replacing \n in private_key into \\n so key is unable to be used
+                //replaceAll because apparently during creating json object
+                // it's replacing \n in private_key into \\n so key is unable
+                // to be used
                 final String credentials = json.toString().replaceAll("\\\\\\\\", "\\\\");
                 printWriter.println(credentials);
             }
 
             final FileInputStream serviceAccount = new FileInputStream(credentialsPath);
-            final FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount)).build();
+            final FirebaseOptions options =
+                    FirebaseOptions.builder().setCredentials(GoogleCredentials.fromStream(serviceAccount)).build();
             return FirebaseApp.initializeApp(options);
 
         } catch (IOException e) {
