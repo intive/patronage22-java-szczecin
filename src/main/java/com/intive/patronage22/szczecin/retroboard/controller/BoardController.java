@@ -32,15 +32,14 @@ public class BoardController {
         return ResponseEntity.status(OK).body(boards);
     }
 
-    // INSERT INTO USER VALUES ('uid1', 'John');
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Creation successful"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     @ResponseStatus(CREATED)
     @PostMapping
-    public BoardDto createNewBoard(@RequestParam String userId,
-                                   @RequestBody BoardNameDTO nameBoard) {
+    public BoardDto createNewBoardForUserId(@RequestParam String userId,
+                                            @RequestBody BoardNameDTO nameBoard) {
 
         return boardService.saveBoardForUserId(nameBoard.getName(), userId);
     }
