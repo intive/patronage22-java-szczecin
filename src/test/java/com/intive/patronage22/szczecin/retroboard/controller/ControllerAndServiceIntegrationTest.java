@@ -29,8 +29,15 @@ public class ControllerAndServiceIntegrationTest {
     @MockBean private UserRepository userRepository;
 
     @Test
-    public void whenNoUserGiven_thenNotFoundStatus() throws Exception {
+    public void whenNoUserGiven_thenBadRequestStatus() throws Exception {
         mvc.perform(MockMvcRequestBuilders.get("/boards?userId=")).
+                andExpect(status().isBadRequest()).
+                andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
+    }
+
+    @Test
+    public void whenNoSuchUser_thenNotFoundStatus() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/boards?userId=nosuchuserid")).
                 andExpect(status().isNotFound()).
                 andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
     }

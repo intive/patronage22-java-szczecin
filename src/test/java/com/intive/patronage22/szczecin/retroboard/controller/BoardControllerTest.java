@@ -1,6 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
@@ -14,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
@@ -22,13 +24,13 @@ import static org.junit.Assert.assertTrue;
 @SpringBootTest
 public class BoardControllerTest {
     @Autowired
-    BoardController boardController;
+    private BoardController boardController;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @Autowired
-    BoardRepository boardRepository;
+    private BoardRepository boardRepository;
 
     @Test
     public void contextLoads() {
@@ -42,8 +44,7 @@ public class BoardControllerTest {
 
     @Test
     public void whenUserExists_thenStatusOk() {
-        User user = new User();
-        user.setUid("abc");
+        User user = makeUser("abc", null);
         long userCount = userRepository.count();
         userRepository.save(user);
         assertTrue(userRepository.count() == userCount + 1);
@@ -55,29 +56,19 @@ public class BoardControllerTest {
 
     @Test
     public void whenUserHasTwoBoards_thenBodyShouldContainTwoBoards() {
-        User user1 = new User();
-        user1.setUid("def");
-        user1.setName("Test user 1");
+        User user1 = makeUser("def","Test user 1");
         userRepository.save(user1);
 
-        Board board1 = new Board();
-        board1.setName("Test board 1");
-        board1.setCreator(user1);
+        Board board1 = makeBoard("Test board 1", user1);
         boardRepository.save(board1);
 
-        Board board2 = new Board();
-        board2.setName("Test board 2");
-        board2.setCreator(user1);
+        Board board2 = makeBoard("Test board 2", user1);
         boardRepository.save(board2);
 
-        User user2 = new User();
-        user2.setUid("ghi");
-        user2.setName("Test user 2");
+        User user2 = makeUser("ghi","Test user 2");
         userRepository.save(user2);
         
-        User user3 = new User();
-        user3.setUid("jkl");
-        user3.setName("Test user 3");
+        User user3 = makeUser("jkl","Test user 3");
         userRepository.save(user3);
 
         board1.getUsers().add(user2);
@@ -90,5 +81,13 @@ public class BoardControllerTest {
         ResponseEntity<List<BoardDto>> res = boardController.getUserBoards(user2.getUid());
         assertTrue(res.getStatusCode() == HttpStatus.OK);
         assertTrue(res.getBody().size() == 2);
+    }
+
+    private User makeUser(String uid, String name) {
+        return new User(uid, name, new HashSet<>());
+    }
+
+    private Board makeBoard(String name, User creator) {
+        return new Board(null, name, EnumStateDto.CREATED, creator, new HashSet<>());
     }
 }
