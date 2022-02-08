@@ -7,10 +7,10 @@ spring:
         baseline-on-migrate: true
         clean-disabled: true
         encoding: UTF-8
-        password: compose-postgres
+        password: ${spring.datasource.password}
         table: schema_version
-        url: jdbc:postgresql://db:5432/compose-postgres
-        user: compose-postgres
+        url: ${spring.datasource.url}
+        user: ${spring.datasource.username}
         hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
         generate-ddl: true
         generate-ddl-auto: update
