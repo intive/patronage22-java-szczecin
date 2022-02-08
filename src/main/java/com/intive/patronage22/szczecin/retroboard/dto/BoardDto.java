@@ -12,14 +12,14 @@ import lombok.Value;
 @RequiredArgsConstructor
 public class BoardDto {
 
-    String id;
+    Integer id;
     EnumStateDto state;
     String name;
 
     // convert Entity into DTO
     public static BoardDto mapToDto(Board board) {
         return BoardDto.builder()
-                .id(board.getId().toString())
+                .id(board.getId())
                 .state(board.getState())
                 .name(board.getName())
                 .build();
