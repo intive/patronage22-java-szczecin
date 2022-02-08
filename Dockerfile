@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM openjdk:11-jre-slim AS build
+FROM openjdk:11-jdk-slim AS build
 WORKDIR /app
 COPY .mvn/ .mvn
 COPY mvnw ./
@@ -9,7 +9,6 @@ COPY pom.xml ./
 COPY checkstyle.xml ./
 COPY src ./src
 RUN ./mvnw clean package -DskipTests
-ARG JAR_FILE=*.jar
 
 FROM openjdk:11-jre-slim
 COPY --from=build /app/target/*.jar /app/retroboard.jar
