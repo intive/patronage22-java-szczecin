@@ -22,10 +22,19 @@ To generate a private key file:
 - Click Generate New Private Key, then confirm by clicking Generate Key
 
 #### Adding values to local variables
+To be able to run Firebase everyone needs to set variables in .env file.
+
 To add values:
-- Copy .envcopy file and change it's extension to .env 
-- Put .env file into the same directory
+- Copy .envcopy file and change its extension to .env 
+- Put .env file into the same directory (root)
 - Add values from private key json to exact name
+
+Following values need to be set:
+- FIREBASE_CLIENT_ID=**your_client_id**
+- FIREBASE_CLIENT_EMAIL=**your_client_email**
+- FIREBASE_CLIENT_PRIVATE_KEY_ID=**your_private_key_id** 
+- FIREBASE_CLIENT_PRIVATE_KEY_PKCS8=**your_private_key** 
+- FIREBASE_PROJECT_ID=**your_project_id**
 
 #### Run Docker with .env file
 ```bash

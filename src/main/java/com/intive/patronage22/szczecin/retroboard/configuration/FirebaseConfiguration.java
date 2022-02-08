@@ -14,15 +14,14 @@ import java.io.IOException;
 public class FirebaseConfiguration {
 
     @Bean
-    public FirebaseApp firebaseApp(@Value("${FIREBASE_TYPE}") final String type,
-                                   @Value("${FIREBASE_CLIENT_ID}") final String clientId,
+    public FirebaseApp firebaseApp(@Value("${FIREBASE_CLIENT_ID}") final String clientId,
                                    @Value("${FIREBASE_CLIENT_EMAIL}") final String clientEmail,
                                    @Value("${FIREBASE_CLIENT_PRIVATE_KEY_ID}") final String clientPrivateKeyId,
                                    @Value("${FIREBASE_CLIENT_PRIVATE_KEY_PKCS8}") final String clientPrivateKeyPkcs8,
                                    @Value("${FIREBASE_PROJECT_ID}") final String projectId) throws IOException {
         final ServiceAccountCredentials serviceAccountCredentials =
-                ServiceAccountCredentials.fromPkcs8(clientId, clientEmail, clientPrivateKeyPkcs8, clientPrivateKeyId,
-                        null);
+                ServiceAccountCredentials.fromPkcs8(clientId, clientEmail, clientPrivateKeyPkcs8.replace("\\n", "\n"),
+                        clientPrivateKeyId, null);
         final FirebaseOptions options =
                 FirebaseOptions.builder().setProjectId(projectId).setCredentials(serviceAccountCredentials).build();
         return FirebaseApp.initializeApp(options);
