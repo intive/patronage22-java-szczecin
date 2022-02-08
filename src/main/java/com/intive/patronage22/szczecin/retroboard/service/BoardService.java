@@ -23,8 +23,8 @@ public class BoardService {
 
     public List<BoardDto> mockBoardData() {
         final List<BoardDto> boardDTOS = new ArrayList<>();
-        boardDTOS.add(new BoardDto("1a", EnumStateDto.CREATED, "RETRO 1"));
-        boardDTOS.add(new BoardDto("2a", EnumStateDto.VOTING, "RETRO 2"));
+        boardDTOS.add(new BoardDto(1, EnumStateDto.CREATED, "RETRO 1"));
+        boardDTOS.add(new BoardDto(2, EnumStateDto.VOTING, "RETRO 2"));
 
         return boardDTOS;
     }
