@@ -1,20 +1,14 @@
 package com.intive.patronage22.szczecin.retroboard.configuration;
 
-import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.file.Files;
 
 @Configuration
 public class FirebaseConfiguration {
@@ -25,33 +19,13 @@ public class FirebaseConfiguration {
                                    @Value("${FIREBASE_CLIENT_EMAIL}") final String clientEmail,
                                    @Value("${FIREBASE_CLIENT_PRIVATE_KEY_ID}") final String clientPrivateKeyId,
                                    @Value("${FIREBASE_CLIENT_PRIVATE_KEY_PKCS8}") final String clientPrivateKeyPkcs8,
-                                   @Value("${FIREBASE_PROJECT_ID}") final String projectId) {
-        try {
-            String credentialsPath = String.valueOf(Files.createTempFile("credentials", ".json"));
-            final FileWriter fileWriter = new FileWriter(credentialsPath);
-            try (final PrintWriter printWriter = new PrintWriter(new BufferedWriter(fileWriter))) {
-                JsonObject json = new JsonObject();
-                json.addProperty("type", type);
-                json.addProperty("project_id", projectId);
-                json.addProperty("private_key_id", clientPrivateKeyId);
-                json.addProperty("private_key", clientPrivateKeyPkcs8);
-                json.addProperty("client_email", clientEmail);
-                json.addProperty("client_id", clientId);
-                //replaceAll because apparently during creating json object
-                // it's replacing \n in private_key into \\n so key is unable
-                // to be used
-                final String credentials = json.toString().replaceAll("\\\\\\\\", "\\\\");
-                printWriter.println(credentials);
-            }
-
-            final FileInputStream serviceAccount = new FileInputStream(credentialsPath);
-            final FirebaseOptions options =
-                    FirebaseOptions.builder().setCredentials(GoogleCredentials.fromStream(serviceAccount)).build();
-            return FirebaseApp.initializeApp(options);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+                                   @Value("${FIREBASE_PROJECT_ID}") final String projectId) throws IOException {
+        final ServiceAccountCredentials serviceAccountCredentials =
+                ServiceAccountCredentials.fromPkcs8(clientId, clientEmail, clientPrivateKeyPkcs8, clientPrivateKeyId,
+                        null);
+        final FirebaseOptions options =
+                FirebaseOptions.builder().setProjectId(projectId).setCredentials(serviceAccountCredentials).build();
+        return FirebaseApp.initializeApp(options);
     }
 
     @Bean
