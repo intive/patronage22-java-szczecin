@@ -16,7 +16,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    UserDetailsService userDetailsService(InMemoryUserDetailsManager inMemoryUserDetailsManager) {
+    UserDetailsService userDetailsService(final InMemoryUserDetailsManager inMemoryUserDetailsManager) {
         return inMemoryUserDetailsManager;
     }
 

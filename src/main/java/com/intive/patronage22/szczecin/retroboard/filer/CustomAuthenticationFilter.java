@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -28,31 +29,39 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
+    private final String jwtSecret;
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+    public Authentication attemptAuthentication(final HttpServletRequest request, final HttpServletResponse response)
             throws AuthenticationException {
-        String username = request.getParameter("username");
-        String password = request.getParameter("password");
-        UsernamePasswordAuthenticationToken authenticationToken =
+
+        final String username = request.getParameter("username");
+        final String password = request.getParameter("password");
+        final UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(username, password);
 
         return authenticationManager.authenticate(authenticationToken);
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
-                                            FilterChain chain, Authentication authentication) throws IOException {
-        User user = (User) authentication.getPrincipal();
-        Algorithm algorithm = Algorithm.HMAC256("secret".getBytes());
-        String accessToken = JWT.create()
+    protected void successfulAuthentication(final HttpServletRequest request, final HttpServletResponse response,
+                                            final FilterChain chain, final Authentication authentication)
+            throws IOException {
+
+        final User user = (User) authentication.getPrincipal();
+        final Algorithm algorithm = Algorithm.HMAC256(jwtSecret.getBytes());
+        final List<String> roles = user.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        final String accessToken = JWT.create()
                 .withSubject(user.getUsername())
                 .withIssuer(request.getRequestURL().toString())
-                .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority)
-                        .collect(Collectors.toList()))
+                .withClaim("roles", roles)
                 .sign(algorithm);
 
-        Map<String, String> tokens = new HashMap<>();
+        final Map<String, String> tokens = new HashMap<>();
         tokens.put("access_token", accessToken);
         response.setContentType(APPLICATION_JSON_VALUE);
         new ObjectMapper().writeValue(response.getOutputStream(), tokens);

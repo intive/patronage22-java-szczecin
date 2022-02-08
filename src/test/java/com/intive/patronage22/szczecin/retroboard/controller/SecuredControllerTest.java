@@ -6,12 +6,14 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intive.patronage22.szczecin.retroboard.exception.UsernameTakenException;
 import com.intive.patronage22.szczecin.retroboard.security.SecurityConfig;
+import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -24,15 +26,15 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest({ SecuredController.class, SecurityConfig.class })
+@WebMvcTest({SecuredController.class, SecurityConfig.class})
 class SecuredControllerTest {
 
     @Autowired
@@ -41,25 +43,33 @@ class SecuredControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Value("${retroboard.jwt.secret}")
+    private String jwtSecret;
+
     @MockBean
     private InMemoryUserDetailsManager inMemoryUserDetailsManager;
 
+    @MockBean
+    private UserService userService;
+
     @Test
-    void shouldReturnInJSONsBodyCreatedUserIfItDoesNotExistBefore() throws Exception {
+    void register_should_return_json_body_with_created_user_data_when_user_not_exist_before() throws Exception {
         // given
         final String url = "/register";
         final String username = "someuser";
         final String password = "1234";
 
-        UserDetails createdUser = User
+        final UserDetails createdUser = User
                 .withUsername(username)
                 .password(password)
                 .roles("USER")
                 .build();
 
+        final User returnedUser = (User) createdUser;
+        returnedUser.eraseCredentials();
+
         // when
-        when(inMemoryUserDetailsManager.userExists(username)).thenReturn(false);
-        when(inMemoryUserDetailsManager.loadUserByUsername(username)).thenReturn(createdUser);
+        when(userService.register(username, password)).thenReturn(returnedUser);
 
         // then
         mockMvc
@@ -70,25 +80,17 @@ class SecuredControllerTest {
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.password").value(IsNull.nullValue()))
                 .andExpect(status().isCreated());
-
-        ArgumentCaptor<UserDetails> argumentCaptor = ArgumentCaptor.forClass(UserDetails.class);
-        verify(inMemoryUserDetailsManager, times(1)).createUser(argumentCaptor.capture());
-        final UserDetails preparedUser = argumentCaptor.getValue();
-
-        assertEquals(username, preparedUser.getUsername());
-        assertNotNull(preparedUser.getPassword());
-        assertNotEquals(password, preparedUser.getPassword());
     }
 
     @Test
-    void shouldReturnConflictExceptionIfUserExists() throws Exception {
+    void register_should_return_conflict_when_user_exist() throws Exception {
         // given
         final String url = "/register";
         final String username = "someuser";
         final String password = "1234";
 
         // when
-        when(inMemoryUserDetailsManager.userExists(username)).thenReturn(true);
+        when(userService.register(username, password)).thenThrow(new UsernameTakenException());
 
         // then
         mockMvc
@@ -100,13 +102,13 @@ class SecuredControllerTest {
     }
 
     @Test
-    void shouldReturnAccessTokenWhenLoggingInIfUserExists() throws Exception {
+    void login_should_return_access_token_when_user_credentials_are_correct() throws Exception {
         // given
         final String url = "/login";
         final String username = "someuser";
         final String password = "1234";
 
-        UserDetails existingUser = User
+        final UserDetails existingUser = User
                 .withUsername(username)
                 .password("$2a$10$wZDpl69jSN6sYRYGZbno.u6LtQ4DDXkwlursaDszbVR24UrYSSkHO")
                 .roles("USER")
@@ -116,7 +118,7 @@ class SecuredControllerTest {
         when(inMemoryUserDetailsManager.loadUserByUsername(username)).thenReturn(existingUser);
 
         // then
-        String jsonResult = mockMvc
+        final String jsonResult = mockMvc
                 .perform(post(url)
                         .param("username", username)
                         .param("password", password)
@@ -126,23 +128,24 @@ class SecuredControllerTest {
                 .getResponse()
                 .getContentAsString();
 
-        TypeReference<Map<String, String>> tr = new TypeReference<>() {};
-        Map<String, String> map = objectMapper.readValue(jsonResult, tr);
-        String token = map.get("access_token");
+        final TypeReference<Map<String, String>> tr = new TypeReference<>() {
+        };
+        final Map<String, String> map = objectMapper.readValue(jsonResult, tr);
+        final String token = map.get("access_token");
 
-        JWTVerifier verifier = JWT.require(Algorithm.HMAC256("secret".getBytes())).build();
-        DecodedJWT decodedJwt = verifier.verify(token);
+        final JWTVerifier verifier = JWT.require(Algorithm.HMAC256(jwtSecret.getBytes())).build();
+        final DecodedJWT decodedJwt = verifier.verify(token);
 
         assertEquals(username, decodedJwt.getSubject());
     }
 
     @Test
-    void shouldReturnUnauthorizedWhenLoggingInIfUserDoesNotExist() throws Exception {
+    void login_should_return_unauthorized_when_user_not_exist() throws Exception {
         // given
         final String url = "/login";
         final String username = "someuser";
         final String password = "1234";
-        UsernameNotFoundException expectedException = new UsernameNotFoundException(username);
+        final UsernameNotFoundException expectedException = new UsernameNotFoundException(username);
 
         // when
         when(inMemoryUserDetailsManager.loadUserByUsername(username)).thenThrow(expectedException);
@@ -157,7 +160,7 @@ class SecuredControllerTest {
     }
 
     @Test
-    void shouldGiveAccessWhenGettingPublicEndpointWithoutAccessToken() throws Exception {
+    void public_should_return_ok_when_user_anonymous() throws Exception {
         // given
         final String url = "/public";
 
@@ -168,7 +171,7 @@ class SecuredControllerTest {
     }
 
     @Test
-    void shouldNotGiveAccessWhenGettingPrivateEndpointWithoutAccessToken() throws Exception {
+    void private_should_return_forbidden_when_user_not_logged_in() throws Exception {
         // given
         final String url = "/private";
 
@@ -179,7 +182,7 @@ class SecuredControllerTest {
     }
 
     @Test
-    void shouldGiveAccessWhenGettingPrivateEndpointWithCorrectAccessToken() throws Exception {
+    void private_should_return_ok_when_user_authenticated() throws Exception {
         // given
         final String url = "/private";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +
