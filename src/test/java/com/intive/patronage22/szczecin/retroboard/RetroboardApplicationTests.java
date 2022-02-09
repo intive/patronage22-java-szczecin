@@ -4,6 +4,7 @@ import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.messaging.FirebaseMessaging;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,8 +34,8 @@ class RetroboardApplicationTests {
         }
 
         @Bean
-        public FirebaseMessaging firebaseMessaging(final FirebaseApp firebaseApp) {
-            return FirebaseMessaging.getInstance(firebaseApp);
+        public FirebaseAuth firebaseAuth(final FirebaseApp firebaseApp) {
+            return FirebaseAuth.getInstance(firebaseApp);
         }
 
         public static class FirebaseCredentialsMock extends GoogleCredentials {
