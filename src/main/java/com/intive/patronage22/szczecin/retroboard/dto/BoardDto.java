@@ -13,7 +13,7 @@ public class BoardDto {
     private final EnumStateDto state;
     private final String name;
 
-    public static BoardDto toDto(Board board) {
+    public static BoardDto fromModel(Board board) {
         return BoardDto.builder()
                 .id(board.getId())
                 .name(board.getName())
