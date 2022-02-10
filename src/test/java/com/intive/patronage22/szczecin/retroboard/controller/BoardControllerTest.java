@@ -6,23 +6,24 @@ import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
-public class BoardControllerTest {
+class BoardControllerTest {
     @Autowired
     private BoardController boardController;
 
@@ -36,10 +37,12 @@ public class BoardControllerTest {
     public void contextLoads() {
     }
 
-    @Test(expected = ResponseStatusException.class)
+    @Test
     public void whenUserDoesNotExist_thenStatusNotFound() {
-        ResponseEntity<List<BoardDto>> res = boardController.getUserBoards("xyz");
-        assertTrue(res.getStatusCode() == HttpStatus.NOT_FOUND);
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
+            boardController.getUserBoards("xyz");
+        });
+        assertTrue(exception.getStatus() == HttpStatus.NOT_FOUND);
     }
 
     @Test
