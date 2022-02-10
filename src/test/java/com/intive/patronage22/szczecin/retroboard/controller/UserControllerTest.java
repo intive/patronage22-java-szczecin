@@ -54,7 +54,7 @@ class UserControllerTest {
     private UserService userService;
 
     @Test
-    void register_should_return_json_body_with_created_user_data_when_user_not_exist_before() throws Exception {
+    void registerShouldReturnJsonBodyWithCreatedUserDataWhenUserNotExistBefore() throws Exception {
         // given
         final String url = "/register";
         final String username = "someuser";
@@ -85,7 +85,7 @@ class UserControllerTest {
     }
 
     @Test
-    void register_should_return_conflict_when_user_exist() throws Exception {
+    void registerShouldReturnConflictWhenUserExist() throws Exception {
         // given
         final String url = "/register";
         final String username = "someuser";
@@ -110,7 +110,7 @@ class UserControllerTest {
     }
 
     @Test
-    void login_should_return_access_token_when_user_credentials_are_correct() throws Exception {
+    void loginShouldReturnAccessTokenWhenUserCredentialsAreCorrect() throws Exception {
         // given
         final String url = "/login";
         final String username = "someuser";
@@ -152,7 +152,7 @@ class UserControllerTest {
     }
 
     @Test
-    void login_should_return_unauthorized_when_user_not_found() throws Exception {
+    void loginShouldReturnUnauthorizedWhenUserNotFound() throws Exception {
         // given
         final String url = "/login";
         final String username = "someuser";
@@ -173,7 +173,7 @@ class UserControllerTest {
     }
 
     @Test
-    void private_should_return_forbidden_when_user_not_logged_in() throws Exception {
+    void privateShouldReturnForbiddenWhenUserNotLogged_in() throws Exception {
         // given
         final String url = "/private";
 
@@ -186,7 +186,7 @@ class UserControllerTest {
     }
 
     @Test
-    void private_should_return_ok_when_user_authenticated() throws Exception {
+    void privateShouldReturnOkWhenUserAuthenticated() throws Exception {
         // given
         final String url = "/private";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +

@@ -29,7 +29,7 @@ class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Test
-    void should_register_if_username_exists() {
+    void shouldRegisterIfUsernameExists() {
         // given
         final String username = "someuser";
         final String password = "1234";
@@ -52,7 +52,7 @@ class UserServiceTest {
     }
 
     @Test
-    void should_return_user_with_erased_credentials_when_user_is_registered() {
+    void shouldReturnUserWithErasedCredentialsWhenUserIsRegistered() {
         // given
         final String username = "someuser";
         final String password = "1234";
@@ -74,7 +74,7 @@ class UserServiceTest {
     }
 
     @Test
-    void register_should_throw_when_username_is_taken() {
+    void registerShouldThrowWhenUsernameIsTaken() {
         // given
         final String username = "someuser";
         final String password = "1234";
