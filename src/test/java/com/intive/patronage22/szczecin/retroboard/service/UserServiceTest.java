@@ -1,8 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.exception.UsernameTakenException;
-import org.junit.Assert;
-import org.junit.Test;
+import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,7 +17,7 @@ import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = UserService.class)
-public class UserServiceTest {
+class UserServiceTest {
 
     @Autowired
     private UserService userService;
@@ -30,7 +29,7 @@ public class UserServiceTest {
     private PasswordEncoder passwordEncoder;
 
     @Test
-    public void should_register_if_username_exists() {
+    void should_register_if_username_exists() {
         // given
         final String username = "someuser";
         final String password = "1234";
@@ -48,12 +47,12 @@ public class UserServiceTest {
 
         // then
         final UserDetails returnedUser = userService.register(username, password);
-        Assert.assertNotNull(returnedUser);
+        assertNotNull(returnedUser);
         assertEquals(returnedUser.getUsername(), preparedUser.getUsername());
     }
 
     @Test
-    public void should_return_user_with_erased_credentials_when_user_is_registered() {
+    void should_return_user_with_erased_credentials_when_user_is_registered() {
         // given
         final String username = "someuser";
         final String password = "1234";
@@ -75,7 +74,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void register_should_throw_when_username_is_taken() {
+    void register_should_throw_when_username_is_taken() {
         // given
         final String username = "someuser";
         final String password = "1234";
@@ -86,6 +85,6 @@ public class UserServiceTest {
         when(inMemoryUserDetailsManager.userExists(username)).thenReturn(true);
 
         // then
-        assertThrows(UsernameTakenException.class, () -> userService.register(username, password));
+        assertThrows(UserAlreadyExistException.class, () -> userService.register(username, password));
     }
 }

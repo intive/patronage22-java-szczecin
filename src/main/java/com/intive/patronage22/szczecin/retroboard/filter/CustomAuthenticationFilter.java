@@ -1,4 +1,4 @@
-package com.intive.patronage22.szczecin.retroboard.filer;
+package com.intive.patronage22.szczecin.retroboard.filter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -14,10 +14,10 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -29,6 +29,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
+    private final ObjectMapper objectMapper;
     private final String jwtSecret;
 
     @Override
@@ -40,7 +41,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         final UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(username, password);
 
-        return authenticationManager.authenticate(authenticationToken);
+        return this.authenticationManager.authenticate(authenticationToken);
     }
 
     @Override
@@ -61,9 +62,23 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
                 .withClaim("roles", roles)
                 .sign(algorithm);
 
-        final Map<String, String> tokens = new HashMap<>();
-        tokens.put("access_token", accessToken);
+        simpleJsonBodyWriter(response, "access_token", accessToken);
+    }
+
+    @Override
+    protected void unsuccessfulAuthentication(final HttpServletRequest request, final HttpServletResponse response,
+                                              final AuthenticationException failed)
+            throws IOException, ServletException {
+
+        simpleJsonBodyWriter(response, "error_message", failed.getMessage());
+        super.unsuccessfulAuthentication(request, response, failed);
+    }
+
+    private void simpleJsonBodyWriter(final HttpServletResponse response, final String key, final String value)
+            throws IOException {
+
+        final Map<String, String> tokens = Map.of(key, value);
         response.setContentType(APPLICATION_JSON_VALUE);
-        new ObjectMapper().writeValue(response.getOutputStream(), tokens);
+        objectMapper.writeValue(response.getOutputStream(), tokens);
     }
 }

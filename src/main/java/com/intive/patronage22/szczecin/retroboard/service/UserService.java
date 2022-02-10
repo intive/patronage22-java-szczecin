@@ -1,6 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.exception.UsernameTakenException;
+import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.User;
@@ -20,15 +20,15 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public UserDetails register(final String username, final String password) {
+        if (userExists(username)) {
+            throw new UserAlreadyExistException();
+        }
+
         final UserDetails preparedUser = User.withUsername(username)
                 .password(password)
                 .roles("USER")
                 .passwordEncoder(passwordEncoder::encode)
                 .build();
-
-        if (userExists(username)) {
-            throw new UsernameTakenException();
-        }
 
         inMemoryUserDetailsManager.createUser(preparedUser);
 

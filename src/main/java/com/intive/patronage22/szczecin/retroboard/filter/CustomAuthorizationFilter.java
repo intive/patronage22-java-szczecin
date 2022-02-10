@@ -1,4 +1,4 @@
-package com.intive.patronage22.szczecin.retroboard.filer;
+package com.intive.patronage22.szczecin.retroboard.filter;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
@@ -7,9 +7,11 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -28,10 +30,15 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
-    private final String jwtSecret;
+    private final ObjectMapper objectMapper;
 
+    @Value("${retroboard.jwt.secret}")
+    private String jwtSecret;
+
+    @SuppressWarnings("NullableProblems")
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
@@ -63,13 +70,12 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                 } catch (final Exception exception) {
                     log.error("Error logging in {}", exception.getMessage());
 
-                    response.setHeader("error", exception.getMessage());
                     response.setStatus(FORBIDDEN.value());
                     response.setContentType(APPLICATION_JSON_VALUE);
 
                     final Map<String, String> error = new HashMap<>();
                     error.put("error_message", exception.getMessage());
-                    new ObjectMapper().writeValue(response.getOutputStream(), error);
+                    objectMapper.writeValue(response.getOutputStream(), error);
                 }
             } else {
                 filterChain.doFilter(request, response);

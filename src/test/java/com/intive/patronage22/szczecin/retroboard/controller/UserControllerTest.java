@@ -6,7 +6,7 @@ import com.auth0.jwt.interfaces.DecodedJWT;
 import com.auth0.jwt.interfaces.JWTVerifier;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intive.patronage22.szczecin.retroboard.exception.UsernameTakenException;
+import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import com.intive.patronage22.szczecin.retroboard.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import org.hamcrest.core.IsNull;
@@ -23,19 +23,20 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest({SecuredController.class, SecurityConfig.class})
-class SecuredControllerTest {
+@WebMvcTest({UserController.class, SecurityConfig.class})
+class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -79,6 +80,7 @@ class SecuredControllerTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(jsonPath("$.username").value(username))
                 .andExpect(jsonPath("$.password").value(IsNull.nullValue()))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
     }
 
@@ -90,15 +92,21 @@ class SecuredControllerTest {
         final String password = "1234";
 
         // when
-        when(userService.register(username, password)).thenThrow(new UsernameTakenException());
+        when(userService.register(username, password)).thenThrow(new UserAlreadyExistException());
 
         // then
-        mockMvc
+        final MvcResult result = mockMvc
                 .perform(post(url)
                         .param("username", username)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(status().isConflict());
+                .andExpect(res -> assertEquals("User already exist", res.getResponse().getErrorMessage()))
+                .andExpect(status().isConflict()).andReturn();
+
+        final Exception resultException = result.getResolvedException();
+
+        assertInstanceOf(UserAlreadyExistException.class, resultException);
+        assertEquals("User already exist", result.getResponse().getErrorMessage());
     }
 
     @Test
@@ -110,7 +118,7 @@ class SecuredControllerTest {
 
         final UserDetails existingUser = User
                 .withUsername(username)
-                .password("$2a$10$wZDpl69jSN6sYRYGZbno.u6LtQ4DDXkwlursaDszbVR24UrYSSkHO")
+                .password("$2a$10$A0IKJqSv.cSqXb7BuIPw4.GvP1U3VPUIRvkAigPVr6HipH.R3nGLO")
                 .roles("USER")
                 .build();
 
@@ -123,6 +131,10 @@ class SecuredControllerTest {
                         .param("username", username)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(jsonPath("$.access_token").value("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."
+                        + "eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2xvZ2l"
+                        + "uIn0.7Kz-x09Xmaw0qb8FVSzIH9lxMO1_5FHSs1GbJHcsP0o"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andReturn()
                 .getResponse()
@@ -140,7 +152,7 @@ class SecuredControllerTest {
     }
 
     @Test
-    void login_should_return_unauthorized_when_user_not_exist() throws Exception {
+    void login_should_return_unauthorized_when_user_not_found() throws Exception {
         // given
         final String url = "/login";
         final String username = "someuser";
@@ -156,18 +168,8 @@ class SecuredControllerTest {
                         .param("username", username)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    void public_should_return_ok_when_user_anonymous() throws Exception {
-        // given
-        final String url = "/public";
-
-        // then
-        mockMvc.perform(get(url))
-                .andExpect(jsonPath("$.principal").value("anonymousUser"))
-                .andExpect(status().isOk());
     }
 
     @Test
@@ -178,7 +180,9 @@ class SecuredControllerTest {
         // then
         mockMvc
                 .perform(get(url).contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(status().isForbidden());
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error_message").value("Access Denied"));
     }
 
     @Test
@@ -193,6 +197,7 @@ class SecuredControllerTest {
         mockMvc
                 .perform(get(url).header("Authorization", "Bearer " + providedAccessToken))
                 .andExpect(jsonPath("$.name").value("someuser"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }
 }
