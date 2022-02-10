@@ -2,7 +2,6 @@ package com.intive.patronage22.szczecin.retroboard.service;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
-import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,7 @@ public class BoardService {
     private final UserRepository userRepository;
 
     @Transactional
-    public List<BoardDto> getUserBoards(String uid) {
+    public List<BoardDto> getUserBoards(final String uid) {
         if (uid == null || uid.isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Invalid request - no uid given!");
@@ -31,7 +30,7 @@ public class BoardService {
                 HttpStatus.NOT_FOUND,
                 "No such user!"));
 
-        return u.getUserBoards().stream().map(b -> Board.toDto(b))
+        return u.getUserBoards().stream().map(b -> BoardDto.fromModel(b))
                 .collect(Collectors.toList());
     }
 

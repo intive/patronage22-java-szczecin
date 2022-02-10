@@ -1,5 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.dto;
 
+import com.intive.patronage22.szczecin.retroboard.model.Board;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -8,7 +9,14 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public class BoardDto {
-    final Integer id;
-    final EnumStateDto state;
-    final String name;
+    private final Integer id;
+    private final EnumStateDto state;
+    private final String name;
+
+    public static BoardDto fromModel(final Board board) {
+        return BoardDto.builder()
+                .id(board.getId())
+                .name(board.getName())
+                .state(board.getState()).build();
+    }
 }
