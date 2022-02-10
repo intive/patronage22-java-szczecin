@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS  Board_Card_Votes (
     card_id INTEGER,
     voter_uid VARCHAR(128),
     count INTEGER(16),
+    PRIMARY KEY(card_id,voter_uid),
     FOREIGN KEY(card_id) REFERENCES Board_Card(id),
     FOREIGN KEY(voter_uid) REFERENCES User(uid)
 );

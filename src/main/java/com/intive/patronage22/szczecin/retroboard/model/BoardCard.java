@@ -1,10 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.model;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -13,8 +10,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Entity
 @Table(name = "Board_Card")
-@Getter
-@Setter
+@Data
 public class BoardCard implements Serializable {
 
     @Id

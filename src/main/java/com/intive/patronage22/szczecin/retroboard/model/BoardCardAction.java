@@ -1,9 +1,8 @@
 package com.intive.patronage22.szczecin.retroboard.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -12,8 +11,7 @@ import java.io.Serializable;
 @AllArgsConstructor
 @Entity
 @Table(name = "Board_Card_Action")
-@Getter
-@Setter
+@Data
 public class BoardCardAction implements Serializable {
 
     @Id
@@ -26,6 +24,4 @@ public class BoardCardAction implements Serializable {
 
     @Column(name = "text", length = 128, nullable = false)
     private String text;
-
-
 }
