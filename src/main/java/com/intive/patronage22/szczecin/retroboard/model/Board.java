@@ -37,11 +37,4 @@ public class Board implements Serializable {
             inverseJoinColumns = {@JoinColumn(name = "uid")}
     )
     private Set<User> users = new HashSet<>();
-
-    public static BoardDto toDto(Board board) {
-        return BoardDto.builder()
-                .id(board.id)
-                .name(board.name)
-                .state(board.state).build();
-    }
 }

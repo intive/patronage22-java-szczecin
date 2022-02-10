@@ -28,7 +28,7 @@ public class BoardController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public ResponseEntity<List<BoardDto>> getUserBoards(
-            @RequestParam(name = "userId", required = false) String uid) {
+            @RequestParam(name = "userId") String uid) {
         List<BoardDto> boards = boardService.getUserBoards(uid);
         return ResponseEntity.status(OK).body(boards);
     }

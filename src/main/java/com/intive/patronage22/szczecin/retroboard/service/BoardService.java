@@ -31,7 +31,7 @@ public class BoardService {
                 HttpStatus.NOT_FOUND,
                 "No such user!"));
 
-        return u.getUserBoards().stream().map(b -> Board.toDto(b))
+        return u.getUserBoards().stream().map(b -> BoardDto.toDto(b))
                 .collect(Collectors.toList());
     }
 
