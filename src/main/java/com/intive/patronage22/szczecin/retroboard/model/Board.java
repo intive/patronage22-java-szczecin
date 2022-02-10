@@ -1,5 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.model;
 
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import lombok.*;
 
@@ -23,6 +24,7 @@ public class Board implements Serializable {
     private String name;
 
     @Enumerated
+    @Column(name = "state", nullable = false)
     private EnumStateDto state = EnumStateDto.CREATED;
 
     @OneToOne
@@ -35,4 +37,11 @@ public class Board implements Serializable {
             inverseJoinColumns = {@JoinColumn(name = "uid")}
     )
     private Set<User> users = new HashSet<>();
+
+    public static BoardDto toDto(Board board) {
+        return BoardDto.builder()
+                .id(board.id)
+                .name(board.name)
+                .state(board.state).build();
+    }
 }

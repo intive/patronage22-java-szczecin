@@ -1,15 +1,14 @@
 package com.intive.patronage22.szczecin.retroboard.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
-@Value
+@Builder
 @Getter
 @RequiredArgsConstructor
 public class BoardDto {
-
-    String id;
-    EnumStateDto state;
-    String name;
+    final Integer id;
+    final EnumStateDto state;
+    final String name;
 }
