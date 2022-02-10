@@ -7,11 +7,12 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
 
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
+@Profile("test")
 @TestConfiguration
 public class FirebaseTestConfiguration {
 
@@ -20,8 +21,7 @@ public class FirebaseTestConfiguration {
                     .setProjectId("sample-project").build();
 
     @Bean
-    @Primary
-    public FirebaseApp firebaseApp() {
+    public FirebaseApp firebaseTestApp() {
         FirebaseApp firebaseApp = FirebaseApp.getApps()
                 .stream()
                 .filter(app -> app.getName().equals(FirebaseApp.DEFAULT_APP_NAME))
@@ -33,8 +33,7 @@ public class FirebaseTestConfiguration {
     }
 
     @Bean
-    @Primary
-    public FirebaseAuth firebaseAuth(final FirebaseApp firebaseApp) {
+    public FirebaseAuth firebaseTestAuth(final FirebaseApp firebaseApp) {
         return FirebaseAuth.getInstance(firebaseApp);
     }
 

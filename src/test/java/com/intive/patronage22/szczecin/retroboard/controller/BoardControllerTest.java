@@ -1,6 +1,5 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
-import com.intive.patronage22.szczecin.retroboard.configuration.FirebaseTestConfiguration;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
@@ -23,7 +22,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {FirebaseTestConfiguration.class})
+@SpringBootTest
 class BoardControllerTest {
     @Autowired
     private BoardController boardController;
@@ -35,7 +34,7 @@ class BoardControllerTest {
     private BoardRepository boardRepository;
 
     @Test
-    public void whenUserDoesNotExist_thenStatusNotFound() {
+    public void whenUserDoesNotExistThenStatusNotFound() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
             boardController.getUserBoards("xyz");
         });
@@ -43,7 +42,7 @@ class BoardControllerTest {
     }
 
     @Test
-    public void whenUserExists_thenStatusOk() {
+    public void whenUserExistsThenStatusOk() {
         User user = createUser("abc", null);
         userRepository.save(user);
         ResponseEntity<List<BoardDto>> res = boardController.getUserBoards("abc");
@@ -52,7 +51,7 @@ class BoardControllerTest {
     }
 
     @Test
-    public void whenUserHasTwoBoards_thenBodyShouldContainTwoBoards() {
+    public void whenUserHasTwoBoardsThenBodyShouldContainTwoBoards() {
         User user1 = createUser("def","Test user 1");
         userRepository.save(user1);
 

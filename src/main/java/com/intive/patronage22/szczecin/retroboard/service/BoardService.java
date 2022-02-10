@@ -20,7 +20,7 @@ public class BoardService {
     private final UserRepository userRepository;
 
     @Transactional
-    public List<BoardDto> getUserBoards(String uid) {
+    public List<BoardDto> getUserBoards(final String uid) {
         if (uid == null || uid.isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Invalid request - no uid given!");
