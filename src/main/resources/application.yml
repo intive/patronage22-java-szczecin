@@ -1,4 +1,6 @@
 spring:
+  profile:
+    active: production
   datasource:
     driverClassName: org.h2.Driver
     password: admin
