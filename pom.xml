@@ -109,6 +109,13 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>com/intive/patronage22/szczecin/retroboard/RetroboardApplication.class</exclude>
+                        <exclude>com/intive/patronage22/szczecin/retroboard/model/</exclude>
+                        <exclude>com/intive/patronage22/szczecin/retroboard/configuration/FirebaseConfiguration.class</exclude>
+                    </excludes>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -135,7 +142,7 @@
                                         <limit>
                                             <counter>LINE</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.0</minimum>
+                                            <minimum>0.65</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
