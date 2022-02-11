@@ -53,10 +53,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.headers().frameOptions().disable();
 
         http.exceptionHandling()
-                .authenticationEntryPoint((req, res, exception) -> handleUnathenticatedAccess(res));
+                .authenticationEntryPoint((req, res, exception) -> handleUnauthenticatedAccess(res));
     }
 
-    private void handleUnathenticatedAccess(final HttpServletResponse response) throws IOException {
+    private void handleUnauthenticatedAccess(final HttpServletResponse response) throws IOException {
         final Map<String, String> tokens = Map.of("error_message", "Access Denied");
         response.setContentType(APPLICATION_JSON_VALUE);
         objectMapper.writeValue(response.getOutputStream(), tokens);
