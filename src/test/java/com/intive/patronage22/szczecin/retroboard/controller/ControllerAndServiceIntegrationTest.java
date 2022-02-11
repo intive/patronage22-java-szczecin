@@ -1,4 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
+
+import com.intive.patronage22.szczecin.retroboard.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.Test;
@@ -18,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
-@WebMvcTest(BoardController.class)
+@WebMvcTest({ BoardController.class, SecurityConfig.class })
 public class ControllerAndServiceIntegrationTest {
     @Autowired
     private MockMvc mvc;
