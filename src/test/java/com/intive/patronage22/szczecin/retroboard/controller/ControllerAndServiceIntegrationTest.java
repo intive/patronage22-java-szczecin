@@ -1,6 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
-import com.intive.patronage22.szczecin.retroboard.security.SecurityConfig;
+import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.Test;

@@ -1,4 +1,4 @@
-package com.intive.patronage22.szczecin.retroboard.security;
+package com.intive.patronage22.szczecin.retroboard.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthenticationFilter;
@@ -43,12 +43,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.authorizeRequests().antMatchers("/register", "/boards").permitAll();
+        http.authorizeRequests().antMatchers("/register", "/boards", "/swagger-ui/**", "/v3/api-docs/**",
+                "/h2-console/**", "/favicon.ico").permitAll();
         http.authorizeRequests().antMatchers("/private").authenticated();
 
         http.addFilter(new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret));
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
+        http.headers().frameOptions().disable();
 
         http.exceptionHandling()
                 .authenticationEntryPoint((req, res, exception) -> handleUnathenticatedAccess(res));
