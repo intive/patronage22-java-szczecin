@@ -1,5 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
+import com.intive.patronage22.szczecin.retroboard.configuration.FirebaseTestConfiguration;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
@@ -22,7 +23,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(classes = FirebaseTestConfiguration.class)
 class BoardControllerTest {
     @Autowired
     private BoardController boardController;
