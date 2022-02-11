@@ -43,7 +43,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.authorizeRequests().antMatchers("/register", "/boards", "/public").permitAll();
+        http.authorizeRequests().antMatchers("/register", "/boards").permitAll();
         http.authorizeRequests().antMatchers("/private").authenticated();
 
         http.addFilter(new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret));

@@ -20,7 +20,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
 
     public UserDetails register(final String username, final String password) {
-        if (userExists(username)) {
+        if (isUserExist(username)) {
             throw new UserAlreadyExistException();
         }
 
@@ -38,7 +38,7 @@ public class UserService {
         return createdUser;
     }
 
-    private boolean userExists(final String username) {
+    private boolean isUserExist(final String username) {
         return inMemoryUserDetailsManager.userExists(username);
     }
 }
