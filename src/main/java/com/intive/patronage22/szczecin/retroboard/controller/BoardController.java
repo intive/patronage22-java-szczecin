@@ -28,9 +28,14 @@ public class BoardController {
     private final BoardService boardService;
 
     @GetMapping
-    public ResponseEntity<List<BoardDto>> getBoards() {
-        final List<BoardDto> boards = boardService.mockBoardData();
-
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad request data"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    public ResponseEntity<List<BoardDto>> getUserBoards(
+            @RequestParam(name = "userId") final String uid) {
+        List<BoardDto> boards = boardService.getUserBoards(uid);
         return ResponseEntity.status(OK).body(boards);
     }
 

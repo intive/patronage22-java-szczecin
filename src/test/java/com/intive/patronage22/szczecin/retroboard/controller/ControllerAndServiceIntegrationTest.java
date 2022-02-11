@@ -1,6 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
-import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
+import com.intive.patronage22.szczecin.retroboard.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.Test;
@@ -13,14 +13,14 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
-import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @AutoConfigureMockMvc
-@WebMvcTest(BoardController.class)
+@WebMvcTest({ BoardController.class, SecurityConfig.class })
 public class ControllerAndServiceIntegrationTest {
 
     @Autowired private MockMvc mvc;
@@ -28,13 +28,19 @@ public class ControllerAndServiceIntegrationTest {
     @MockBean private BoardRepository boardRepository;
     @MockBean private UserRepository userRepository;
 
-    @Test
-    public void statusIsOk_TwoObjectsReturned() throws Exception {
+    @MockBean private UserRepository userRepository;
 
-        final BoardService boardService = new BoardService(boardRepository, userRepository);
-        mvc.perform(MockMvcRequestBuilders
-                        .get("/boards"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.*", hasSize(2)));
+    @Test
+    public void whenNoUserGiven_thenBadRequestStatus() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/boards?userId=")).
+                andExpect(status().isBadRequest()).
+                andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
+    }
+
+    @Test
+    public void whenNoSuchUser_thenNotFoundStatus() throws Exception {
+        mvc.perform(MockMvcRequestBuilders.get("/boards?userId=nosuchuserid")).
+                andExpect(status().isNotFound()).
+                andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
     }
 }
