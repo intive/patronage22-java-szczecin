@@ -1,4 +1,4 @@
-package com.intive.patronage22.szczecin.retroboard.security;
+package com.intive.patronage22.szczecin.retroboard.configuration.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
