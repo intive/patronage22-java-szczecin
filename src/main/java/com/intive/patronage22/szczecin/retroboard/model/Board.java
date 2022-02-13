@@ -27,7 +27,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "Board")
+@Table(name = "board")
 public class Board implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
