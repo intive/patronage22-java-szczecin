@@ -9,7 +9,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Board_Card")
+@Table(schema = "retro", name = "board_card")
 @Data
 public class BoardCard implements Serializable {
 

@@ -29,7 +29,7 @@ import java.util.Set;
 @Getter
 @Setter
 @Entity
-@Table(name = "Board")
+@Table(schema = "retro", name = "board")
 public class Board implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,10 +46,10 @@ public class Board implements Serializable {
     private User creator;
 
     @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "BoardUsers",
-            joinColumns = {@JoinColumn(name = "id")},
-            inverseJoinColumns = {@JoinColumn(name = "uid")}
+    @JoinTable(schema = "retro",
+            name = "users_boards",
+            joinColumns = @JoinColumn(name = "board_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_uid")
     )
     private Set<User> users = new HashSet<>();
 }
