@@ -2,10 +2,9 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    driverClassName: org.h2.Driver
-    password: admin
-    url: jdbc:h2:mem:retroboard
-    username: admin
+    url: jdbc:postgresql://db:5432/compose-postgres
+    username: compose-postgres
+    password: compose-postgres
   flyway:
     baseline-on-migrate: true
     clean-disabled: true
@@ -14,14 +13,14 @@ spring:
     table: schema_version
     url: ${spring.datasource.url}
     user: ${spring.datasource.username}
-  h2:
-    console:
-      enabled: true
+    generate-ddl: true
+    generate-ddl-auto: update
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   config:
     import: optional:file:.env[.properties]
 
 retroboard:
   jwt:
     secret: secret
+
