@@ -17,11 +17,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @WebMvcTest(BoardController.class)
 public class ControllerAndServiceIntegrationTest {
-    @Autowired
-    private MockMvc mvc;
-    
-    @SpyBean
-    private BoardService service;
+
+    @Autowired private MockMvc mvc;
+    @SpyBean private BoardService service;
+    @MockBean private BoardRepository boardRepository;
+    @MockBean private UserRepository userRepository;
 
     @Test
     public void statusIsOk_TwoObjectsReturned() throws Exception {

@@ -4,10 +4,9 @@ import com.intive.patronage22.szczecin.retroboard.model.Board;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 
-@Value
 @Builder
+@Value
 @Getter
 @RequiredArgsConstructor
 public class BoardDto {
