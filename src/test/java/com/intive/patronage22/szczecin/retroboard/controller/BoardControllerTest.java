@@ -104,7 +104,7 @@ class BoardControllerTest {
         final String uid = "uid101";
         final String nameBoard = "My first board.";
 
-        BoardDto boardDto = BoardDto.builder()
+        final BoardDto boardDto = BoardDto.builder()
                 .id(1004)
                 .state(EnumStateDto.CREATED)
                 .name(nameBoard)
