@@ -7,76 +7,67 @@ import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Collections;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
-@ExtendWith(MockitoExtension.class)
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = BoardService.class)
 class BoardServiceTest {
 
-    @Mock UserRepository userRepository;
-    @Mock BoardRepository boardRepository;
-
+    @Autowired
     private BoardService boardService;
 
-    @BeforeEach
-    void setUp() {
-        boardService = new BoardService(boardRepository, userRepository);
-    }
+    @MockBean
+    UserRepository userRepository;
 
-    @ParameterizedTest
-    @MethodSource("validBoardData")
-    void saveBoardForUserId_shouldNotThrow(String boardName, String userId) {
+    @MockBean
+    BoardRepository boardRepository;
+
+    @Test
+    void createNewBoardShouldReturnBoardDtoWhenUserExists() {
         // given
-        Optional<User> optionalUser = Optional.of(new User(userId, "Josef"));
-        Board board = new Board(10, boardName, EnumStateDto.CREATED,
-                optionalUser.get(), Collections.emptySet());
+        final String uid = "uid101";
+        final String boardName = "My first board.";
 
-        when(userRepository.findById(userId)).thenReturn(optionalUser);
-        when(boardRepository.save(new Board(boardName, any()))).thenReturn(board);
-
-        BoardDto boardDtoExpected = BoardDto.mapToDto(board);
+        final User user = new User(uid, "Josef", Set.of());
+        final Board board = new Board(10, boardName, EnumStateDto.CREATED,
+                user, Set.of());
 
         // when
-        BoardDto boardDtoResult =
-                boardService.saveBoardForUserId(boardName, userId);
+        when(userRepository.findById(uid)).thenReturn(Optional.of(user));
+        when(boardRepository.save(any(Board.class))).thenReturn(board);
+        final BoardDto boardDtoResult = boardService.createNewBoard(boardName, uid);
 
         // then
-        assertEquals(boardDtoExpected, boardDtoResult);
-        verify(userRepository).findById(anyString());
+        assertEquals(BoardDto.mapToDto(board), boardDtoResult);
+        verify(userRepository).findById(uid);
         verify(boardRepository).save(any(Board.class));
     }
 
-    @ParameterizedTest
-    @MethodSource("validBoardData")
-    void saveBoardForUserId_shouldThrowUserNotFoundException(String boardName,
-                                                             String userId) {
+    @Test
+    void createNewBoardShouldReturnNoFoundWhenUserDoesNotExists() {
         // given
-        when(userRepository.findById(anyString())).thenReturn(Optional.empty());
+        final String uid = "uid101";
+        final String boardName = "My first board.";
+
+        // when
+        when(userRepository.findById(uid)).thenReturn(Optional.empty());
 
         // then
         assertThrows(UserNotFoundException.class,
-                () -> boardService.saveBoardForUserId(boardName, userId));
-    }
-
-    private static Stream<Arguments> validBoardData() {
-        return Stream.of(Arguments.of("test1", "uid10"));
+                () -> boardService.createNewBoard(boardName, uid));
     }
 }

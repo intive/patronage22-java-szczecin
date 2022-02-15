@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
     private final UserService userService;
@@ -20,7 +21,7 @@ public class UserController {
         return SecurityContextHolder.getContext().getAuthentication();
     }
 
-    @PostMapping(value = "/register", produces = {MediaType.APPLICATION_JSON_VALUE})
+    @PostMapping(value = "/register")
     @ResponseStatus(HttpStatus.CREATED)
     UserDetails register(@RequestParam final String username, @RequestParam final String password) {
         return userService.register(username, password);

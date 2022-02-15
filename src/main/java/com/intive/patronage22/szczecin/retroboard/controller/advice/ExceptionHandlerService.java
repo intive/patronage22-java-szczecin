@@ -10,11 +10,11 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @ControllerAdvice
 @ResponseBody
-public class BoardControllerAdvice {
+public class ExceptionHandlerService {
 
     @ResponseStatus(NOT_FOUND)
     @ExceptionHandler(UserNotFoundException.class)
-    public String userNotFoundHandler(UserNotFoundException exception) {
+    public String userNotFoundHandler(final UserNotFoundException exception) {
         return exception.getMessage();
     }
 }

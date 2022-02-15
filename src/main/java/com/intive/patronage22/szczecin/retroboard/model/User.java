@@ -23,9 +23,4 @@ public class User implements Serializable {
 
     @ManyToMany(mappedBy = "users")
     private Set<Board> userBoards = new HashSet<>();
-
-    public User(String uid, String name) {
-        this.uid = uid;
-        this.name = name;
-    }
 }

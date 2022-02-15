@@ -50,9 +50,4 @@ public class Board implements Serializable {
             inverseJoinColumns = {@JoinColumn(name = "uid")}
     )
     private Set<User> users = new HashSet<>();
-
-    public Board(String name, User creator) {
-        this.name = name;
-        this.creator = creator;
-    }
 }
