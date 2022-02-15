@@ -37,7 +37,7 @@ class BoardServiceTest {
     BoardRepository boardRepository;
 
     @Test
-    void createNewBoardShouldReturnBoardDtoWhenUserExists() {
+    void createNewBoardShouldReturnBoardDtoWhenUserExist() {
         // given
         final String uid = "uid101";
         final String boardName = "My first board.";
@@ -58,7 +58,7 @@ class BoardServiceTest {
     }
 
     @Test
-    void createNewBoardShouldReturnNoFoundWhenUserDoesNotExists() {
+    void createNewBoardShouldReturnNoFoundWhenUserNotExist() {
         // given
         final String uid = "uid101";
         final String boardName = "My first board.";

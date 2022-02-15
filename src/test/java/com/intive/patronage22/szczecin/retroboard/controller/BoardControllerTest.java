@@ -41,7 +41,7 @@ class BoardControllerTest {
     private BoardService boardService;
 
     @Test
-    void getUserBoardsShouldReturnOkWhenUserExists() throws Exception{
+    void getUserBoardsShouldReturnOkWhenUserExist() throws Exception{
         // given
         final String url = "/boards";
         final String uid = "uid101";
@@ -64,7 +64,7 @@ class BoardControllerTest {
     }
 
     @Test
-    void getUserBoardsShouldReturnNotFoundWhenUserDoesNotExists() throws Exception {
+    void getUserBoardsShouldReturnNotFoundWhenUserNotExist() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
@@ -98,7 +98,7 @@ class BoardControllerTest {
     }
 
     @Test
-    void createNewBoardShouldReturnCreatedWhenUserExists() throws Exception {
+    void createNewBoardShouldReturnCreatedWhenUserExist() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
@@ -126,7 +126,7 @@ class BoardControllerTest {
     }
 
     @Test
-    void createNewBoardShouldReturnNotFoundWhenUserDoesNotExists() throws Exception {
+    void createNewBoardShouldReturnNotFoundWhenUserNotExist() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
