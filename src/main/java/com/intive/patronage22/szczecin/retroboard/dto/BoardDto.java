@@ -19,7 +19,7 @@ public class BoardDto {
     String name;
 
     // convert Entity into DTO
-    public static BoardDto fromModel(Board board) {
+    public static BoardDto fromModel(final Board board) {
         return BoardDto.builder()
                 .id(board.getId())
                 .state(board.getState())
