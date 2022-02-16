@@ -35,7 +35,7 @@ public class BoardService {
                 "No such user!"));
 
         return user.getUserBoards().stream()
-                .map(BoardDto::mapToDto)
+                .map(BoardDto::fromModel)
                 .collect(Collectors.toList());
     }
 
@@ -44,7 +44,13 @@ public class BoardService {
         final User user = userRepository.findById(uid)
                 .orElseThrow(UserNotFoundException::new);
 
-        final Board newBoard = new Board(null, boardName, EnumStateDto.CREATED, user, Set.of());
-        return BoardDto.mapToDto(boardRepository.save(newBoard));
+        final Board newBoard = Board.builder()
+                .name(boardName)
+                .state(EnumStateDto.CREATED)
+                .creator(user)
+                .users(Set.of())
+                .build();
+
+        return BoardDto.fromModel(boardRepository.save(newBoard));
     }
 }

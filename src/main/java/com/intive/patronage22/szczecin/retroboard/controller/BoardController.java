@@ -3,6 +3,7 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCreateDto;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
@@ -28,22 +29,20 @@ public class BoardController {
     private final BoardService boardService;
 
     @GetMapping
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "400", description = "Bad request data"),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
-    public ResponseEntity<List<BoardDto>> getUserBoards(@RequestParam(name = "userId") final String uid) {
-        List<BoardDto> boards = boardService.getUserBoards(uid);
-        return ResponseEntity.status(OK).body(boards);
+    @ResponseStatus(OK)
+    @Operation(summary = "Get retro board for given user.",
+               responses = {@ApiResponse(responseCode = "200", description = "OK"),
+                            @ApiResponse(responseCode = "400", description = "Bad request data"),
+                            @ApiResponse(responseCode = "404", description = "User not found")})
+    public List<BoardDto> getUserBoards(@RequestParam(name = "userId") final String uid) {
+        return boardService.getUserBoards(uid);
     }
 
     @PostMapping
     @ResponseStatus(CREATED)
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Creation successful"),
-            @ApiResponse(responseCode = "404", description = "User not found")
-    })
+    @Operation(summary = "Create retro board for given user.",
+            responses = {@ApiResponse(responseCode = "201", description = "Board created for given user"),
+                         @ApiResponse(responseCode = "404", description = "User not found")})
     public BoardDto createNewBoard(@RequestParam(name = "userId") final String uid,
                                    @RequestBody final BoardCreateDto boardName) {
 

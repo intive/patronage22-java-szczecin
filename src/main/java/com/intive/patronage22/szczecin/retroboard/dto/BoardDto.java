@@ -1,7 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.dto;
 
 import com.intive.patronage22.szczecin.retroboard.model.Board;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
@@ -11,15 +11,15 @@ import lombok.Value;
 @RequiredArgsConstructor
 public class BoardDto {
 
-    @ApiModelProperty(value = "Board id", name = "id", example = "1")
+    @Schema(description = "Board id")
     Integer id;
-    @ApiModelProperty(value = "Board state", example = "CREATED")
+    @Schema(description = "Board state", implementation = EnumStateDto.class)
     EnumStateDto state;
-    @ApiModelProperty(value = "Board name", required = true, example = "My first board.")
+    @Schema(description = "Board name", required = true)
     String name;
 
     // convert Entity into DTO
-    public static BoardDto mapToDto(Board board) {
+    public static BoardDto fromModel(Board board) {
         return BoardDto.builder()
                 .id(board.getId())
                 .state(board.getState())

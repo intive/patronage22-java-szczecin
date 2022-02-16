@@ -1,6 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.dto;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +11,6 @@ import lombok.Value;
 @NoArgsConstructor(force = true, access = AccessLevel.PRIVATE)
 public class BoardCreateDto {
 
-    @ApiModelProperty(value = "Board name", required = true, example = "My first board.")
+    @Schema(description = "Board name", required = true)
     String name;
 }

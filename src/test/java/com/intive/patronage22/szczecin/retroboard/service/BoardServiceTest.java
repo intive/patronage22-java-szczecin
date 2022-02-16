@@ -43,8 +43,14 @@ class BoardServiceTest {
         final String boardName = "My first board.";
 
         final User user = new User(uid, "Josef", Set.of());
-        final Board board = new Board(10, boardName, EnumStateDto.CREATED,
-                user, Set.of());
+
+        final Board board = Board.builder()
+                .id(10)
+                .name(boardName)
+                .state(EnumStateDto.CREATED)
+                .creator(user)
+                .users(Set.of())
+                .build();
 
         // when
         when(userRepository.findById(uid)).thenReturn(Optional.of(user));
@@ -52,7 +58,7 @@ class BoardServiceTest {
         final BoardDto boardDtoResult = boardService.createNewBoard(boardName, uid);
 
         // then
-        assertEquals(BoardDto.mapToDto(board), boardDtoResult);
+        assertEquals(BoardDto.fromModel(board), boardDtoResult);
         verify(userRepository).findById(uid);
         verify(boardRepository).save(any(Board.class));
     }
