@@ -2,7 +2,6 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
