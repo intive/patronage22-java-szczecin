@@ -102,27 +102,27 @@ class BoardControllerTest {
         // given
         final String url = "/boards";
         final String uid = "uid101";
-        final String nameBoard = "My first board.";
+        final String boardName = "My first board.";
 
         final BoardDto boardDto = BoardDto.builder()
                 .id(1004)
                 .state(EnumStateDto.CREATED)
-                .name(nameBoard)
+                .name(boardName)
                 .build();
 
         // when
-        when(boardService.createNewBoard(nameBoard, uid))
+        when(boardService.createNewBoard(boardName, uid))
                 .thenReturn(boardDto);
 
         // then
         mockMvc.perform(post(url)
                         .param("userId", uid)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"" + nameBoard + "\"}")
+                        .content("{\"name\":\"" + boardName + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.name").value(nameBoard));
+                .andExpect(jsonPath("$.name").value(boardName));
     }
 
     @Test
@@ -130,17 +130,17 @@ class BoardControllerTest {
         // given
         final String url = "/boards";
         final String uid = "uid101";
-        final String nameBoard = "My first board.";
+        final String boardName = "My first board.";
 
         // when
-        when(boardService.createNewBoard(nameBoard, uid))
+        when(boardService.createNewBoard(boardName, uid))
                 .thenThrow(new UserNotFoundException());
 
         // then
         mockMvc.perform(post(url)
                         .param("userId", uid)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"" + nameBoard + "\"}")
+                        .content("{\"name\":\"" + boardName + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

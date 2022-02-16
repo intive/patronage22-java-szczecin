@@ -45,8 +45,8 @@ public class BoardController {
             @ApiResponse(responseCode = "404", description = "User not found")
     })
     public BoardDto createNewBoard(@RequestParam(name = "userId") final String uid,
-                                   @RequestBody final BoardCreateDto nameBoard) {
+                                   @RequestBody final BoardCreateDto boardName) {
 
-        return boardService.createNewBoard(nameBoard.getName(), uid);
+        return boardService.createNewBoard(boardName.getName(), uid);
     }
 }

@@ -45,7 +45,6 @@ public class BoardService {
                 .orElseThrow(UserNotFoundException::new);
 
         final Board newBoard = new Board(null, boardName, EnumStateDto.CREATED, user, Set.of());
-        final Board save = boardRepository.save(newBoard);
-        return BoardDto.mapToDto(save);
+        return BoardDto.mapToDto(boardRepository.save(newBoard));
     }
 }

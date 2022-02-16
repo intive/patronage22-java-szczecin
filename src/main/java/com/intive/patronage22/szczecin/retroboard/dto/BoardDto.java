@@ -11,7 +11,7 @@ import lombok.Value;
 @RequiredArgsConstructor
 public class BoardDto {
 
-    @ApiModelProperty(value = "Board id", example = "1")
+    @ApiModelProperty(value = "Board id", name = "id", example = "1")
     Integer id;
     @ApiModelProperty(value = "Board state", example = "CREATED")
     EnumStateDto state;
