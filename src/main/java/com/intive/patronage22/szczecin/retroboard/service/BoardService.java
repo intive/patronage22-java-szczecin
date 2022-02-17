@@ -1,11 +1,19 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardVotesDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
+import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
+import com.intive.patronage22.szczecin.retroboard.model.BoardCardAction;
+import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotes;
 import com.intive.patronage22.szczecin.retroboard.model.User;
+import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsActionsRepository;
+import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
+import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,6 +33,9 @@ public class BoardService {
 
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+    private final BoardCardsRepository boardCardsRepository;
+    private final BoardCardsActionsRepository boardCardsActionsRepository;
+    private final BoardCardsVotesRepository boardCardsVotesRepository;
 
     @Transactional(readOnly = true)
     public List<BoardDto> getUserBoards(final String uid) {
@@ -39,27 +51,35 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardDataDto getBoardDataById(final Integer boardId, final String name) {
-        userRepository.findUserByName(name)
+        final User user = userRepository.findUserByName(name)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Board not found."));
+        final Board board = boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "User has no permission to view board data."));
 
-        // check whether user is assigned to board - if not -> 400
-        /*boardRepository.findByIdAndCreatorNameOrByUsersName(boardId, name).ifPresentOrElse(board -> {
+        final List<BoardCard> boardCards = boardCardsRepository.findAllByBoardId(board.getId());
+        final List<BoardCardDataDto> boardCardDataDtos = new ArrayList<>();
+        final List<BoardCardVotesDto> voters = new ArrayList<>();
+        for (BoardCard boardCard : boardCards) {
+            final BoardCardAction action =
+                    boardCardsActionsRepository.findByCardId(boardCard.getId()).orElseThrow(() -> {
+                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Board action not found");
+                    });
+            final BoardCardVotes votes = boardCardsVotesRepository.findByCardId(boardCard.getId()).orElseThrow(() -> {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Board votes not found");
+            });
 
-        }, () -> {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User is not owner of board.");});
-        return BoardDataDto.fromModel();
-*/
-        /*
-        GET
+            final List<BoardCardVotes> userVoters = boardCardsVotesRepository.findAllByIdCardId(boardCard.getId());
 
-/boards/{id}
-Should return all data related to the board by id. (Cards, Votes, Assigned users etc).
-Required validation if board exist & if user has access to it (if is owner or assigned to BoardUsers table)
+            for (BoardCardVotes userVoter : userVoters) {
+                voters.add(BoardCardVotesDto.fromModel(userVoter));
+            }
+            boardCardDataDtos.add(BoardCardDataDto.create(boardCard, action, votes, voters));
+        }
+        return BoardDataDto.create(BoardDto.fromModel(board), boardCardDataDtos);
 
-
-         */
-        return BoardDataDto.fromModel();
     }
 
     @Transactional

@@ -21,12 +21,18 @@ public class BoardCardDataDto {
     @Schema(description = "Board card creator") String boardCardCreator;
     @Schema(description = "Board card action text") String actionText;
     @Schema(description = "Board card number of votes") Integer votesNumber;
-    @Schema(description = "Board card voters name list") List<String> voters;
+    @Schema(description = "Board card voters name list") List<BoardCardVotesDto> voters;
 
-    public static BoardCardDataDto fromModel(final BoardCard boardCard, final BoardCardAction boardCardAction,
-                                             final BoardCardVotes boardCardVotes) {
-        return BoardCardDataDto.builder().id(boardCard.getId()).cardText(boardCard.getText())
-                .columnName(boardCard.getColumn()).boardCardCreator(boardCard.getCreator().getUid())
-                .actionText(boardCardAction.getText()).votesNumber(boardCardVotes.getVotes()).build();
+    public static BoardCardDataDto create(final BoardCard boardCard, final BoardCardAction boardCardAction,
+                                             final BoardCardVotes boardCardVotes,
+                                             final List<BoardCardVotesDto> voters) {
+        return BoardCardDataDto.builder()
+                .id(boardCard.getId())
+                .cardText(boardCard.getText())
+                .columnName(boardCard.getColumn())
+                .boardCardCreator(boardCard.getCreator().getName())
+                .actionText(boardCardAction.getText())
+                .votesNumber(boardCardVotes.getVotes())
+                .voters(voters).build();
     }
 }
