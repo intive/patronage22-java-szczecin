@@ -20,7 +20,7 @@ public class FirebaseTestConfiguration {
 
     @Bean
     public FirebaseApp firebaseApp() {
-        final FirebaseApp firebaseApp = FirebaseApp.getApps()
+        FirebaseApp firebaseApp = FirebaseApp.getApps()
                 .stream()
                 .filter(app -> app.getName().equals(FirebaseApp.DEFAULT_APP_NAME))
                 .findAny()
@@ -37,8 +37,8 @@ public class FirebaseTestConfiguration {
 
     public static class FirebaseCredentialsMock extends GoogleCredentials {
 
-        private final String accessToken;
-        private final Long expirationTime;
+        private String accessToken;
+        private Long expirationTime;
 
         public FirebaseCredentialsMock(final String token) {
             this.accessToken = token;
