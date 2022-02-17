@@ -2,7 +2,10 @@ package com.intive.patronage22.szczecin.retroboard.service;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
+import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
+import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,35 +13,44 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class BoardService {
+    private final BoardRepository boardRepository;
     private final UserRepository userRepository;
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<BoardDto> getUserBoards(final String uid) {
         if (uid == null || uid.isBlank())
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Invalid request - no uid given!");
 
-        User u = userRepository.findById(uid).orElseThrow(
+        final User user = userRepository.findById(uid).orElseThrow(
                 () -> new ResponseStatusException(
                 HttpStatus.NOT_FOUND,
                 "No such user!"));
 
-        return u.getUserBoards().stream().map(b -> BoardDto.fromModel(b))
+        return user.getUserBoards().stream()
+                .map(BoardDto::fromModel)
                 .collect(Collectors.toList());
     }
 
-    public List<BoardDto> mockBoardData() {
-        final List<BoardDto> boardDTOS = new ArrayList<>();
-        boardDTOS.add(new BoardDto(1, EnumStateDto.CREATED, "RETRO 1"));
-        boardDTOS.add(new BoardDto(2, EnumStateDto.VOTING, "RETRO 2"));
+    @Transactional
+    public BoardDto createNewBoard(final String boardName, final String uid) {
+        final User user = userRepository.findById(uid)
+                .orElseThrow(UserNotFoundException::new);
 
-        return boardDTOS;
+        final Board newBoard = Board.builder()
+                .name(boardName)
+                .state(EnumStateDto.CREATED)
+                .creator(user)
+                .users(Set.of())
+                .build();
+
+        return BoardDto.fromModel(boardRepository.save(newBoard));
     }
 }

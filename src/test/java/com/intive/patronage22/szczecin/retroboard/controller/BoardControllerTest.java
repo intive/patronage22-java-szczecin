@@ -1,90 +1,147 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
-import com.intive.patronage22.szczecin.retroboard.configuration.FirebaseTestConfiguration;
+import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
+import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.HashSet;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = FirebaseTestConfiguration.class)
+@WebMvcTest({BoardController.class, SecurityConfig.class})
 class BoardControllerTest {
-    @Autowired
-    private BoardController boardController;
 
     @Autowired
-    private UserRepository userRepository;
+    private MockMvc mockMvc;
 
-    @Autowired
-    private BoardRepository boardRepository;
-
-    @Test
-    public void whenUserDoesNotExistThenStatusNotFound() {
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> {
-            boardController.getUserBoards("xyz");
-        });
-        assertTrue(exception.getStatus() == HttpStatus.NOT_FOUND);
-    }
+    @MockBean
+    private BoardService boardService;
 
     @Test
-    public void whenUserExistsThenStatusOk() {
-        User user = createUser("abc", null);
-        userRepository.save(user);
-        ResponseEntity<List<BoardDto>> res = boardController.getUserBoards("abc");
-        assertTrue(res.getStatusCode() == HttpStatus.OK);
-        assertTrue(res.hasBody());
+    void getUserBoardsShouldReturnOkWhenUserExist() throws Exception{
+        // given
+        final String url = "/boards";
+        final String uid = "uid101";
+
+        final List<BoardDto> dtoList = List.of(
+                new BoardDto(1, EnumStateDto.CREATED, "test1"),
+                new BoardDto(2, EnumStateDto.CREATED, "test2")
+        );
+
+        // when
+        when(boardService.getUserBoards(uid))
+                .thenReturn(dtoList);
+
+        // then
+        mockMvc.perform(get(url)
+                        .param("userId", uid))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.*", hasSize(2)));
     }
 
     @Test
-    public void whenUserHasTwoBoardsThenBodyShouldContainTwoBoards() {
-        User user1 = createUser("def","Test user 1");
-        userRepository.save(user1);
+    void getUserBoardsShouldReturnNotFoundWhenUserNotExist() throws Exception {
+        // given
+        final String url = "/boards";
+        final String uid = "uid101";
 
-        Board board1 = createBoard("Test board 1", user1);
-        boardRepository.save(board1);
+        // when
+        when(boardService.getUserBoards(uid))
+                .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-        Board board2 = createBoard("Test board 2", user1);
-        boardRepository.save(board2);
-
-        User user2 = createUser("ghi","Test user 2");
-        userRepository.save(user2);
-
-        User user3 = createUser("jkl","Test user 3");
-        userRepository.save(user3);
-
-        board1.getUsers().add(user2);
-        board1.getUsers().add(user3);
-        boardRepository.save(board1);
-
-        board2.getUsers().add(user2);
-        boardRepository.save(board2);
-        
-        ResponseEntity<List<BoardDto>> res = boardController.getUserBoards(user2.getUid());
-        assertTrue(res.getStatusCode() == HttpStatus.OK);
-        assertTrue(res.getBody().size() == 2);
+        // then
+        mockMvc.perform(get(url)
+                        .param("userId", uid))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException()
+                        instanceof ResponseStatusException));
     }
 
-    private User createUser(String uid, String name) {
-        return new User(uid, name, new HashSet<>());
+    @Test
+    void getUserBoardsShouldReturnBadRequestWhenNoUserGiven() throws Exception {
+        // given
+        final String url = "/boards?userId=";
+
+        // when
+        when(boardService.getUserBoards(anyString()))
+                .thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST));
+
+        // then
+        mockMvc.perform(get(url))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException()
+                        instanceof ResponseStatusException));
     }
 
-    private Board createBoard(String name, User creator) {
-        return new Board(null, name, EnumStateDto.CREATED, creator, new HashSet<>());
+    @Test
+    void createNewBoardShouldReturnCreatedWhenUserExist() throws Exception {
+        // given
+        final String url = "/boards";
+        final String uid = "uid101";
+        final String boardName = "My first board.";
+
+        final BoardDto boardDto = BoardDto.builder()
+                .id(1004)
+                .state(EnumStateDto.CREATED)
+                .name(boardName)
+                .build();
+
+        // when
+        when(boardService.createNewBoard(boardName, uid))
+                .thenReturn(boardDto);
+
+        // then
+        mockMvc.perform(post(url)
+                        .param("userId", uid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + boardName + "\"}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value(boardName));
+    }
+
+    @Test
+    void createNewBoardShouldReturnNotFoundWhenUserNotExist() throws Exception {
+        // given
+        final String url = "/boards";
+        final String uid = "uid101";
+        final String boardName = "My first board.";
+
+        // when
+        when(boardService.createNewBoard(boardName, uid))
+                .thenThrow(new UserNotFoundException());
+
+        // then
+        mockMvc.perform(post(url)
+                        .param("userId", uid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + boardName + "\"}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
     }
 }

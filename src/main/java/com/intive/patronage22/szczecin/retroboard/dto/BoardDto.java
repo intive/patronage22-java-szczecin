@@ -1,22 +1,29 @@
 package com.intive.patronage22.szczecin.retroboard.dto;
 
 import com.intive.patronage22.szczecin.retroboard.model.Board;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
 @Builder
-@Getter
+@Value
 @RequiredArgsConstructor
 public class BoardDto {
-    private final Integer id;
-    private final EnumStateDto state;
-    private final String name;
 
+    @Schema(description = "Board id")
+    Integer id;
+    @Schema(description = "Board state", implementation = EnumStateDto.class)
+    EnumStateDto state;
+    @Schema(description = "Board name", required = true)
+    String name;
+
+    // convert Entity into DTO
     public static BoardDto fromModel(final Board board) {
         return BoardDto.builder()
                 .id(board.getId())
+                .state(board.getState())
                 .name(board.getName())
-                .state(board.getState()).build();
+                .build();
     }
 }
