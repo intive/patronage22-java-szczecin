@@ -45,8 +45,7 @@ public class FirebaseTestConfiguration {
             this.expirationTime = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(10);
         }
 
-        @Override
-        public AccessToken refreshAccessToken() {
+        public AccessToken refreshToken() {
             return new AccessToken(accessToken, new Date(expirationTime));
         }
     }
