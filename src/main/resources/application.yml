@@ -25,3 +25,7 @@ spring:
 retroboard:
   jwt:
     secret: secret
+
+server:
+  error:
+    include-stacktrace: never
