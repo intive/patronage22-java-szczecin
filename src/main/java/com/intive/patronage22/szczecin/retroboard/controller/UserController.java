@@ -2,6 +2,8 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.intive.patronage22.szczecin.retroboard.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -25,6 +27,10 @@ public class UserController {
 
     @PostMapping(value = "/register")
     @ResponseStatus(CREATED)
+    @Operation(summary = "Create user in Firebase.",
+            responses = {@ApiResponse(responseCode = "201", description = "User created"),
+                    @ApiResponse(responseCode = "409", description = "User already exist"),
+                    @ApiResponse(responseCode = "400", description = "Email, UserName or Password not valid")})
     UserDetails register(@RequestParam final String email, @RequestParam final String password,
                          @RequestParam final String displayName) throws FirebaseAuthException {
 
