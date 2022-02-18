@@ -14,7 +14,8 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    @Bean FirebaseAuthenticationProvider firebaseAuthenticationProvider() {
+    @Bean
+    FirebaseAuthenticationProvider firebaseAuthenticationProvider() {
         return new FirebaseAuthenticationProvider();
     }
 }
