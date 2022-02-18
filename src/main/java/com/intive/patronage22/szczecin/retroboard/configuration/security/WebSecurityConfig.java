@@ -3,6 +3,7 @@ package com.intive.patronage22.szczecin.retroboard.configuration.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthenticationFilter;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthorizationFilter;
+import com.intive.patronage22.szczecin.retroboard.provider.FirebaseAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +35,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final PasswordEncoder passwordEncoder;
     private final CustomAuthorizationFilter customAuthorizationFilter;
     private final ObjectMapper objectMapper;
+    private final FirebaseAuthenticationProvider authenticationProvider;
 
     @Value("${retroboard.jwt.secret}")
     private String jwtSecret;
@@ -41,6 +43,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder);
+        auth.authenticationProvider(authenticationProvider);
     }
 
     @Override
