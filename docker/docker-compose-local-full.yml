@@ -1,0 +1,24 @@
+version: '2'
+
+services:
+  app:
+    depends_on:
+      - db
+    build:
+      context: ..
+      dockerfile: docker/DockerfileLocalFull
+    ports:
+      - "8080:8080"
+    environment:
+      - FIREBASE_CLIENT_ID=${FIREBASE_CLIENT_ID}
+      - FIREBASE_CLIENT_EMAIL=${FIREBASE_CLIENT_EMAIL}
+      - FIREBASE_CLIENT_PRIVATE_KEY_ID=${FIREBASE_CLIENT_PRIVATE_KEY_ID}
+      - FIREBASE_CLIENT_PRIVATE_KEY_PKCS8=${FIREBASE_CLIENT_PRIVATE_KEY_PKCS8}
+      - FIREBASE_PROJECT_ID=${FIREBASE_PROJECT_ID}
+  db:
+    image: 'postgres:13.1-alpine'
+    environment:
+      - POSTGRES_USER=compose-postgres
+      - POSTGRES_PASSWORD=compose-postgres
+    ports:
+      - "5432:5432"

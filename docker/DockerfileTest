@@ -1,0 +1,11 @@
+# syntax=docker/dockerfile:1
+
+FROM openjdk:11-jdk-slim AS build
+WORKDIR /app
+COPY .mvn/ .mvn
+COPY mvnw ./
+RUN chmod +x mvnw
+COPY pom.xml ./
+COPY checkstyle.xml ./
+COPY src ./src
+COPY .env ./

@@ -27,8 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -57,11 +56,12 @@ class UserControllerTest {
     void registerShouldReturnJsonBodyWithCreatedUserDataWhenUserNotExistBefore() throws Exception {
         // given
         final String url = "/register";
-        final String username = "someuser";
+        final String email = "someuser@test.com";
+        final String displayName = "someuser";
         final String password = "1234";
 
         final UserDetails createdUser = User
-                .withUsername(username)
+                .withUsername(email)
                 .password(password)
                 .roles("USER")
                 .build();
@@ -70,15 +70,16 @@ class UserControllerTest {
         returnedUser.eraseCredentials();
 
         // when
-        when(userService.register(username, password)).thenReturn(returnedUser);
+        when(userService.register(email, password, displayName)).thenReturn(returnedUser);
 
         // then
         mockMvc
                 .perform(post(url)
-                        .param("username", username)
+                        .param("email", email)
                         .param("password", password)
+                        .param("displayName", displayName)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(jsonPath("$.username").value(username))
+                .andExpect(jsonPath("$.username").value(email))
                 .andExpect(jsonPath("$.password").value(IsNull.nullValue()))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated());
@@ -88,17 +89,19 @@ class UserControllerTest {
     void registerShouldReturnConflictWhenUserExist() throws Exception {
         // given
         final String url = "/register";
-        final String username = "someuser";
+        final String email = "someuser@test.com";
+        final String displayName = "someuser";
         final String password = "1234";
 
         // when
-        when(userService.register(username, password)).thenThrow(new UserAlreadyExistException());
+        when(userService.register(email, password, displayName)).thenThrow(new UserAlreadyExistException());
 
         // then
         final MvcResult result = mockMvc
                 .perform(post(url)
-                        .param("username", username)
+                        .param("email", email)
                         .param("password", password)
+                        .param("displayName", displayName)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(res -> assertEquals("User already exist", res.getResponse().getErrorMessage()))
                 .andExpect(status().isConflict()).andReturn();

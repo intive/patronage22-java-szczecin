@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  app:
+    depends_on:
+      - db
+    build:
+      context: ..
+      dockerfile: docker/DockerfileTest
+    command: bash -c "./mvnw clean verify -Dspring.profiles.active=docker"
+  db:
+    image: 'postgres:13.1-alpine'
+    environment:
+      - POSTGRES_USER=compose-postgres
+      - POSTGRES_PASSWORD=compose-postgres

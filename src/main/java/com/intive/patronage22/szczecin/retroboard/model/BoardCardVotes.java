@@ -10,7 +10,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Board_Card_Votes")
+@Table(schema = "retro", name = "board_card_votes")
 @Data
 public class BoardCardVotes implements Serializable {
 
