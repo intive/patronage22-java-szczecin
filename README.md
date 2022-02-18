@@ -2,18 +2,57 @@
 
 ## Building and running the app
 
-### Docker 
+### Starting env locally
+REMEMBER: Start Docker daemon first!
+
+In the root directory run below script. 
 ```bash
-docker build -t retroboard .
-docker run -p 8080:8080 --rm -it retroboard:latest
+Linux
+./docker/local-db.sh
+```
+```bash
+Windows
+./docker/local-db.bat
+```
+This will startup postgresql database required to start the project locally. 
+After that you could run project directly from your IDE.
+
+### Building locally - quick build & test
+Becuse docker build & test is slow (because of downloading many dependencies), you could run this script to build & test application with new postgresql database.
+```bash
+Linux
+./docker/test-local.sh
+```
+```bash
+Windows
+./docker/test-local.bat
 ```
 
+### Starting env locally inside docker containers
+Scripts start postgresql database and build application inside docker container and then expose it.
+
+```bash
+Linux
+./docker/local-full.sh
+```
+```bash
+Windows
+./docker/local-full.bat
+```
+
+### Building locally - with docker (github actions build)
+Build used by github actions
+```bash
+./docker/test-githubactions.sh
+```
+
+## Swagger
 ### Accessing Swagger UI
 ```
 http://localhost:8080/swagger-ui/index.html
 ```
 
-### Firebase
+## Firebase configuration
 #### Creating json file with needed values
 To generate a private key file: 
 - Go to: [a link](https://console.firebase.google.com/u/0/project/_/settings/serviceaccounts/adminsdk)
@@ -34,8 +73,3 @@ Following values need to be set:
 - FIREBASE_CLIENT_PRIVATE_KEY_ID=**your_private_key_id** 
 - FIREBASE_CLIENT_PRIVATE_KEY_PKCS8=**your_private_key** 
 - FIREBASE_PROJECT_ID=**your_project_id**
-
-#### Run Docker with .env file
-```bash
-docker-compose up --build
-```
