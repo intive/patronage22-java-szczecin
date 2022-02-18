@@ -12,6 +12,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.client.RestTemplate;
@@ -29,7 +30,7 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public boolean supports(Class<?> authentication) {
-        return UsernamePasswordAuthenticationToken.class.equals(authentication);
+        return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
 
     @Override
@@ -49,8 +50,9 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
                 String msg = (String)result.get("error").get("message");
                 switch (msg) {
                     case "EMAIL_NOT_FOUND":
+                        throw new UsernameNotFoundException("Email not found.");
                     case "INVALID_PASSWORD":
-                        throw new BadCredentialsException("Incorrect email or password.");
+                        throw new BadCredentialsException("Invalid password.");
                     case "USER_DISABLED":
                         throw new DisabledException("The user account has been disabled by an administrator.");
                     default:
