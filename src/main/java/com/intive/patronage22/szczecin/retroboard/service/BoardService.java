@@ -1,15 +1,12 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDataDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardVotesDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCardAction;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotes;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsActionsRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
@@ -34,8 +31,6 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final BoardCardsRepository boardCardsRepository;
-    private final BoardCardsActionsRepository boardCardsActionsRepository;
-    private final BoardCardsVotesRepository boardCardsVotesRepository;
 
     @Transactional(readOnly = true)
     public List<BoardDto> getUserBoards(final String uid) {
@@ -61,25 +56,9 @@ public class BoardService {
 
         final List<BoardCard> boardCards = boardCardsRepository.findAllByBoardId(board.getId());
         final List<BoardCardDataDto> boardCardDataDtos = new ArrayList<>();
-        final List<BoardCardVotesDto> voters = new ArrayList<>();
-        for (BoardCard boardCard : boardCards) {
-            final BoardCardAction action =
-                    boardCardsActionsRepository.findByCardId(boardCard.getId()).orElseThrow(() -> {
-                        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Board action not found");
-                    });
-            final BoardCardVotes votes = boardCardsVotesRepository.findByCardId(boardCard.getId()).orElseThrow(() -> {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Board votes not found");
-            });
+        boardCards.forEach(boardCard -> boardCardDataDtos.add(BoardCardDataDto.create(boardCard)));
 
-            final List<BoardCardVotes> userVoters = boardCardsVotesRepository.findAllByIdCardId(boardCard.getId());
-
-            for (BoardCardVotes userVoter : userVoters) {
-                voters.add(BoardCardVotesDto.fromModel(userVoter));
-            }
-            boardCardDataDtos.add(BoardCardDataDto.create(boardCard, action, votes, voters));
-        }
         return BoardDataDto.create(BoardDto.fromModel(board), boardCardDataDtos);
-
     }
 
     @Transactional
