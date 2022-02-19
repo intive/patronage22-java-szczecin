@@ -7,7 +7,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserDto {
+public class FirebaseUserDto {
     private String idToken;
     private String email;
     private String refreshToken;

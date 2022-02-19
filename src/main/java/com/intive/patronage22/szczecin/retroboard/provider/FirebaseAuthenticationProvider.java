@@ -2,9 +2,11 @@ package com.intive.patronage22.szczecin.retroboard.provider;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intive.patronage22.szczecin.retroboard.dto.UserDto;
+import com.intive.patronage22.szczecin.retroboard.dto.FirebaseUserDto;
 import com.intive.patronage22.szczecin.retroboard.dto.UserLoginRequestDto;
+import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -28,6 +30,11 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
     @Value("${FIREBASE_API_KEY}")
     private String apiKey;
 
+    private final String firebaseUrl = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=";
+
+    @Autowired
+    private RestTemplate restTemplate;
+
     @Override
     public boolean supports(Class<?> authentication) {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
@@ -35,13 +42,11 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
 
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        final RestTemplate restTemplate = new RestTemplate();
-        final String email = authentication.getPrincipal().toString();
-        final String password = authentication.getCredentials().toString();
+        final String email = (String)authentication.getPrincipal();
+        final String password = (String)authentication.getCredentials();
         try {
-            UserDto userDto = restTemplate.postForObject(
-                    "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + apiKey,
-                    new UserLoginRequestDto(email, password), UserDto.class);
+            FirebaseUserDto userDto = restTemplate.postForObject(firebaseUrl + apiKey,
+                    new UserLoginRequestDto(email, password), FirebaseUserDto.class);
             return new UsernamePasswordAuthenticationToken(userDto, password, new HashSet<>());
         } catch (RestClientResponseException e) {
             try {
@@ -49,6 +54,9 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
                         .readValue(e.getResponseBodyAsString(), HashMap.class);
                 String msg = (String)result.get("error").get("message");
                 switch (msg) {
+                    case "MISSING_EMAIL":
+                    case "MISSING_PASSWORD":
+                        throw new MissingFieldException("Missing email or password.");
                     case "EMAIL_NOT_FOUND":
                         throw new UsernameNotFoundException("Email not found.");
                     case "INVALID_PASSWORD":

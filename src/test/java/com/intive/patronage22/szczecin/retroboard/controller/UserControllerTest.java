@@ -2,6 +2,9 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
+import com.intive.patronage22.szczecin.retroboard.dto.FirebaseUserDto;
+import com.intive.patronage22.szczecin.retroboard.dto.UserLoginRequestDto;
+import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import com.intive.patronage22.szczecin.retroboard.provider.FirebaseAuthenticationProvider;
 import com.intive.patronage22.szczecin.retroboard.service.UserService;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.client.RestTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -49,6 +54,12 @@ class UserControllerTest {
 
     @MockBean
     private FirebaseAuthenticationProvider authenticationProvider;
+
+    @MockBean
+    private AuthenticationManager authenticationManager;
+
+    @MockBean
+    private RestTemplate restTemplate;
 
     @Test
     void registerShouldReturnJsonBodyWithCreatedUserDataWhenUserNotExistBefore() throws Exception {
@@ -110,6 +121,7 @@ class UserControllerTest {
         assertEquals("User already exist", result.getResponse().getErrorMessage());
     }
 
+    // not working - No AuthenticationProvider
 //    @Test
     void loginShouldReturnAccessTokenWhenUserCredentialsAreCorrect() throws Exception {
         // given
@@ -119,7 +131,7 @@ class UserControllerTest {
         final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, password);
 
         // when
-        when(authenticationProvider.authenticate(token)).thenReturn(token);
+        when(authenticationManager.authenticate(token)).thenReturn(token);
 
         // then
         mockMvc
@@ -150,6 +162,26 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // not working - No AuthenticationProvider
+//    @Test
+    void loginShouldReturnBadRequestWhenEmailIsMissing() throws Exception {
+        // given
+        final String url = "/login";
+        final UserLoginRequestDto dto = new UserLoginRequestDto(null, "1234");
+        final MissingFieldException expectedException = new MissingFieldException("");
+
+        // when
+        when(restTemplate.postForObject("", dto, FirebaseUserDto.class)).thenThrow(expectedException);
+
+        // then
+        final MvcResult result = mockMvc
+                .perform(post(url).contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        assertEquals(result.getResolvedException(), expectedException);
     }
 
     @Test
