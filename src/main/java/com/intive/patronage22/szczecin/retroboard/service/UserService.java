@@ -4,7 +4,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
-import com.intive.patronage22.szczecin.retroboard.service.validation.UserValidator;
+import com.intive.patronage22.szczecin.retroboard.service.validation.FormatValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.User;
@@ -27,7 +27,7 @@ public class UserService {
             throw new UserAlreadyExistException();
         }
 
-        UserValidator.validate(email, password, displayName);
+        FormatValidator.validateUserInputData(email, password, displayName);
 
         final UserRecord.CreateRequest request = new UserRecord.CreateRequest()
                 .setEmail(email)

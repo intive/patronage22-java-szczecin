@@ -1,7 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCreateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -40,7 +40,8 @@ public class BoardController {
     @ResponseStatus(CREATED)
     @Operation(summary = "Create retro board for given user.",
             responses = {@ApiResponse(responseCode = "201", description = "Board created for given user"),
-                         @ApiResponse(responseCode = "404", description = "User not found")})
+                    @ApiResponse(responseCode = "404", description = "User not found"),
+                    @ApiResponse(responseCode = "400", description = "BoardName cannot be empty")})
     public BoardDto createNewBoard(@RequestParam(name = "userId") final String uid,
                                    @RequestBody final BoardCreateDto boardName) {
 

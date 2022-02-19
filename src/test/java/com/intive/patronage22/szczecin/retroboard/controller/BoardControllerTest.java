@@ -3,9 +3,8 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.exception.BoardNameFormatException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
-import com.intive.patronage22.szczecin.retroboard.model.Board;
-import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -26,9 +25,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest({BoardController.class, SecurityConfig.class})
@@ -98,7 +95,7 @@ class BoardControllerTest {
     }
 
     @Test
-    void createNewBoardShouldReturnCreatedWhenUserExist() throws Exception {
+    void createNewBoardShouldReturnCreatedWhenUserExistsAndBoardNameIsNotEmpty() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
@@ -143,5 +140,25 @@ class BoardControllerTest {
                         .content("{\"name\":\"" + boardName + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void createNewBoardShouldReturnBardNameFormatExceptionWhenBoardNameIsEmpty() throws Exception {
+        // given
+        final String url = "/boards";
+        final String uid = "uid101";
+        final String boardName = "";
+
+        // when
+        when(boardService.createNewBoard(boardName, uid))
+                .thenThrow(new BoardNameFormatException());
+
+        // then
+        mockMvc.perform(post(url)
+                        .param("userId", uid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + boardName + "\"}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
     }
 }

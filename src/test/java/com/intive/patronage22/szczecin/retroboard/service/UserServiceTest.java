@@ -7,7 +7,7 @@ import com.intive.patronage22.szczecin.retroboard.exception.DisplayNameFormatExc
 import com.intive.patronage22.szczecin.retroboard.exception.EmailFormatException;
 import com.intive.patronage22.szczecin.retroboard.exception.PasswordFormatException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,14 +16,16 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {UserService.class})
-public class UserServiceTest {
+class UserServiceTest {
 
     @Autowired
     private UserService userService;
@@ -35,7 +37,7 @@ public class UserServiceTest {
     private FirebaseAuth firebaseAuth;
 
     @Test
-    public void shouldRegisterAndReturnUserWithErasedCredentialsWhenEmailIsNotTaken() throws FirebaseAuthException {
+    void shouldRegisterAndReturnUserWithErasedCredentialsWhenEmailIsNotTaken() throws FirebaseAuthException {
         // given
         final String email = "test22@test.com";
         final String password = "123456";
@@ -58,7 +60,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void shouldThrowUserAlreadyExistsExceptionWhenEmailIsTaken() throws FirebaseAuthException {
+    void shouldThrowUserAlreadyExistsExceptionWhenEmailIsTaken() throws FirebaseAuthException {
         // given
         final String email = "test22@test.com";
         final String password = "123456";
@@ -74,7 +76,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void shouldThrowEmailFormatExceptionWhenEmailIsNotValid() throws FirebaseAuthException {
+    void shouldThrowEmailFormatExceptionWhenEmailIsNotValid() throws FirebaseAuthException {
         // given
         final String email = "test22@.com";
         final String password = "123456";
@@ -88,7 +90,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void shouldThrowPasswordFormatExceptionWhenPasswordIsNotValid() throws FirebaseAuthException {
+    void shouldThrowPasswordFormatExceptionWhenPasswordIsNotValid() throws FirebaseAuthException {
         // given
         final String email = "test22@test.com";
         final String password = "12";
@@ -102,7 +104,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void shouldThrowDisplayNameFormatExceptionWhenDisplayNameIsNotValid() throws FirebaseAuthException {
+    void shouldThrowDisplayNameFormatExceptionWhenDisplayNameIsNotValid() throws FirebaseAuthException {
         // given
         final String email = "test22@test.com";
         final String password = "123456";

@@ -2,6 +2,7 @@ package com.intive.patronage22.szczecin.retroboard.service;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.exception.BoardNameFormatException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
@@ -31,13 +32,13 @@ class BoardServiceTest {
     private BoardService boardService;
 
     @MockBean
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @MockBean
-    BoardRepository boardRepository;
+    private BoardRepository boardRepository;
 
     @Test
-    void createNewBoardShouldReturnBoardDtoWhenUserExist() {
+    void createNewBoardShouldReturnBoardDtoWhenUserExistsAndBoardNameIsNotEmpty() {
         // given
         final String uid = "uid101";
         final String boardName = "My first board.";
@@ -74,6 +75,17 @@ class BoardServiceTest {
 
         // then
         assertThrows(UserNotFoundException.class,
+                () -> boardService.createNewBoard(boardName, uid));
+    }
+
+    @Test
+    void createNewBoardShouldReturnBoardNameFormatExceptionWhenBoardNameIsEmpty() {
+        // given
+        final String uid = "uid101";
+        final String boardName = "";
+
+        // then
+        assertThrows(BoardNameFormatException.class,
                 () -> boardService.createNewBoard(boardName, uid));
     }
 }

@@ -10,9 +10,9 @@ import org.springframework.util.StringUtils;
 import java.util.regex.Pattern;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class UserValidator {
+public class FormatValidator {
 
-    public static void validate(final String email, final String password, final String displayName) {
+    public static void validateUserInputData(final String email, final String password, final String displayName) {
         if (!isEmailValid(email)) {
             throw new EmailFormatException();
         }
@@ -28,6 +28,10 @@ public class UserValidator {
 
     private static boolean isDisplayNameValid(final String displayName) {
         return StringUtils.hasText(displayName);
+    }
+
+    public static boolean isBoardNameValid(final String boardName) {
+        return StringUtils.hasText(boardName);
     }
 
     private static boolean isPasswordValid(final String password) {
