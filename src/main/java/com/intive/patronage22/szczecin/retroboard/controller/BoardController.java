@@ -44,7 +44,7 @@ public class BoardController {
     @ResponseStatus(OK)
     @Operation(summary = "Get retro board data for user by id",
                responses = {@ApiResponse(responseCode = "200", description = "OK"),
-                       @ApiResponse(responseCode = "400", description = "Bad request"),
+                       @ApiResponse(responseCode = "400", description = "User has no access to board."),
                        @ApiResponse(responseCode = "404", description = "Board is not found")})
     public BoardDataDto getBoardDataById(@PathVariable final Integer id, final Authentication authentication) {
         return boardService.getBoardDataById(id, authentication.getName());
