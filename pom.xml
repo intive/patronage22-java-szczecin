@@ -113,6 +113,8 @@
                         <exclude>com/intive/patronage22/szczecin/retroboard/RetroboardApplication.class</exclude>
                         <exclude>com/intive/patronage22/szczecin/retroboard/model/</exclude>
                         <exclude>com/intive/patronage22/szczecin/retroboard/configuration/FirebaseConfiguration.class</exclude>
+                        <exclude>com/intive/patronage22/szczecin/retroboard/provider/FirebaseAuthenticationProvider.class</exclude>
+                        <exclude>com/intive/patronage22/szczecin/retroboard/dto/UserDto.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>
