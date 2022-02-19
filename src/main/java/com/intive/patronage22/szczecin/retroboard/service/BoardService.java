@@ -8,9 +8,7 @@ import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundExceptio
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
 import com.intive.patronage22.szczecin.retroboard.model.User;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsActionsRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
