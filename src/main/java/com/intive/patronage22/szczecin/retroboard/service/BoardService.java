@@ -54,6 +54,7 @@ public class BoardService {
 
         return BoardDto.fromModel(boardRepository.save(newBoard));
     }
+
     @Transactional
     public void deleteBoard(final int boardId, final String uid) {
         final User user = userRepository.findById(uid)
@@ -72,9 +73,5 @@ public class BoardService {
         }else{
             boardRepository.deleteById(boardId);
         }
-
-
     }
-
-
 }
