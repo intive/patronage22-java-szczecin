@@ -17,7 +17,7 @@ public class BoardDataDto {
     @Schema(description = "Board cards data")
     List<BoardCardDataDto> boardCards;
 
-    public static BoardDataDto create(final BoardDto boardDto, List<BoardCardDataDto> boardCards) {
+    public static BoardDataDto create(final BoardDto boardDto, final List<BoardCardDataDto> boardCards) {
         return BoardDataDto.builder()
                 .board(boardDto)
                 .boardCards(boardCards)
