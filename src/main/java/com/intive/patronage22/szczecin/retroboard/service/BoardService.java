@@ -2,6 +2,7 @@ package com.intive.patronage22.szczecin.retroboard.service;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.exception.BoardNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
@@ -53,4 +54,27 @@ public class BoardService {
 
         return BoardDto.fromModel(boardRepository.save(newBoard));
     }
+    @Transactional
+    public void deleteBoard(final int boardId, final String uid) {
+        final User user = userRepository.findById(uid)
+                .orElseThrow(BoardNotFoundException::new);
+
+        final Board board = boardRepository.findById(boardId)
+                .orElseThrow(BoardNotFoundException::new);
+
+        if (user.getUserBoards() == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
+                    "Invalid request - no boards for given user!");
+
+        if(board.getCreator() != user){
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "Forbidden request - given user is not creator");
+        }else{
+            boardRepository.deleteById(boardId);
+        }
+
+
+    }
+
+
 }
