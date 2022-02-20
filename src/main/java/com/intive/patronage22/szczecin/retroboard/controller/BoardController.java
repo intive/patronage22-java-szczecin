@@ -7,13 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -45,5 +39,17 @@ public class BoardController {
                                    @RequestBody final BoardCreateDto boardName) {
 
         return boardService.createNewBoard(boardName.getName(), uid);
+    }
+
+    @DeleteMapping("/{bid}")
+    @ResponseStatus(OK)
+    @Operation(summary = "Delete retro board for given user.",
+            responses = {@ApiResponse(responseCode = "200", description = "Board deleted for given user"),
+                    @ApiResponse(responseCode = "400", description = "User is not the owner"),
+                    @ApiResponse(responseCode = "404", description = "Board not found")})
+    public void deleteNewBoard(@RequestParam(name = "userId") final String uid,
+                                   @RequestParam(name = "boardId") final int bid) {
+
+        boardService.deleteBoard(bid, uid);
     }
 }
