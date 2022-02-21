@@ -1,8 +1,6 @@
 spring:
   main:
     allow-bean-definition-overriding: true
-  profile:
-    active: production
   datasource:
     url: jdbc:postgresql://localhost:5432/compose-postgres
     username: compose-postgres
