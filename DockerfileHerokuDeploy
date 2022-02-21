@@ -9,7 +9,7 @@ COPY pom.xml ./
 COPY checkstyle.xml ./
 COPY src ./src
 COPY .env ./
-RUN ./mvnw clean verify
+RUN ./mvnw clean verify -Dspring.profiles.active=docker
 
 FROM openjdk:11-jre-slim
 COPY --from=build /app/target/*.jar /app/retroboard.jar
