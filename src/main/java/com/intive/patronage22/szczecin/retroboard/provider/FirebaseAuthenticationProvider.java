@@ -47,7 +47,7 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
             final FirebaseUserDto userDto = restTemplate.postForObject(firebaseUrl + apiKey,
                     new UserLoginRequestDto(email, password), FirebaseUserDto.class);
             return new UsernamePasswordAuthenticationToken(userDto, password, new HashSet<>());
-        } catch (RestClientResponseException e) {
+        } catch (final RestClientResponseException e) {
             try {
                 final Map<String, Map<String, Object>> result = new ObjectMapper()
                         .readValue(e.getResponseBodyAsString(), HashMap.class);
@@ -62,7 +62,7 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
                     default:
                         throw e;
                 }
-            } catch(JsonProcessingException e1) {
+            } catch(final JsonProcessingException e1) {
                 throw e;
             }
         }
