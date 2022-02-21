@@ -31,6 +31,8 @@ retroboard:
 server:
   error:
     include-stacktrace: never
+springdoc:
+  show-login-endpoint: true
 
 firebase:
   signInWithPasswordUrl: https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=
