@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
@@ -21,6 +22,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/private")
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"))
     Authentication privateOp() {
         return SecurityContextHolder.getContext().getAuthentication();
     }
