@@ -44,14 +44,14 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
         final String email = (String)authentication.getPrincipal();
         final String password = (String)authentication.getCredentials();
         try {
-            FirebaseUserDto userDto = restTemplate.postForObject(firebaseUrl + apiKey,
+            final FirebaseUserDto userDto = restTemplate.postForObject(firebaseUrl + apiKey,
                     new UserLoginRequestDto(email, password), FirebaseUserDto.class);
             return new UsernamePasswordAuthenticationToken(userDto, password, new HashSet<>());
         } catch (RestClientResponseException e) {
             try {
-                Map<String, Map<String, Object>> result = new ObjectMapper()
+                final Map<String, Map<String, Object>> result = new ObjectMapper()
                         .readValue(e.getResponseBodyAsString(), HashMap.class);
-                String msg = (String)result.get("error").get("message");
+                final String msg = (String)result.get("error").get("message");
                 switch (msg) {
                     case "EMAIL_NOT_FOUND":
                         throw new UsernameNotFoundException("Email not found.");
