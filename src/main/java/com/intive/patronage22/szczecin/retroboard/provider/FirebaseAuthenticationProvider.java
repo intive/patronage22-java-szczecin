@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intive.patronage22.szczecin.retroboard.dto.FirebaseUserDto;
 import com.intive.patronage22.szczecin.retroboard.dto.UserLoginRequestDto;
-import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -54,9 +53,6 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
                         .readValue(e.getResponseBodyAsString(), HashMap.class);
                 String msg = (String)result.get("error").get("message");
                 switch (msg) {
-                    case "MISSING_EMAIL":
-                    case "MISSING_PASSWORD":
-                        throw new MissingFieldException("Missing email or password.");
                     case "EMAIL_NOT_FOUND":
                         throw new UsernameNotFoundException("Email not found.");
                     case "INVALID_PASSWORD":

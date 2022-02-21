@@ -35,6 +35,11 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 
         final String email = request.getParameter("email");
         final String password = request.getParameter("password");
+        
+        if (email == null || email.isBlank())
+            throw new MissingFieldException("Missing email.");
+        if (password == null || password.isBlank())
+            throw new MissingFieldException("Missing password.");
 
         final UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(email, password);
