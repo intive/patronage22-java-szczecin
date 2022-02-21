@@ -38,4 +38,17 @@ public class UserController {
 
         return userService.register(email, password, displayName);
     }
+
+    @PostMapping("/login")
+    @ResponseStatus(CREATED)
+    @RequestMapping(produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @Operation(summary = "Login in user using provided email and password.",
+            responses = {@ApiResponse(responseCode = "200", description = "Successfully logged in."),
+                    @ApiResponse(responseCode = "400", description = "Email or password is not valid")})
+    public void fakeLogin(@RequestParam("email") final String email, @RequestParam("password") final String password) {
+        throw new IllegalStateException(
+                "This method shouldn't be called. It's implemented by Spring Security filters. " +
+                "The reason for it's creation is to override bug in /login swagger documentation " +
+                        "https://github.com/springdoc/springdoc-openapi/issues/827 ");
+    }
 }
