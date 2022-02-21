@@ -9,8 +9,9 @@ COPY pom.xml ./
 COPY checkstyle.xml ./
 COPY src ./src
 COPY .env ./
-RUN ./mvnw clean verify
+RUN ./mvnw clean package -DskipTests
 
 FROM openjdk:11-jre-slim
 COPY --from=build /app/target/*.jar /app/retroboard.jar
-CMD java -Xmx300m -Xss512k -XX:CICompilerCount=2 -Dspring.profiles.active=prod -jar /app/retroboard.jar
+EXPOSE 8080
+CMD java -Dspring.profiles.active=docker -jar /app/retroboard.jar
