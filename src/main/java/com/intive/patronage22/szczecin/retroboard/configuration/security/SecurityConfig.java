@@ -21,11 +21,6 @@ public class SecurityConfig {
     }
 
     @Bean
-    RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-
-    @Bean
     FirebaseAuthenticationProvider firebaseAuthenticationProvider() {
         return new FirebaseAuthenticationProvider();
     }
