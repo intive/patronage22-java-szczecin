@@ -5,8 +5,7 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
-import com.intive.patronage22.szczecin.retroboard.exception.BoardNotFoundException;
-import com.intive.patronage22.szczecin.retroboard.exception.MissingPermissionsException;
+import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
@@ -47,10 +46,11 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardDataDto getBoardDataById(final Integer boardId, final String name) {
-        final User user = userRepository.findUserByName(name).orElseThrow(BadRequestException::new);
-        boardRepository.findById(boardId).orElseThrow(BoardNotFoundException::new);
+        final User user =
+                userRepository.findUserByName(name).orElseThrow(() -> new BadRequestException("User not found."));
+        boardRepository.findById(boardId).orElseThrow(() -> new NotFoundException("Board is not found."));
         final Board board = boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)
-                .orElseThrow(MissingPermissionsException::new);
+                .orElseThrow(() -> new BadRequestException("User doesn't have permissions to view board data."));
         final List<BoardCard> boardCards = boardCardsRepository.findAllByBoardId(board.getId());
         final List<BoardCardDto> boardCardDataDtos = new ArrayList<>();
         boardCards.forEach(boardCard -> boardCardDataDtos.add(BoardCardDto.createFrom(boardCard)));

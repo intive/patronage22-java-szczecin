@@ -1,17 +1,13 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.Authentication;
-import com.google.firebase.auth.AbstractFirebaseAuth;
-import com.google.firebase.auth.FirebaseAuth;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
-import com.intive.patronage22.szczecin.retroboard.exception.BoardNotFoundException;
-import com.intive.patronage22.szczecin.retroboard.exception.MissingPermissionsException;
+import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
+import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.jupiter.api.DisplayName;
@@ -20,30 +16,20 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.Locale;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -56,20 +42,9 @@ class BoardControllerTest {
 
     @Autowired private MockMvc mockMvc;
 
-    @Autowired private ObjectMapper objectMapper;
-
     @MockBean private BoardService boardService;
 
-    @MockBean private AuthenticationManager authenticationManager;
-
     @Autowired private RestTemplate restTemplate;
-
-    private MockRestServiceServer firebaseRestServiceServer;
-
-    @PostConstruct
-    public void postConstruct() {
-        firebaseRestServiceServer = MockRestServiceServer.createServer(restTemplate);
-    }
 
     @Test
     void getUserBoardsShouldReturnOkWhenUserExist() throws Exception {
@@ -170,10 +145,9 @@ class BoardControllerTest {
     @DisplayName("getBoardDataById should return 200 when board data is collected")
     void getBoardDataByIdShouldReturnOk() throws Exception {
         //given
-        final String loginUrl = "/login";
-        final String username = "testuser@example.com";
-        final String password = "1234";
-        final String encodedPassword = "$2a$10$A0IKJqSv.cSqXb7BuIPw4.GvP1U3VPUIRvkAigPVr6HipH.R3nGLO";
+        final String username = "someuser";
+        final String tokenString = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
         final String boardDataUrl = "/boards";
         final int boardId = 1;
 
@@ -187,12 +161,9 @@ class BoardControllerTest {
 
         //when
         when(boardService.getBoardDataById(boardId, username)).thenReturn(boardDataDto);
-//        when(inMemoryUserDetailsManager.loadUserByUsername(username)).thenReturn(
-//                createExistingUser(username, encodedPassword, "user"));
 
         //then
-        final String token = getToken(loginUrl, username, password);
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + token))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + tokenString))
                 .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(2))).andExpect(result -> assertTrue(
                         result.getResponse().getContentAsString().contains(boardDataDto.getBoard().getId().toString())))
@@ -216,74 +187,41 @@ class BoardControllerTest {
     @DisplayName("getBoardDataById should return 400 when user has no permission to view board data")
     void getBoardDataByIdShouldThrowBadRequestWhenUserDoesntHavePermissions() throws Exception {
         //given
-        final String loginUrl = "/login";
-        final String username = "testuser@example.com";
-        final String password = "1234";
+        final String username = "someuser";
+        final String tokenString = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
         final String boardDataUrl = "/boards";
         final int boardId = 1;
-        final String expectedExceptionMessage = "User has no permission to view data.";
+        final String exceptionMessage = "User doesn't have permissions to view board data.";
 
         //when
-        when(boardService.getBoardDataById(boardId, username)).thenThrow(MissingPermissionsException.class);
-//        when(inMemoryUserDetailsManager.loadUserByUsername(username)).thenReturn(
-//                createExistingUser(username, encodedPassword, "user"));
+        when(boardService.getBoardDataById(boardId, username)).thenThrow(new BadRequestException(exceptionMessage));
 
         //then
-        final String token = getToken(loginUrl, username, password);
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + token))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + tokenString))
                 .andExpect(status().isBadRequest())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException))
-                .andExpect(result -> assertTrue(
-                        result.getResolvedException().getMessage().contains(expectedExceptionMessage)));
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof BadRequestException))
+                .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
     }
 
     @Test
     @DisplayName("getBoardDataById should return 404 when board does not exist")
     void getBoardDataByIdShouldThrowNotFoundWhenBoardDoesNotExist() throws Exception {
         //given
-        final String loginUrl = "/login";
-        final String email = "someuser@gmail.com";
-        final String password = "1234";
+        final String username = "someuser";
+        final String tokenString = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
         final String boardDataUrl = "/boards";
-//        final String tokenString = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjI3ZGRlMTAyMDAyMGI3OGZiODc2ZDdiMjVlZDhmMGE5Y2UwNmRiNGQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL3NlY3VyZXRva2VuLmdvb2dsZS5jb20vcGF0cm9uYWdlMjAyMi1yZXRybyIsImF1ZCI6InBhdHJvbmFnZTIwMjItcmV0cm8iLCJhdXRoX3RpbWUiOjE2NDU0ODY2MjYsInVzZXJfaWQiOiI0U01Rc2lHQm90UFl5RXNoSDVuUXlCY1lwVzgyIiwic3ViIjoiNFNNUXNpR0JvdFBZeUVzaEg1blF5QmNZcFc4MiIsImlhdCI6MTY0NTQ4NjYyNiwiZXhwIjoxNjQ1NDkwMjI2LCJlbWFpbCI6InBhdHJ5ay56ZXQrdGVzdDFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJmaXJlYmFzZSI6eyJpZGVudGl0aWVzIjp7ImVtYWlsIjpbInBhdHJ5ay56ZXQrdGVzdDFAZ21haWwuY29tIl19LCJzaWduX2luX3Byb3ZpZGVyIjoicGFzc3dvcmQifX0.PQwm5BNvn1BYKDZ7jJGuKwtnFQOo98YhEzVpnrotjCQaWBrqomnhjcvxUeUIm4smYi1pX3fpHw74WeALyQ8tZBrmoqTW6VyUpqaYGzeHyQe5D7Ot6Z7t7svto6eeGZCYkgxTeXZwK1Acpqvlsxnu4NCoin115g6A4BTyzJwiqlVxI2_c4dZxcugvY1m1oT3V1Dn-p7eqcTPLFcvMrGP6aBr9Q-ZNEWcopPrKgRkTKjL7lKmOmP8UH4jMNFYUs2k0LOecelRVEMlFzdM-aTJ4yWhZ135dkjNzRms-NMd1QqGTowgpfj-WiV6bXvmjguvDXcqYE_kYmU0rZBgbdkvZFg";
         final int boardId = 1;
-        final String expectedExceptionMessage = "Board is not found.";
-
-        final UsernamePasswordAuthenticationToken tokenToAuth = new UsernamePasswordAuthenticationToken(email, password);
-        firebaseRestServiceServer.expect(method(HttpMethod.POST))
-                .andRespond(withSuccess("{\n" +
-                                        "  \"kind\": \"identitytoolkit#VerifyPasswordResponse\",\n" +
-                                        "  \"localId\": \"4SMQsiGBotPYyEshH5nQyBcYpW82\",\n" +
-                                        "  \"email\": \"" + email + "\",\n" +
-                                        "  \"displayName\": \"\",\n" +
-                                        "  \"idToken\": \"" + tokenToAuth +"\",\n" +
-                                        "  \"registered\": true,\n" +
-                                        "  \"refreshToken\": \"[REFRESH_TOKEN]\",\n" +
-                                        "  \"expiresIn\": \"3600\"\n" + "}", MediaType.APPLICATION_JSON));
-
-
+        final String exceptionMessage = "Board is not found.";
 
         // when
-        when(authenticationManager.authenticate(tokenToAuth)).thenReturn(tokenToAuth);
-        when(boardService.getBoardDataById(boardId, email)).thenThrow(BoardNotFoundException.class);
+        when(boardService.getBoardDataById(boardId, username)).thenThrow(new NotFoundException(exceptionMessage));
 
         //then
-        final String token = getToken(loginUrl, email, password);
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", token))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + tokenString))
                 .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException))
-                .andExpect(result -> assertTrue(
-                        result.getResolvedException().getMessage().contains(expectedExceptionMessage)));
-    }
-
-    private UserDetails createExistingUser(final String username, final String encodedPassword, final String role) {
-        return User.withUsername(username).password(encodedPassword).roles(role.toUpperCase(Locale.ROOT)).build();
-    }
-
-
-    private String getToken(final String loginUrl, final String email, final String password) throws Exception {
-        return mockMvc.perform(post(loginUrl).param("email", email).param("password", password).param("returnSecureToken", "true")
-                        .contentType(MediaType.APPLICATION_FORM_URLENCODED)).andReturn().getResponse()
-                .getHeader("Authorization");
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException))
+                .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
     }
 }

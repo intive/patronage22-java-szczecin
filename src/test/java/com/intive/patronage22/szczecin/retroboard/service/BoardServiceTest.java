@@ -5,8 +5,7 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
-import com.intive.patronage22.szczecin.retroboard.exception.BoardNotFoundException;
-import com.intive.patronage22.szczecin.retroboard.exception.MissingPermissionsException;
+import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
@@ -22,7 +21,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -117,7 +115,7 @@ class BoardServiceTest {
         when(boardRepository.findById(boardId)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(BoardNotFoundException.class, () -> boardService.getBoardDataById(boardId, username));
+        assertThrows(NotFoundException.class, () -> boardService.getBoardDataById(boardId, username));
     }
 
     @Test
@@ -142,7 +140,7 @@ class BoardServiceTest {
         when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(MissingPermissionsException.class, () -> boardService.getBoardDataById(boardId, username));
+        assertThrows(BadRequestException.class, () -> boardService.getBoardDataById(boardId, username));
     }
 
     @Test

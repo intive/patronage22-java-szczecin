@@ -1,8 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.controller.advice;
 
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
-import com.intive.patronage22.szczecin.retroboard.exception.BoardNotFoundException;
-import com.intive.patronage22.szczecin.retroboard.exception.MissingPermissionsException;
+import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -23,14 +22,8 @@ public class ExceptionHandlerService {
     }
 
     @ResponseStatus(NOT_FOUND)
-    @ExceptionHandler(BoardNotFoundException.class)
-    public String boardNotFoundHandler(final BoardNotFoundException exception) {
-        return exception.getMessage();
-    }
-
-    @ResponseStatus(BAD_REQUEST)
-    @ExceptionHandler(MissingPermissionsException.class)
-    public String missingPermissionsHandler(final MissingPermissionsException exception) {
+    @ExceptionHandler(NotFoundException.class)
+    public String notFoundHandler(final NotFoundException exception) {
         return exception.getMessage();
     }
 
