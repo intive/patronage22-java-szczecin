@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -41,9 +42,9 @@ public class BoardController {
     @Operation(summary = "Create retro board for given user.",
             responses = {@ApiResponse(responseCode = "201", description = "Board created for given user"),
                     @ApiResponse(responseCode = "404", description = "User not found"),
-                    @ApiResponse(responseCode = "400", description = "BoardName cannot be empty")})
+                    @ApiResponse(responseCode = "400", description = "Board name cannot be empty")})
     public BoardDto createNewBoard(@RequestParam(name = "userId") final String uid,
-                                   @RequestBody final BoardCreateDto boardName) {
+                                   @RequestBody @Valid final BoardCreateDto boardName) {
 
         return boardService.createNewBoard(boardName.getName(), uid);
     }

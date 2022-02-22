@@ -2,13 +2,11 @@ package com.intive.patronage22.szczecin.retroboard.service;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
-import com.intive.patronage22.szczecin.retroboard.exception.BoardNameFormatException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
-import com.intive.patronage22.szczecin.retroboard.service.validation.FormatValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -44,10 +42,6 @@ public class BoardService {
 
     @Transactional
     public BoardDto createNewBoard(final String boardName, final String uid) {
-        if (!FormatValidator.isBoardNameValid(boardName)) {
-            throw new BoardNameFormatException();
-        }
-
         final User user = userRepository.findById(uid)
                 .orElseThrow(UserNotFoundException::new);
 

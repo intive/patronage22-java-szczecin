@@ -3,10 +3,11 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
-import com.intive.patronage22.szczecin.retroboard.exception.BoardNameFormatException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,17 +16,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest({BoardController.class, SecurityConfig.class})
@@ -95,7 +101,7 @@ class BoardControllerTest {
     }
 
     @Test
-    void createNewBoardShouldReturnCreatedWhenUserExistsAndBoardNameIsNotEmpty() throws Exception {
+    void createNewBoardShouldReturnCreatedWhenUserExistsAndBoardNameIsValid() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
@@ -142,23 +148,47 @@ class BoardControllerTest {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    void createNewBoardShouldReturnBardNameFormatExceptionWhenBoardNameIsEmpty() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"", "  ", "123",
+            "01234567890123456789012345678901234567890123456789012345678912345"})
+    void createNewBoardShouldReturnBadRequestWhenBoardNameIsNotValid(final String boardName) throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
-        final String boardName = "";
-
-        // when
-        when(boardService.createNewBoard(boardName, uid))
-                .thenThrow(new BoardNameFormatException());
 
         // then
-        mockMvc.perform(post(url)
+        final MvcResult result = mockMvc
+                .perform(post(url)
                         .param("userId", uid)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"" + boardName + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest()).andReturn();
+
+        final Exception resultException = result.getResolvedException();
+
+        assertInstanceOf(MethodArgumentNotValidException.class, resultException);
+    }
+
+    @Test
+    void createNewBoardShouldReturnBadRequestWhenBoardNameIsNull() throws Exception {
+        // given
+        final String url = "/boards";
+        final String uid = "uid101";
+        final String boardName = null;
+
+
+        // then
+        final MvcResult result = mockMvc
+                .perform(post(url)
+                        .param("userId", uid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":" + boardName + "}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest()).andReturn();
+
+        final Exception resultException = result.getResolvedException();
+
+        assertInstanceOf(MethodArgumentNotValidException.class, resultException);
     }
 }
