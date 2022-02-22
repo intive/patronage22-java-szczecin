@@ -3,8 +3,8 @@ package com.intive.patronage22.szczecin.retroboard.service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
+import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
-import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.validation.UserValidator;
 import lombok.RequiredArgsConstructor;
@@ -62,7 +62,6 @@ public class UserService {
 
     public final com.intive.patronage22.szczecin.retroboard.model.User findUserById(final String uid){
 
-        return userRepository.findById(uid)
-                .orElseThrow(UserNotFoundException::new);
+        return userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
     }
 }

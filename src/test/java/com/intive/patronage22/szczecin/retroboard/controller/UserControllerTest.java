@@ -172,18 +172,18 @@ class UserControllerTest {
         firebaseRestServiceServer.expect(method(HttpMethod.POST))
                 .andRespond(withBadRequest()
                         .body("{\n" +
-                            "  \"error\": {\n" +
-                            "    \"code\": 400,\n" +
-                            "    \"message\": \"EMAIL_NOT_FOUND\",\n" +
-                            "    \"errors\": [\n" +
-                            "      {\n" +
-                            "        \"message\": \"EMAIL_NOT_FOUND\",\n" +
-                            "        \"domain\": \"global\",\n" +
-                            "        \"reason\": \"invalid\"\n" +
-                            "      }\n" +
-                            "    ]\n" +
-                            "  }\n" +
-                            "}").contentType(MediaType.APPLICATION_JSON));
+                                "  \"error\": {\n" +
+                                "    \"code\": 400,\n" +
+                                "    \"message\": \"EMAIL_NOT_FOUND\",\n" +
+                                "    \"errors\": [\n" +
+                                "      {\n" +
+                                "        \"message\": \"EMAIL_NOT_FOUND\",\n" +
+                                "        \"domain\": \"global\",\n" +
+                                "        \"reason\": \"invalid\"\n" +
+                                "      }\n" +
+                                "    ]\n" +
+                                "  }\n" +
+                                "}").contentType(MediaType.APPLICATION_JSON));
 
         // when
         when(authenticationManager.authenticate(token)).thenThrow(expectedException);
@@ -196,7 +196,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error_message").value("Email not found."));;
+                .andExpect(jsonPath("$.error_message").value("Email not found."));
     }
 
     @Test
@@ -210,18 +210,18 @@ class UserControllerTest {
         firebaseRestServiceServer.expect(method(HttpMethod.POST))
                 .andRespond(withBadRequest()
                         .body("{\n" +
-                              "  \"error\": {\n" +
-                              "    \"code\": 400,\n" +
-                              "    \"message\": \"MISSING_EMAIL\",\n" +
-                              "    \"errors\": [\n" +
-                              "      {\n" +
-                              "        \"message\": \"MISSING_EMAIL\",\n" +
-                              "        \"domain\": \"global\",\n" +
-                              "        \"reason\": \"invalid\"\n" +
-                              "      }\n" +
-                              "    ]\n" +
-                              "  }\n" +
-                              "}").contentType(MediaType.APPLICATION_JSON));
+                                "  \"error\": {\n" +
+                                "    \"code\": 400,\n" +
+                                "    \"message\": \"MISSING_EMAIL\",\n" +
+                                "    \"errors\": [\n" +
+                                "      {\n" +
+                                "        \"message\": \"MISSING_EMAIL\",\n" +
+                                "        \"domain\": \"global\",\n" +
+                                "        \"reason\": \"invalid\"\n" +
+                                "      }\n" +
+                                "    ]\n" +
+                                "  }\n" +
+                                "}").contentType(MediaType.APPLICATION_JSON));
 
         // when
         when(authenticationManager.authenticate(token)).thenThrow(expectedException);
@@ -247,17 +247,17 @@ class UserControllerTest {
         firebaseRestServiceServer.expect(method(HttpMethod.POST))
                 .andRespond(withBadRequest()
                         .body("{\n" +
-                              "  \"error\": {\n" + "    \"code\": 400,\n" +
-                              "    \"message\": \"INVALID_PASSWORD\",\n" +
-                              "    \"errors\": [\n" +
-                              "      {\n" +
-                              "        \"message\": \"INVALID_PASSWORD\",\n" +
-                              "        \"domain\": \"global\",\n" +
-                              "        \"reason\": \"invalid\"\n" +
-                              "      }\n" +
-                              "    ]\n" +
-                              "  }\n" +
-                              "}").contentType(MediaType.APPLICATION_JSON));
+                                "  \"error\": {\n" + "    \"code\": 400,\n" +
+                                "    \"message\": \"INVALID_PASSWORD\",\n" +
+                                "    \"errors\": [\n" +
+                                "      {\n" +
+                                "        \"message\": \"INVALID_PASSWORD\",\n" +
+                                "        \"domain\": \"global\",\n" +
+                                "        \"reason\": \"invalid\"\n" +
+                                "      }\n" +
+                                "    ]\n" +
+                                "  }\n" +
+                                "}").contentType(MediaType.APPLICATION_JSON));
 
         // when
         when(authenticationManager.authenticate(token)).thenThrow(expectedException);
@@ -283,18 +283,18 @@ class UserControllerTest {
         firebaseRestServiceServer.expect(method(HttpMethod.POST))
                 .andRespond(withBadRequest()
                         .body("{\n" +
-                              "  \"error\": {\n" +
-                              "    \"code\": 400,\n" +
-                              "    \"message\": \"MISSING_PASSWORD\",\n" +
-                              "    \"errors\": [\n" +
-                              "      {\n" +
-                              "        \"message\": \"MISSING_PASSWORD\",\n" +
-                              "        \"domain\": \"global\",\n" +
-                              "        \"reason\": \"invalid\"\n" +
-                              "      }\n" +
-                              "    ]\n" +
-                              "  }\n" +
-                              "}").contentType(MediaType.APPLICATION_JSON));
+                                "  \"error\": {\n" +
+                                "    \"code\": 400,\n" +
+                                "    \"message\": \"MISSING_PASSWORD\",\n" +
+                                "    \"errors\": [\n" +
+                                "      {\n" +
+                                "        \"message\": \"MISSING_PASSWORD\",\n" +
+                                "        \"domain\": \"global\",\n" +
+                                "        \"reason\": \"invalid\"\n" +
+                                "      }\n" +
+                                "    ]\n" +
+                                "  }\n" +
+                                "}").contentType(MediaType.APPLICATION_JSON));
 
         // when
         when(authenticationManager.authenticate(token)).thenThrow(expectedException);

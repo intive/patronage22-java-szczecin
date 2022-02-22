@@ -1,11 +1,9 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.google.firebase.auth.FirebaseAuthException;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
-import com.intive.patronage22.szczecin.retroboard.exception.BoardNotFoundException;
-import com.intive.patronage22.szczecin.retroboard.exception.UserIsNotOwnerException;
-import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
+import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
+import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
@@ -32,7 +30,6 @@ class BoardServiceTest {
 
     @Autowired
     private BoardService boardService;
-
 
     @Autowired
     private UserService userService;
@@ -80,7 +77,7 @@ class BoardServiceTest {
         when(userRepository.findById(uid)).thenReturn(Optional.empty());
 
         // then
-        assertThrows(UserNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> boardService.createNewBoard(boardName, uid));
     }
 
@@ -95,18 +92,18 @@ class BoardServiceTest {
         when(userRepository.findById(uid)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(UserNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> boardService.delete(bid,uid));
     }
 
     @Test
-    void deleteBoardShouldReturnForbiddenWhenUserIsNotOwner(){
+    void deleteBoardShouldReturnBadRequestWhenUserIsNotOwner(){
 
         //given
         final String uid = "uid101";
         final int bid = 101;
 
-        final User user = new User(uid, "Josef", Set.of());
+        final User user = new User(uid, "bob", Set.of());
         final Board board = Board.builder()
                 .id(bid)
                 .name("boardName")
@@ -120,7 +117,7 @@ class BoardServiceTest {
         when(userRepository.findById(uid)).thenReturn(Optional.of(board.getCreator()));
 
         //then
-        assertThrows(UserIsNotOwnerException.class,
+        assertThrows(BadRequestException.class,
                 () -> boardService.delete(bid,uid));
     }
 
@@ -135,7 +132,7 @@ class BoardServiceTest {
         when(boardRepository.findById(bid)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(BoardNotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> boardService.delete(bid,uid));
     }
 }
