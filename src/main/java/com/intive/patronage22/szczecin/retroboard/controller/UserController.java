@@ -39,9 +39,8 @@ public class UserController {
         return userService.register(email, password, displayName);
     }
 
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = {MediaType.APPLICATION_FORM_URLENCODED_VALUE})
     @ResponseStatus(CREATED)
-    @RequestMapping(produces = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     @Operation(summary = "Login in user using provided email and password.",
             responses = {@ApiResponse(responseCode = "200", description = "Successfully logged in."),
                     @ApiResponse(responseCode = "400", description = "Email or password is not valid")})
