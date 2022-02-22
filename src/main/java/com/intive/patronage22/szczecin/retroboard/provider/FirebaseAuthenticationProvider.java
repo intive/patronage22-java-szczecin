@@ -29,7 +29,8 @@ public class FirebaseAuthenticationProvider implements AuthenticationProvider {
     @Value("${FIREBASE_API_KEY}")
     private String apiKey;
 
-    private final String firebaseUrl = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=";
+    @Value("${firebase.signInWithPasswordUrl}")
+    private String firebaseUrl;
 
     @Autowired
     private RestTemplate restTemplate;

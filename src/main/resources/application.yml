@@ -23,7 +23,11 @@ spring:
     hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
   config:
     import: optional:file:.env[.properties]
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
 retroboard:
   jwt:
     secret: secret
@@ -31,3 +35,6 @@ retroboard:
 server:
   error:
     include-stacktrace: never
+
+firebase:
+  signInWithPasswordUrl: https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=

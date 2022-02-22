@@ -46,7 +46,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
         http.authorizeRequests().antMatchers("/register", "/boards", "/swagger-ui/**", "/v3/api-docs/**",
-                "/h2-console/**", "/error").permitAll();
+                "/h2-console/**", "/error", "/actuator/health").permitAll();
         http.authorizeRequests().antMatchers("/private").authenticated();
 
         http.addFilter(new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret));
