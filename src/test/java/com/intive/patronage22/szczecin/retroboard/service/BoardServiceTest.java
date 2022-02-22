@@ -1,10 +1,12 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
+import com.intive.patronage22.szczecin.retroboard.exception.BoardNotFoundException;
+import com.intive.patronage22.szczecin.retroboard.exception.MissingPermissionsException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
@@ -22,7 +24,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -90,8 +91,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("getBoardDataById should throw exception when user does not exist")
-    void getBoardDataByIdWhenUserDoesNotExistThenShouldThrowException() {
+    @DisplayName("getBoardDataById should throw 400 when user does not exist")
+    void getBoardDataByIdShouldThrowBadRequestWhenUserDoesNotExist() {
         //given
         final int boardId = 1;
         final String username = "testemail@example.com";
@@ -100,12 +101,12 @@ class BoardServiceTest {
         when(userRepository.findUserByName(username)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(ResponseStatusException.class, () -> boardService.getBoardDataById(boardId, username));
+        assertThrows(BadRequestException.class, () -> boardService.getBoardDataById(boardId, username));
     }
 
     @Test
-    @DisplayName("getBoardDataById should throw exception when board does not exist")
-    void getBoardDataByIdWhenBoardDoesNotExistThenShouldThrowException() {
+    @DisplayName("getBoardDataById should throw 404 when board does not exist")
+    void getBoardDataByIdShouldThrowNotFoundWhenBoardDoesNotExist() {
         //given
         final int boardId = 1;
         final String username = "testemail@example.com";
@@ -116,12 +117,12 @@ class BoardServiceTest {
         when(boardRepository.findById(boardId)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(ResponseStatusException.class, () -> boardService.getBoardDataById(boardId, username));
+        assertThrows(BoardNotFoundException.class, () -> boardService.getBoardDataById(boardId, username));
     }
 
     @Test
-    @DisplayName("getBoardDataById should throw exception when user has no permission to board")
-    void getBoardDataByIdWhenUserHasNoPermissionToBoardThenShouldThrowException() {
+    @DisplayName("getBoardDataById should throw 400 when user has no permission to view board")
+    void getBoardDataByIdShouldThrowBadRequestWhenUserDoesntHavePermissions() {
         //given
         final int boardId = 1;
         final String username = "testemail@example.com";
@@ -141,12 +142,12 @@ class BoardServiceTest {
         when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(ResponseStatusException.class, () -> boardService.getBoardDataById(boardId, username));
+        assertThrows(MissingPermissionsException.class, () -> boardService.getBoardDataById(boardId, username));
     }
 
     @Test
-    @DisplayName("getBoardDataById should return BoardDataDto when board & user exist and has pems to board")
-    void getBoardDataByIdWhenBoardAndUserExistsAndHasNPermissionToBoardThenShouldReturnBoardDataDto() {
+    @DisplayName("getBoardDataById should return 200")
+    void getBoardDataByIdShouldReturnOk() {
         //given
         final int boardId = 1;
         final String username = "testemail@example.com";
@@ -164,6 +165,7 @@ class BoardServiceTest {
         board.setBoardCards(Set.of(boardCard));
         boardCard.setBoardCardActions(List.of(boardCardAction));
         final List<BoardCard> boardCards = List.of(boardCard);
+
         //when
         when(userRepository.findUserByName(username)).thenReturn(Optional.of(user));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));

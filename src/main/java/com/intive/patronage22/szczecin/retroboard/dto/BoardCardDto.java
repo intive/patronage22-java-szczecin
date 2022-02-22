@@ -1,6 +1,5 @@
 package com.intive.patronage22.szczecin.retroboard.dto;
 
-import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCardAction;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 @Builder
 @Value
 @RequiredArgsConstructor
-public class BoardCardDataDto {
+public class BoardCardDto {
 
     @Schema(description = "Board card id")
     Integer id;
@@ -25,8 +24,10 @@ public class BoardCardDataDto {
     @Schema(description = "Board card action text")
     List<String> actionTexts;
 
-    public static BoardCardDataDto create(final BoardCard boardCard) {
-        return BoardCardDataDto.builder().id(boardCard.getId()).cardText(boardCard.getText())
+    public static BoardCardDto createFrom(final com.intive.patronage22.szczecin.retroboard.model.BoardCard boardCard) {
+        return BoardCardDto.builder()
+                .id(boardCard.getId())
+                .cardText(boardCard.getText())
                 .columnName(boardCard.getColumn())
                 .boardCardCreator(boardCard.getCreator().getName())
                 .actionTexts(
