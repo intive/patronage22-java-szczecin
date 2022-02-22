@@ -3,6 +3,7 @@ package com.intive.patronage22.szczecin.retroboard.configuration.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthenticationFilter;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthorizationFilter;
+import com.intive.patronage22.szczecin.retroboard.provider.FirebaseAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
