@@ -31,3 +31,6 @@ retroboard:
 server:
   error:
     include-stacktrace: never
+
+firebase:
+  signInWithPasswordUrl: https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=
