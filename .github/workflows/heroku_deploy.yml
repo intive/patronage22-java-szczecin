@@ -42,7 +42,7 @@ jobs:
 
           # (Optional, default: "Dockerfile")
           # Dockerfile name.
-          dockerfile_name: DockerfileHerokuDeploy
+          dockerfile_name: ./docker/DockerfileHerokuDeploy
 
           # (Optional, default: "")
           # Additional options of docker build command.
