@@ -42,7 +42,7 @@ public class BoardController {
     @Operation(summary = "Create retro board for given user.",
             responses = {@ApiResponse(responseCode = "201", description = "Board created for given user"),
                     @ApiResponse(responseCode = "404", description = "User not found"),
-                    @ApiResponse(responseCode = "400", description = "Board name cannot be empty")})
+                    @ApiResponse(responseCode = "400", description = "Board name not valid")})
     public BoardDto createNewBoard(@RequestParam(name = "userId") final String uid,
                                    @RequestBody @Valid final BoardCreateDto boardName) {
 

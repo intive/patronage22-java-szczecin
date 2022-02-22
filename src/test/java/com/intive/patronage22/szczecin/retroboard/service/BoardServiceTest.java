@@ -37,7 +37,7 @@ class BoardServiceTest {
     private BoardRepository boardRepository;
 
     @Test
-    void createNewBoardShouldReturnBoardDtoWhenUserExistsAndBoardNameIsNotEmpty() {
+    void createNewBoardShouldReturnBoardDtoWhenUserExistsAndBoardNameIsValid() {
         // given
         final String uid = "uid101";
         final String boardName = "My first board.";

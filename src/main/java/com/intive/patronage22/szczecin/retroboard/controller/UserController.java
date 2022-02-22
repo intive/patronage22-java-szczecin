@@ -47,7 +47,7 @@ public class UserController {
     @Operation(summary = "Create user in Firebase.",
             responses = {@ApiResponse(responseCode = "201", description = "User created"),
                     @ApiResponse(responseCode = "409", description = "User already exist"),
-                    @ApiResponse(responseCode = "400", description = "Email, display name or password not valid")})
+                    @ApiResponse(responseCode = "400", description = "Email, displayName or password not valid")})
     UserDetails register(@RequestParam @Email @Size(max = 64) @NotEmpty final String email,
                          @RequestParam @Size(min = 6, max = 64) @NotBlank @NotNull @NotEmpty final String password,
                          @RequestParam @Size(min = 4, max = 64) @NotBlank @NotNull @NotEmpty final String displayName)
