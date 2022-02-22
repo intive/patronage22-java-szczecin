@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -49,8 +48,8 @@ public class UserController {
                     @ApiResponse(responseCode = "409", description = "User already exist"),
                     @ApiResponse(responseCode = "400", description = "Email, displayName or password not valid")})
     UserDetails register(@RequestParam @Email @Size(max = 64) @NotEmpty final String email,
-                         @RequestParam @Size(min = 6, max = 64) @NotBlank @NotNull @NotEmpty final String password,
-                         @RequestParam @Size(min = 4, max = 64) @NotBlank @NotNull @NotEmpty final String displayName)
+                         @RequestParam @Size(min = 6, max = 64) @NotBlank @NotEmpty final String password,
+                         @RequestParam @Size(min = 4, max = 64) @NotBlank @NotEmpty final String displayName)
             throws FirebaseAuthException {
 
         return userService.register(email, password, displayName);
