@@ -6,7 +6,6 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
-import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
@@ -23,7 +22,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -100,7 +98,7 @@ class BoardControllerTest {
     }
 
     @Test
-    void createBoardShouldReturnCreatedWhenUserExist() throws Exception {
+    void createBoardShouldReturnCreatedWhenUserExistsAndBoardNameIsValid() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
@@ -255,7 +253,6 @@ class BoardControllerTest {
         final String url = "/boards";
         final String uid = "uid101";
         final String boardName = null;
-
 
         // then
         final MvcResult result = mockMvc

@@ -3,25 +3,23 @@ package com.intive.patronage22.szczecin.retroboard.service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
-import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(SpringRunner.class)
 @SpringBootTest(classes = {UserService.class})
-public class UserServiceTest {
+class UserServiceTest {
 
     @Autowired
     private UserService userService;
@@ -69,47 +67,5 @@ public class UserServiceTest {
 
         // then
         assertThrows(UserAlreadyExistException.class, () -> userService.register(email, password, displayName));
-    }
-
-    @Test
-    public void shouldThrowBadRequestExceptionWhenEmailIsNotValid() throws FirebaseAuthException {
-        // given
-        final String email = "test22@.com";
-        final String password = "123456";
-        final String displayName = "someuser";
-
-        // when
-        when(firebaseAuth.getUserByEmail(email)).thenThrow(FirebaseAuthException.class);
-
-        // then
-        assertThrows(BadRequestException.class, () -> userService.register(email, password, displayName));
-    }
-
-    @Test
-    public void shouldThrowBadRequestExceptionWhenPasswordIsNotValid() throws FirebaseAuthException {
-        // given
-        final String email = "test22@test.com";
-        final String password = "12";
-        final String displayName = "someuser";
-
-        // when
-        when(firebaseAuth.getUserByEmail(email)).thenThrow(FirebaseAuthException.class);
-
-        // then
-        assertThrows(BadRequestException.class, () -> userService.register(email, password, displayName));
-    }
-
-    @Test
-    public void shouldThrowBadRequestExceptionWhenDisplayNameIsNotValid() throws FirebaseAuthException {
-        // given
-        final String email = "test22@test.com";
-        final String password = "123456";
-        final String displayName = "";
-
-        // when
-        when(firebaseAuth.getUserByEmail(email)).thenThrow(FirebaseAuthException.class);
-
-        // then
-        assertThrows(BadRequestException.class, () -> userService.register(email, password, displayName));
     }
 }
