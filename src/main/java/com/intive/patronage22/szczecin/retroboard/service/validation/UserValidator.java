@@ -1,8 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.service.validation;
 
-import com.intive.patronage22.szczecin.retroboard.exception.DisplayNameFormatException;
-import com.intive.patronage22.szczecin.retroboard.exception.EmailFormatException;
-import com.intive.patronage22.szczecin.retroboard.exception.PasswordFormatException;
+import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -14,15 +12,15 @@ public class UserValidator {
 
     public static void validate(final String email, final String password, final String displayName) {
         if (!isEmailValid(email)) {
-            throw new EmailFormatException();
+            throw new BadRequestException("Email format not valid");
         }
 
         if (!isPasswordValid(password)) {
-            throw new PasswordFormatException();
+            throw new BadRequestException("Password cannot be empty");
         }
 
         if (!isDisplayNameValid(displayName)) {
-            throw new DisplayNameFormatException();
+            throw new BadRequestException("DisplayName cannot be empty");
         }
     }
 

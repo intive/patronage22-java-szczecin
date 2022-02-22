@@ -17,6 +17,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import java.io.Serializable;
@@ -52,4 +53,7 @@ public class Board implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "user_uid")
     )
     private Set<User> users = new HashSet<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<BoardCard> boardCards;
 }
