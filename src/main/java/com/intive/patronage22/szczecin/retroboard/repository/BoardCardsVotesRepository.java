@@ -6,6 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BoardCardsVotesRepository
-        extends CrudRepository<BoardCardVotes, BoardCardVotesKey> {
+public interface BoardCardsVotesRepository extends CrudRepository<BoardCardVotes, BoardCardVotesKey> {
 }

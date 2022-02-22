@@ -5,6 +5,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -31,4 +32,7 @@ public class BoardCard implements Serializable {
     @ManyToOne
     @JoinColumn(name = "creator_uid")
     private User creator;
+
+    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BoardCardAction> boardCardActions;
 }

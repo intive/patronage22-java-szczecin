@@ -3,9 +3,7 @@ package com.intive.patronage22.szczecin.retroboard.service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
-import com.intive.patronage22.szczecin.retroboard.exception.DisplayNameFormatException;
-import com.intive.patronage22.szczecin.retroboard.exception.EmailFormatException;
-import com.intive.patronage22.szczecin.retroboard.exception.PasswordFormatException;
+import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,7 +72,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void shouldThrowEmailFormatExceptionWhenEmailIsNotValid() throws FirebaseAuthException {
+    public void shouldThrowBadRequestExceptionWhenEmailIsNotValid() throws FirebaseAuthException {
         // given
         final String email = "test22@.com";
         final String password = "123456";
@@ -84,11 +82,11 @@ public class UserServiceTest {
         when(firebaseAuth.getUserByEmail(email)).thenThrow(FirebaseAuthException.class);
 
         // then
-        assertThrows(EmailFormatException.class, () -> userService.register(email, password, displayName));
+        assertThrows(BadRequestException.class, () -> userService.register(email, password, displayName));
     }
 
     @Test
-    public void shouldThrowPasswordFormatExceptionWhenPasswordIsNotValid() throws FirebaseAuthException {
+    public void shouldThrowBadRequestExceptionWhenPasswordIsNotValid() throws FirebaseAuthException {
         // given
         final String email = "test22@test.com";
         final String password = "12";
@@ -98,11 +96,11 @@ public class UserServiceTest {
         when(firebaseAuth.getUserByEmail(email)).thenThrow(FirebaseAuthException.class);
 
         // then
-        assertThrows(PasswordFormatException.class, () -> userService.register(email, password, displayName));
+        assertThrows(BadRequestException.class, () -> userService.register(email, password, displayName));
     }
 
     @Test
-    public void shouldThrowDisplayNameFormatExceptionWhenDisplayNameIsNotValid() throws FirebaseAuthException {
+    public void shouldThrowBadRequestExceptionWhenDisplayNameIsNotValid() throws FirebaseAuthException {
         // given
         final String email = "test22@test.com";
         final String password = "123456";
@@ -112,6 +110,6 @@ public class UserServiceTest {
         when(firebaseAuth.getUserByEmail(email)).thenThrow(FirebaseAuthException.class);
 
         // then
-        assertThrows(DisplayNameFormatException.class, () -> userService.register(email, password, displayName));
+        assertThrows(BadRequestException.class, () -> userService.register(email, password, displayName));
     }
 }

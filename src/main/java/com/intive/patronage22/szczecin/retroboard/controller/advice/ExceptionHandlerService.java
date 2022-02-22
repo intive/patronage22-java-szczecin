@@ -1,5 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.controller.advice;
 
+
 import com.intive.patronage22.szczecin.retroboard.exception.BoardNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserIsNotOwnerException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
@@ -16,8 +17,14 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 public class ExceptionHandlerService {
 
     @ResponseStatus(NOT_FOUND)
-    @ExceptionHandler(UserNotFoundException.class)
-    public String userNotFoundHandler(final UserNotFoundException exception) {
+    @ExceptionHandler(NotFoundException.class)
+    public String notFoundHandler(final NotFoundException exception) {
+        return exception.getMessage();
+    }
+
+    @ResponseStatus(BAD_REQUEST)
+    @ExceptionHandler(BadRequestException.class)
+    public String badRequestHandler(final BadRequestException exception) {
         return exception.getMessage();
     }
 
