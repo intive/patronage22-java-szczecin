@@ -1,12 +1,8 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
-import com.auth0.jwt.interfaces.JWTVerifier;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
+import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import org.hamcrest.core.IsNull;
@@ -16,22 +12,34 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.Map;
+import javax.annotation.PostConstruct;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest({UserController.class, SecurityConfig.class})
@@ -47,10 +55,20 @@ class UserControllerTest {
     private String jwtSecret;
 
     @MockBean
-    private InMemoryUserDetailsManager inMemoryUserDetailsManager;
+    private UserService userService;
 
     @MockBean
-    private UserService userService;
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    private MockRestServiceServer firebaseRestServiceServer;
+
+    @PostConstruct
+    public void postContruct() {
+        firebaseRestServiceServer = MockRestServiceServer.createServer(restTemplate);
+    }
 
     @Test
     void registerShouldReturnJsonBodyWithCreatedUserDataWhenUserNotExistBefore() throws Exception {
@@ -116,63 +134,179 @@ class UserControllerTest {
     void loginShouldReturnAccessTokenWhenUserCredentialsAreCorrect() throws Exception {
         // given
         final String url = "/login";
-        final String username = "someuser";
+        final String email = "someuser@test.com";
         final String password = "1234";
-
-        final UserDetails existingUser = User
-                .withUsername(username)
-                .password("$2a$10$A0IKJqSv.cSqXb7BuIPw4.GvP1U3VPUIRvkAigPVr6HipH.R3nGLO")
-                .roles("USER")
-                .build();
+        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, password);
+        firebaseRestServiceServer.expect(method(HttpMethod.POST))
+                .andRespond(withSuccess("{\n" +
+                        "  \"kind\": \"identitytoolkit#VerifyPasswordResponse\",\n" +
+                        "  \"localId\": \"4SMQsiGBotPYyEshH5nQyBcYpW82\",\n" +
+                        "  \"email\": \"" + email + "\",\n" +
+                        "  \"displayName\": \"\",\n" +
+                        "  \"idToken\": \"[ID_TOKEN]\",\n" +
+                        "  \"registered\": true,\n" +
+                        "  \"refreshToken\": \"[REFRESH_TOKEN]\",\n" +
+                        "  \"expiresIn\": \"3600\"\n" + "}", MediaType.APPLICATION_JSON));
 
         // when
-        when(inMemoryUserDetailsManager.loadUserByUsername(username)).thenReturn(existingUser);
+        when(authenticationManager.authenticate(token)).thenReturn(token);
 
-        // then
-        final String jsonResult = mockMvc
+        //then
+        mockMvc
                 .perform(post(url)
-                        .param("username", username)
+                        .param("email", email)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(jsonPath("$.access_token").value("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."
-                        + "eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0L2xvZ2l"
-                        + "uIn0.7Kz-x09Xmaw0qb8FVSzIH9lxMO1_5FHSs1GbJHcsP0o"))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
-
-        final TypeReference<Map<String, String>> tr = new TypeReference<>() {
-        };
-        final Map<String, String> map = objectMapper.readValue(jsonResult, tr);
-        final String token = map.get("access_token");
-
-        final JWTVerifier verifier = JWT.require(Algorithm.HMAC256(jwtSecret.getBytes())).build();
-        final DecodedJWT decodedJwt = verifier.verify(token);
-
-        assertEquals(username, decodedJwt.getSubject());
+                .andExpect(header().string("Authorization", "Bearer [ID_TOKEN]"));
     }
 
     @Test
     void loginShouldReturnUnauthorizedWhenUserNotFound() throws Exception {
         // given
         final String url = "/login";
-        final String username = "someuser";
+        final String email = "someuser@test.com";
         final String password = "1234";
-        final UsernameNotFoundException expectedException = new UsernameNotFoundException(username);
+        final UsernameNotFoundException expectedException = new UsernameNotFoundException(email);
+        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, password);
+        firebaseRestServiceServer.expect(method(HttpMethod.POST))
+                .andRespond(withBadRequest()
+                        .body("{\n" +
+                            "  \"error\": {\n" +
+                            "    \"code\": 400,\n" +
+                            "    \"message\": \"EMAIL_NOT_FOUND\",\n" +
+                            "    \"errors\": [\n" +
+                            "      {\n" +
+                            "        \"message\": \"EMAIL_NOT_FOUND\",\n" +
+                            "        \"domain\": \"global\",\n" +
+                            "        \"reason\": \"invalid\"\n" +
+                            "      }\n" +
+                            "    ]\n" +
+                            "  }\n" +
+                            "}").contentType(MediaType.APPLICATION_JSON));
 
         // when
-        when(inMemoryUserDetailsManager.loadUserByUsername(username)).thenThrow(expectedException);
+        when(authenticationManager.authenticate(token)).thenThrow(expectedException);
 
         // then
         mockMvc
                 .perform(post(url)
-                        .param("username", username)
+                        .param("email", email)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error_message").value("Email not found."));;
+    }
+
+    @Test
+    void loginShouldReturnBadRequestWhenEmailIsMissing() throws Exception {
+        // given
+        final String url = "/login";
+        final String email = null;
+        final String password = "1234";
+        final MissingFieldException expectedException = new MissingFieldException("Missing email.");
+        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, password);
+        firebaseRestServiceServer.expect(method(HttpMethod.POST))
+                .andRespond(withBadRequest()
+                        .body("{\n" +
+                              "  \"error\": {\n" +
+                              "    \"code\": 400,\n" +
+                              "    \"message\": \"MISSING_EMAIL\",\n" +
+                              "    \"errors\": [\n" +
+                              "      {\n" +
+                              "        \"message\": \"MISSING_EMAIL\",\n" +
+                              "        \"domain\": \"global\",\n" +
+                              "        \"reason\": \"invalid\"\n" +
+                              "      }\n" +
+                              "    ]\n" +
+                              "  }\n" +
+                              "}").contentType(MediaType.APPLICATION_JSON));
+
+        // when
+        when(authenticationManager.authenticate(token)).thenThrow(expectedException);
+
+        // then
+        mockMvc
+                .perform(post(url)
+                        .param("email", email)
+                        .param("password", password)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error_message").value("Missing email."));
+    }
+
+    @Test
+    void loginShouldReturnUnauthorizedWhenPasswordIsInvalid() throws Exception {
+        // given
+        final String url = "/login";
+        final String email = "someuser@test.com";
+        final String password = "1234";
+        final BadCredentialsException expectedException = new BadCredentialsException("Invalid password.");
+        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, password);
+        firebaseRestServiceServer.expect(method(HttpMethod.POST))
+                .andRespond(withBadRequest()
+                        .body("{\n" +
+                              "  \"error\": {\n" + "    \"code\": 400,\n" +
+                              "    \"message\": \"INVALID_PASSWORD\",\n" +
+                              "    \"errors\": [\n" +
+                              "      {\n" +
+                              "        \"message\": \"INVALID_PASSWORD\",\n" +
+                              "        \"domain\": \"global\",\n" +
+                              "        \"reason\": \"invalid\"\n" +
+                              "      }\n" +
+                              "    ]\n" +
+                              "  }\n" +
+                              "}").contentType(MediaType.APPLICATION_JSON));
+
+        // when
+        when(authenticationManager.authenticate(token)).thenThrow(expectedException);
+
+        // then
+        mockMvc
+                .perform(post(url)
+                        .param("email", email)
+                        .param("password", password)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error_message").value("Invalid password."));
+    }
+
+    @Test
+    void loginShouldReturnBadRequestWhenPasswordIsMissing() throws Exception {
+        // given
+        final String url = "/login";
+        final String email = "someuser@test.com";
+        final String password = null;
+        final MissingFieldException expectedException = new MissingFieldException("Missing password.");
+        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, password);
+        firebaseRestServiceServer.expect(method(HttpMethod.POST))
+                .andRespond(withBadRequest()
+                        .body("{\n" +
+                              "  \"error\": {\n" +
+                              "    \"code\": 400,\n" +
+                              "    \"message\": \"MISSING_PASSWORD\",\n" +
+                              "    \"errors\": [\n" +
+                              "      {\n" +
+                              "        \"message\": \"MISSING_PASSWORD\",\n" +
+                              "        \"domain\": \"global\",\n" +
+                              "        \"reason\": \"invalid\"\n" +
+                              "      }\n" +
+                              "    ]\n" +
+                              "  }\n" +
+                              "}").contentType(MediaType.APPLICATION_JSON));
+
+        // when
+        when(authenticationManager.authenticate(token)).thenThrow(expectedException);
+
+        // then
+        mockMvc
+                .perform(post(url)
+                        .param("email", email)
+                        .param("password", password)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error_message").value("Missing password."));
     }
 
     @Test
