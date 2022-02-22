@@ -3,11 +3,10 @@ package com.intive.patronage22.szczecin.retroboard.service;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BoardNotFoundException;
-import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
+import com.intive.patronage22.szczecin.retroboard.exception.UserIsNotOwnerException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BoardService {
     private final BoardRepository boardRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
 
     @Transactional(readOnly = true)
     public List<BoardDto> getUserBoards(final String uid) {
@@ -30,10 +29,7 @@ public class BoardService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Invalid request - no uid given!");
 
-        final User user = userRepository.findById(uid).orElseThrow(
-                () -> new ResponseStatusException(
-                HttpStatus.NOT_FOUND,
-                "No such user!"));
+        final User user = userService.findUserById(uid);
 
         return user.getUserBoards().stream()
                 .map(BoardDto::fromModel)
@@ -42,9 +38,8 @@ public class BoardService {
 
     @Transactional
     public BoardDto createNewBoard(final String boardName, final String uid) {
-        final User user = userRepository.findById(uid)
-                .orElseThrow(UserNotFoundException::new);
 
+        final User user = userService.findUserById(uid);
         final Board newBoard = Board.builder()
                 .name(boardName)
                 .state(EnumStateDto.CREATED)
@@ -56,20 +51,15 @@ public class BoardService {
     }
 
     @Transactional
-    public void deleteBoard(final int boardId, final String uid) {
-        final User user = userRepository.findById(uid)
-                .orElseThrow(BoardNotFoundException::new);
+    public void delete(final int boardId, final String uid) {
+
+        final User user = userService.findUserById(uid);
 
         final Board board = boardRepository.findById(boardId)
                 .orElseThrow(BoardNotFoundException::new);
 
-        if (user.getUserBoards() == null)
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND,
-                    "Invalid request - no boards for given user!");
-
-        if(board.getCreator() != user){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
-                    "Forbidden request - given user is not creator");
+        if(!(user.equals(board.getCreator()))){
+            throw new UserIsNotOwnerException();
         }else{
             boardRepository.deleteById(boardId);
         }

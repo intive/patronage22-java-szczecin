@@ -3,7 +3,6 @@ package com.intive.patronage22.szczecin.retroboard.configuration.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthenticationFilter;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthorizationFilter;
-import com.intive.patronage22.szczecin.retroboard.provider.FirebaseAuthenticationProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,7 +44,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.authorizeRequests().antMatchers("/register", "/boards", "/swagger-ui/**", "/v3/api-docs/**",
+        http.authorizeRequests().antMatchers("/register", "/boards","/boards/*", "/swagger-ui/**", "/v3/api-docs/**",
                 "/h2-console/**", "/error", "/actuator/health").permitAll();
         http.authorizeRequests().antMatchers("/private").authenticated();
 
