@@ -4,6 +4,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
+import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
+import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.validation.UserValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final FirebaseAuth firebaseAuth;
+    private final UserRepository userRepository;
 
     public UserDetails register(final String email, final String password, final String displayName)
             throws FirebaseAuthException {
@@ -55,5 +58,11 @@ public class UserService {
         } catch (final FirebaseAuthException e) {
             return false;
         }
+    }
+
+    public final com.intive.patronage22.szczecin.retroboard.model.User findUserById(final String uid){
+
+        return userRepository.findById(uid)
+                .orElseThrow(UserNotFoundException::new);
     }
 }
