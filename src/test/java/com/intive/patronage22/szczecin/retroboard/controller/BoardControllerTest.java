@@ -8,7 +8,6 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
-import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,13 +15,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -44,21 +39,19 @@ class BoardControllerTest {
 
     @MockBean private BoardService boardService;
 
-    @Autowired private RestTemplate restTemplate;
-
     @Test
     void getUserBoardsShouldReturnOkWhenUserExist() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
 
-        final List<BoardDto> dtoList = List.of(
+        final List<BoardDto> boardList = List.of(
                 new BoardDto(1, EnumStateDto.CREATED, "test1"),
                 new BoardDto(2, EnumStateDto.CREATED, "test2")
         );
 
         // when
-        when(boardService.getUserBoards(uid)).thenReturn(dtoList);
+        when(boardService.getUserBoards(uid)).thenReturn(boardList);
 
         // then
         mockMvc.perform(get(url)
@@ -69,18 +62,18 @@ class BoardControllerTest {
     }
 
     @Test
-    void getUserBoardsShouldReturnNotFoundWhenUserNotExist() throws Exception {
+    void getUserBoardsShouldReturnBadRequestWhenUserDoesNotExist() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
 
         // when
-        when(boardService.getUserBoards(uid)).thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
+        when(boardService.getUserBoards(uid)).thenThrow(BadRequestException.class);
 
         // then
         mockMvc.perform(get(url).param("userId", uid))
-                .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof BadRequestException));
     }
 
     @Test
@@ -89,16 +82,16 @@ class BoardControllerTest {
         final String url = "/boards?userId=";
 
         // when
-        when(boardService.getUserBoards(anyString())).thenThrow(new ResponseStatusException(HttpStatus.BAD_REQUEST));
+        when(boardService.getUserBoards(anyString())).thenThrow(BadRequestException.class);
 
         // then
         mockMvc.perform(get(url))
                 .andExpect(status().isBadRequest())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof BadRequestException));
     }
 
     @Test
-    void createNewBoardShouldReturnCreatedWhenUserExist() throws Exception {
+    void createBoardShouldReturnCreatedWhenUserExist() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
@@ -111,7 +104,7 @@ class BoardControllerTest {
                 .build();
 
         // when
-        when(boardService.createNewBoard(boardName, uid)).thenReturn(boardDto);
+        when(boardService.createBoard(boardName, uid)).thenReturn(boardDto);
 
         // then
         mockMvc.perform(post(url).param("userId", uid)
@@ -124,14 +117,14 @@ class BoardControllerTest {
     }
 
     @Test
-    void createNewBoardShouldReturnNotFoundWhenUserNotExist() throws Exception {
+    void createBoardShouldReturnNotFoundWhenUserNotExist() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
         final String boardName = "My first board.";
 
         // when
-        when(boardService.createNewBoard(boardName, uid)).thenThrow(new UserNotFoundException());
+        when(boardService.createBoard(boardName, uid)).thenThrow(new NotFoundException("User not found"));
 
         // then
         mockMvc.perform(post(url).param("userId", uid)

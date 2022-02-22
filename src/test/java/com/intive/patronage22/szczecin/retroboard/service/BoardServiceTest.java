@@ -6,7 +6,6 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
-import com.intive.patronage22.szczecin.retroboard.exception.UserNotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCardAction;
@@ -49,7 +48,66 @@ class BoardServiceTest {
     BoardCardsRepository boardCardsRepository;
 
     @Test
-    void createNewBoardShouldReturnBoardDtoWhenUserExist() {
+    void getUserBoardsShouldReturnOk(){
+        //given
+        final String uid = "1234";
+        final User user = new User(uid, "John", Set.of());
+        final Board board = Board.builder()
+                .id(1)
+                .name("board name")
+                .state(EnumStateDto.CREATED)
+                .creator(user)
+                .users(Set.of())
+                .boardCards(Set.of())
+                .build();
+        user.setUserBoards(Set.of(board));
+
+        //when
+        when(userRepository.findById(uid)).thenReturn(Optional.of(user));
+        final List<BoardDto> boards = boardService.getUserBoards(uid);
+
+        //then
+        assertEquals(boards.get(0).getId(), board.getId());
+        assertEquals(boards.get(0).getName(), board.getName());
+        assertEquals(boards.get(0).getState(), board.getState());
+    }
+
+    @Test
+    void getUserBoardsShouldThrowBadRequestWhenUidIsBlank(){
+        //given
+        final String uid = "";
+
+        //when
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.getUserBoards(uid));
+    }
+
+    @Test
+    void getUserBoardsShouldThrowBadRequestWhenUidIsNull(){
+        //given
+        final String uid = null;
+
+        //when
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.getUserBoards(uid));
+    }
+
+    @Test
+    void getUserBoardsShouldThrowBadRequestWhenUserDoesNotExist(){
+        //given
+        final String uid = "123";
+
+        //when
+        when(userRepository.findById(uid)).thenThrow(BadRequestException.class);
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.getUserBoards(uid));
+    }
+
+    @Test
+    void createBoardShouldReturnBoardDtoWhenUserExist() {
         // given
         final String uid = "uid101";
         final String boardName = "My first board.";
@@ -67,7 +125,7 @@ class BoardServiceTest {
         // when
         when(userRepository.findById(uid)).thenReturn(Optional.of(user));
         when(boardRepository.save(any(Board.class))).thenReturn(board);
-        final BoardDto boardDtoResult = boardService.createNewBoard(boardName, uid);
+        final BoardDto boardDtoResult = boardService.createBoard(boardName, uid);
 
         // then
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
@@ -76,7 +134,7 @@ class BoardServiceTest {
     }
 
     @Test
-    void createNewBoardShouldReturnNoFoundWhenUserNotExist() {
+    void createBoardShouldReturnNotFoundWhenUserDoesNotExist() {
         // given
         final String uid = "uid101";
         final String boardName = "My first board.";
@@ -85,7 +143,7 @@ class BoardServiceTest {
         when(userRepository.findById(uid)).thenReturn(Optional.empty());
 
         // then
-        assertThrows(UserNotFoundException.class, () -> boardService.createNewBoard(boardName, uid));
+        assertThrows(NotFoundException.class, () -> boardService.createBoard(boardName, uid));
     }
 
     @Test
