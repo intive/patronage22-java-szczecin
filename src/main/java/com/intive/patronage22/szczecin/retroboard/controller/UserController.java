@@ -11,11 +11,23 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 
 import static org.springframework.http.HttpStatus.CREATED;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -34,9 +46,11 @@ public class UserController {
     @Operation(summary = "Create user in Firebase.",
             responses = {@ApiResponse(responseCode = "201", description = "User created"),
                     @ApiResponse(responseCode = "409", description = "User already exist"),
-                    @ApiResponse(responseCode = "400", description = "Email, UserName or Password not valid")})
-    UserDetails register(@RequestParam final String email, @RequestParam final String password,
-                         @RequestParam final String displayName) throws FirebaseAuthException {
+                    @ApiResponse(responseCode = "400", description = "Email, displayName or password not valid")})
+    UserDetails register(@RequestParam @Email @Size(max = 64) @NotEmpty final String email,
+                         @RequestParam @Size(min = 6, max = 64) @NotBlank @NotEmpty final String password,
+                         @RequestParam @Size(min = 4, max = 64) @NotBlank @NotEmpty final String displayName)
+            throws FirebaseAuthException {
 
         return userService.register(email, password, displayName);
     }
