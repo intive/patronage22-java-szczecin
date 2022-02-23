@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -112,7 +113,7 @@ class BoardServiceTest {
         final String uid = "uid101";
         final String boardName = "My first board.";
 
-        final User user = new User(uid, "Josef", Set.of());
+        final User user = new User(uid, "Josef", new HashSet<>());
 
         final Board board = Board.builder()
                 .id(10)
@@ -121,6 +122,7 @@ class BoardServiceTest {
                 .creator(user)
                 .users(Set.of())
                 .build();
+        user.getUserBoards().add(board);
 
         // when
         when(userRepository.findById(uid)).thenReturn(Optional.of(user));

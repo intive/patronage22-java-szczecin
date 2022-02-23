@@ -11,11 +11,10 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -46,12 +45,7 @@ public class Board implements Serializable {
     @OneToOne
     private User creator;
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(schema = "retro",
-            name = "users_boards",
-            joinColumns = @JoinColumn(name = "board_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_uid")
-    )
+    @ManyToMany(mappedBy = "userBoards", fetch = FetchType.LAZY)
     private Set<User> users = new HashSet<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)

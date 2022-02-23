@@ -21,6 +21,11 @@ public class User implements Serializable {
     @Column(name = "name", length = 64)
     private String name;
 
-    @ManyToMany(mappedBy = "users")
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(schema = "retro",
+            name = "users_boards",
+            joinColumns = @JoinColumn(name = "user_uid"),
+            inverseJoinColumns = @JoinColumn(name = "board_id")
+    )
     private Set<Board> userBoards = new HashSet<>();
 }
