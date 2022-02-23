@@ -13,10 +13,8 @@ import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepositor
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +28,6 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final BoardCardsRepository boardCardsRepository;
-    private final UserService userService;
 
     @Transactional(readOnly = true)
     public BoardDataDto getBoardDataById(final Integer boardId, final String name) {
@@ -60,40 +57,22 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public List<BoardDto> getUserBoards(final String uid) {
-        if (uid == null || uid.isBlank())
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Invalid request - no uid given!");
+        if (uid == null || uid.isBlank()) {
+            throw new BadRequestException("Invalid request - no uid given!");
+        }
 
-        final User user = userService.findUserById(uid);
+        final User user = userRepository.findById(uid).orElseThrow(() -> new BadRequestException("No such user!"));
 
-        return user.getUserBoards().stream()
-                .map(BoardDto::fromModel)
-                .collect(Collectors.toList());
-    }
-
-    @Transactional
-    public BoardDto createNewBoard(final String boardName, final String uid) {
-
-        final User user = userService.findUserById(uid);
-        final Board newBoard = Board.builder()
-                .name(boardName)
-                .state(EnumStateDto.CREATED)
-                .creator(user)
-                .users(Set.of())
-                .build();
-
-        return BoardDto.fromModel(boardRepository.save(newBoard));
+        return user.getUserBoards().stream().map(BoardDto::fromModel).collect(Collectors.toList());
     }
 
     @Transactional
     public void delete(final int boardId, final String uid) {
 
-        final User user = userService.findUserById(uid);
-
         final Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Board not found"));
 
-        if(!(user.equals(board.getCreator()))){
+        if(!(uid.equals(board.getCreator().getUid()))){
             throw new BadRequestException("User is not owner");
         }else{
             boardRepository.deleteById(boardId);
