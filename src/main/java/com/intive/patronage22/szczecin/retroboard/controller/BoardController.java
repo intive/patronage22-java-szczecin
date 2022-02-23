@@ -52,4 +52,16 @@ public class BoardController {
                                 @RequestBody @Valid final BoardDto boardDto) {
         return boardService.createBoard(boardDto.getName(), uid);
     }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(OK)
+    @Operation(summary = "Delete retro board for given id.",
+            responses = {@ApiResponse(responseCode = "200", description = "Board deleted for given user"),
+                    @ApiResponse(responseCode = "400", description = "User is not the board owner"),
+                    @ApiResponse(responseCode = "404", description = "Board not found")})
+    public void deleteBoard(@RequestParam(name = "userId") final String uid,
+                            @PathVariable(name = "id") final int id){
+
+        boardService.delete(id, uid);
+    }
 }
