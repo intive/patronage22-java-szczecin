@@ -25,8 +25,8 @@ public class BoardCard implements Serializable {
     @Column(name = "text", length = 128, nullable = false)
     private String text;
 
-    @Column(name = "column", length = 16, nullable = false)
     @Enumerated(EnumType.STRING)
+    @Column(name = "column", length = 16, nullable = false)
     private BoardCardsColumn column;
 
     @ManyToOne
