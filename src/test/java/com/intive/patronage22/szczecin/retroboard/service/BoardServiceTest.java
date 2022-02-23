@@ -39,10 +39,10 @@ class BoardServiceTest {
     private BoardService boardService;
 
     @MockBean
-    UserRepository userRepository;
+    private UserRepository userRepository;
 
     @MockBean
-    BoardRepository boardRepository;
+    private BoardRepository boardRepository;
 
     @MockBean
     BoardCardsRepository boardCardsRepository;
@@ -110,7 +110,7 @@ class BoardServiceTest {
     }
 
     @Test
-    void createBoardShouldReturnBoardDtoWhenUserExist() {
+    void createBoardShouldReturnBoardDtoWhenUserExistsAndBoardNameIsValid() {
         // given
         final String uid = "uid101";
         final String boardName = "My first board.";
