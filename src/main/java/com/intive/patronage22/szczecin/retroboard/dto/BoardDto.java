@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
 @Builder
 @Value
 @RequiredArgsConstructor
@@ -15,6 +19,10 @@ public class BoardDto {
     Integer id;
     @Schema(description = "Board state", implementation = EnumStateDto.class)
     EnumStateDto state;
+
+    @NotEmpty
+    @NotBlank
+    @Size(min = 4, max = 64)
     @Schema(description = "Board name", required = true)
     String name;
 

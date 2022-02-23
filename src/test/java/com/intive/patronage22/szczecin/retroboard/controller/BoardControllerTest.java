@@ -11,6 +11,8 @@ import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -18,10 +20,13 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -35,9 +40,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest({BoardController.class, SecurityConfig.class})
 class BoardControllerTest {
 
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private MockMvc mockMvc;
 
-    @MockBean private BoardService boardService;
+    @MockBean
+    private BoardService boardService;
 
     @Test
     void getUserBoardsShouldReturnOkWhenUserExist() throws Exception {
@@ -91,7 +98,7 @@ class BoardControllerTest {
     }
 
     @Test
-    void createBoardShouldReturnCreatedWhenUserExist() throws Exception {
+    void createBoardShouldReturnCreatedWhenUserExistsAndBoardNameIsValid() throws Exception {
         // given
         final String url = "/boards";
         final String uid = "uid101";
@@ -216,5 +223,48 @@ class BoardControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException))
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "  ", "123",
+            "01234567890123456789012345678901234567890123456789012345678912345"})
+    void createNewBoardShouldReturnBadRequestWhenBoardNameIsNotValid(final String boardName) throws Exception {
+        // given
+        final String url = "/boards";
+        final String uid = "uid101";
+
+        // then
+        final MvcResult result = mockMvc
+                .perform(post(url)
+                        .param("userId", uid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + boardName + "\"}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest()).andReturn();
+
+        final Exception resultException = result.getResolvedException();
+
+        assertInstanceOf(MethodArgumentNotValidException.class, resultException);
+    }
+
+    @Test
+    void createNewBoardShouldReturnBadRequestWhenBoardNameIsNull() throws Exception {
+        // given
+        final String url = "/boards";
+        final String uid = "uid101";
+        final String boardName = null;
+
+        // then
+        final MvcResult result = mockMvc
+                .perform(post(url)
+                        .param("userId", uid)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":" + boardName + "}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest()).andReturn();
+
+        final Exception resultException = result.getResolvedException();
+
+        assertInstanceOf(MethodArgumentNotValidException.class, resultException);
     }
 }

@@ -7,6 +7,9 @@ import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistExce
 import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +30,10 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
+import javax.validation.Path;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -71,12 +78,12 @@ class UserControllerTest {
     }
 
     @Test
-    void registerShouldReturnJsonBodyWithCreatedUserDataWhenUserNotExistBefore() throws Exception {
+    void registerShouldReturnCreatedWhenUserInputsAreValid() throws Exception {
         // given
         final String url = "/register";
         final String email = "someuser@test.com";
         final String displayName = "someuser";
-        final String password = "1234";
+        final String password = "123456";
 
         final UserDetails createdUser = User
                 .withUsername(email)
@@ -104,15 +111,16 @@ class UserControllerTest {
     }
 
     @Test
-    void registerShouldReturnConflictWhenUserExist() throws Exception {
+    void registerShouldReturnConflictWhenUserAlreadyExists() throws Exception {
         // given
         final String url = "/register";
         final String email = "someuser@test.com";
         final String displayName = "someuser";
-        final String password = "1234";
+        final String password = "123456";
 
         // when
-        when(userService.register(email, password, displayName)).thenThrow(new UserAlreadyExistException());
+        when(userService.register(email, password, displayName))
+                .thenThrow(new UserAlreadyExistException("User already exist"));
 
         // then
         final MvcResult result = mockMvc
@@ -121,13 +129,67 @@ class UserControllerTest {
                         .param("password", password)
                         .param("displayName", displayName)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(res -> assertEquals("User already exist", res.getResponse().getErrorMessage()))
-                .andExpect(status().isConflict()).andReturn();
+                .andExpect(status().isConflict())
+                .andReturn();
 
         final Exception resultException = result.getResolvedException();
 
         assertInstanceOf(UserAlreadyExistException.class, resultException);
-        assertEquals("User already exist", result.getResponse().getErrorMessage());
+        assertEquals("User already exist", resultException.getMessage());
+    }
+
+    private static Stream<Arguments> provideStringsForUserInputsValidation() {
+        return Stream.of(
+                Arguments.of("someuser@test.com", "someuser", "12345", "register.password"),
+                Arguments.of("someuser@test.com", "someuser",
+                        "01234567890123456789012345678901234567890123456789012345678912345", "register.password"),
+                Arguments.of("someuser@test.com", "someuser", "", "register.password"),
+                Arguments.of("someuser@test.com", "someuser", " ", "register.password"),
+                Arguments.of("someuser@test.com", "someuser", "null", "register.password"),
+                Arguments.of("", "someuser", "123456", "register.email"),
+                Arguments.of(" ", "someuser", "123456", "register.email"),
+                Arguments.of("01234567890123456789012345678901234567890123456789012345678912345@test.com", "someuser",
+                        "123456", "register.email"),
+                Arguments.of("someuser@.com", "someuser", "123456", "register.email"),
+                Arguments.of("someuser@test.", "someuser", "123456", "register.email"),
+                Arguments.of("someuser@", "someuser", "123456", "register.email"),
+                Arguments.of("someuser@test.com", "", "123456", "register.displayName"),
+                Arguments.of("someuser@test.com", " ", "123456", "register.displayName"),
+                Arguments.of("someuser@test.com", "123", "123456", "register.displayName"),
+                Arguments.of("someuser@test.com", ".", "123456", "register.displayName"),
+                Arguments.of("someuser@test.com", "01234567890123456789012345678901234567890123456789012345678912345",
+                        "123456", "register.displayName")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideStringsForUserInputsValidation")
+    void registerShouldThrowBadRequestWhenUserInputsAreNotValid(final String email, final String displayName,
+                                                                final String password, final String expectedIssue)
+            throws Exception {
+
+        // given
+        final String url = "/register";
+
+        // then
+        final MvcResult result = mockMvc
+                .perform(post(url)
+                        .param("email", email)
+                        .param("password", password)
+                        .param("displayName", displayName)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().isBadRequest()).andReturn();
+
+        final Exception resultException = result.getResolvedException();
+
+        assertInstanceOf(ConstraintViolationException.class, resultException);
+
+        ((ConstraintViolationException) resultException)
+                .getConstraintViolations()
+                .stream()
+                .map(ConstraintViolation::getPropertyPath)
+                .map(Path::toString)
+                .forEach(c -> assertEquals(expectedIssue, c));
     }
 
     @Test
@@ -196,7 +258,7 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.error_message").value("Email not found."));;
+                .andExpect(jsonPath("$.error_message").value("Email not found."));
     }
 
     @Test
