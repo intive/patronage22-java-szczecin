@@ -251,14 +251,14 @@ class BoardServiceTest {
 
         //given
         final String uid = "uid101";
-        final int bid = 101;
+        final int boardId = 101;
 
         //when
         when(userRepository.findById(uid)).thenReturn(Optional.empty());
 
         //then
         assertThrows(NotFoundException.class,
-                () -> boardService.delete(bid,uid));
+                () -> boardService.delete(boardId,uid));
     }
 
     @Test
@@ -266,13 +266,13 @@ class BoardServiceTest {
 
         //given
         final String uid = "uid101";
-        final int bid = 101;
+        final int boardId = 101;
 
         //when
-        when(boardRepository.findById(bid)).thenReturn(Optional.empty());
+        when(boardRepository.findById(boardId)).thenReturn(Optional.empty());
 
         //then
         assertThrows(NotFoundException.class,
-                () -> boardService.delete(bid,uid));
+                () -> boardService.delete(boardId,uid));
     }
 }
