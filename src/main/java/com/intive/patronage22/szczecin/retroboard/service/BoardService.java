@@ -69,8 +69,6 @@ public class BoardService {
     @Transactional
     public void delete(final int boardId, final String uid) {
 
-        final User user = userRepository.findById(uid)
-                .orElseThrow(() -> new BadRequestException("No such user!"));
         final Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Board not found"));
 
