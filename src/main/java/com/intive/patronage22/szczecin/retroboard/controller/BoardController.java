@@ -49,6 +49,7 @@ public class BoardController {
                        @ApiResponse(responseCode = "400", description = "User has no access to board."),
                        @ApiResponse(responseCode = "404", description = "Board is not found")})
     public BoardDataDto getBoardDataById(@PathVariable final Integer id, final Authentication authentication) {
+
         return boardService.getBoardDataById(id, authentication.getName());
     }
 

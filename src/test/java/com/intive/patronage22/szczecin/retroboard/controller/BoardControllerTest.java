@@ -1,5 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
@@ -29,7 +31,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -45,6 +49,9 @@ class BoardControllerTest {
 
     @MockBean
     private BoardService boardService;
+
+    @MockBean
+    private FirebaseAuth firebaseAuth;
 
     @Test
     void getUserBoardsShouldReturnOkWhenUserExist() throws Exception {
@@ -145,8 +152,8 @@ class BoardControllerTest {
     @DisplayName("getBoardDataById should return 200 when board data is collected")
     void getBoardDataByIdShouldReturnOk() throws Exception {
         //given
-        final String username = "someuser";
-        final String tokenString = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+        final String email = "test22@test.com";
+        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
                                    ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
         final String boardDataUrl = "/boards";
         final int boardId = 1;
@@ -154,16 +161,22 @@ class BoardControllerTest {
         final BoardDto boardDto = new BoardDto(1, EnumStateDto.CREATED, "test1");
         final List<String> actionTexts = List.of("action text 1", "action text 2");
         final BoardCardDto boardCardDataDto =
-                new BoardCardDto(2, "cardText", BoardCardsColumn.SUCCESS, username, actionTexts);
+                new BoardCardDto(2, "cardText", BoardCardsColumn.SUCCESS, email, actionTexts);
         final BoardCardDto boardCardDataDto1 =
-                new BoardCardDto(3, "cardText3", BoardCardsColumn.FAILURES, username, actionTexts);
+                new BoardCardDto(3, "cardText3", BoardCardsColumn.FAILURES, email, actionTexts);
         final BoardDataDto boardDataDto = new BoardDataDto(boardDto, List.of(boardCardDataDto, boardCardDataDto1));
 
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
         //when
-        when(boardService.getBoardDataById(boardId, username)).thenReturn(boardDataDto);
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        when(boardService.getBoardDataById(boardId, email)).thenReturn(boardDataDto);
 
         //then
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + tokenString))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId)
+                        .header("Authorization", "Bearer " + providedAccessToken))
                 .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(2))).andExpect(result -> assertTrue(
                         result.getResponse().getContentAsString().contains(boardDataDto.getBoard().getId().toString())))
@@ -187,18 +200,23 @@ class BoardControllerTest {
     @DisplayName("getBoardDataById should return 400 when user has no permission to view board data")
     void getBoardDataByIdShouldThrowBadRequestWhenUserDoesntHavePermissions() throws Exception {
         //given
-        final String username = "someuser";
-        final String tokenString = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+        final String email = "test22@test.com";
+        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
                                    ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
         final String boardDataUrl = "/boards";
         final int boardId = 1;
         final String exceptionMessage = "User doesn't have permissions to view board data.";
 
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
         //when
-        when(boardService.getBoardDataById(boardId, username)).thenThrow(new BadRequestException(exceptionMessage));
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        when(boardService.getBoardDataById(boardId, email)).thenThrow(new BadRequestException(exceptionMessage));
 
         //then
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + tokenString))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + providedAccessToken))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof BadRequestException))
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
@@ -208,18 +226,23 @@ class BoardControllerTest {
     @DisplayName("getBoardDataById should return 404 when board does not exist")
     void getBoardDataByIdShouldThrowNotFoundWhenBoardDoesNotExist() throws Exception {
         //given
-        final String username = "someuser";
-        final String tokenString = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+        final String email = "test22@test.com";
+        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
                                    ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
         final String boardDataUrl = "/boards";
         final int boardId = 1;
         final String exceptionMessage = "Board is not found.";
 
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
         // when
-        when(boardService.getBoardDataById(boardId, username)).thenThrow(new NotFoundException(exceptionMessage));
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        when(boardService.getBoardDataById(boardId, email)).thenThrow(new NotFoundException(exceptionMessage));
 
         //then
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + tokenString))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException))
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
