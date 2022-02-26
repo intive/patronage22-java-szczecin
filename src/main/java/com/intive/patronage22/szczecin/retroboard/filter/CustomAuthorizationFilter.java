@@ -49,7 +49,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                 try {
                     final String token = authorizationHeader.substring("Bearer ".length());
 
-                    FirebaseToken firebaseToken = firebaseAuth.verifyIdToken(token);
+                    final FirebaseToken firebaseToken = firebaseAuth.verifyIdToken(token);
 
                     final var authenticationToken =
                             new UsernamePasswordAuthenticationToken(
