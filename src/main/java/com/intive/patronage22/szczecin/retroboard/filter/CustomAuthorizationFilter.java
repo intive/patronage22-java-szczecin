@@ -1,15 +1,11 @@
 package com.intive.patronage22.szczecin.retroboard.filter;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -20,9 +16,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
@@ -34,9 +29,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
-
-    @Value("${retroboard.jwt.secret}")
-    private String jwtSecret;
+    private final FirebaseAuth firebaseAuth;
 
     @SuppressWarnings("NullableProblems")
     @Override
@@ -51,22 +44,19 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 try {
                     final String token = authorizationHeader.substring("Bearer ".length());
-                    final DecodedJWT decodedJwt = decodeJwt(token);
 
-                    final String username = decodedJwt.getSubject();
+                    final FirebaseToken firebaseToken = firebaseAuth.verifyIdToken(token);
 
-                    final List<SimpleGrantedAuthority> authorities = decodedJwt.getClaim("roles")
-                            .asList(String.class)
-                            .stream()
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
-
-                    final UsernamePasswordAuthenticationToken authenticationToken =
-                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+                    final var authenticationToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    firebaseToken.getEmail(),
+                                    null,
+                                    new HashSet<>());
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
                     filterChain.doFilter(request, response);
+
                 } catch (final Exception exception) {
                     log.error("Error logging in {}", exception.getMessage());
 
@@ -81,11 +71,5 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
             }
         }
-    }
-
-    private DecodedJWT decodeJwt(final String token) {
-        final Algorithm algorithm = Algorithm.HMAC256(jwtSecret.getBytes());
-        final JWTVerifier verifier = JWT.require(algorithm).build();
-        return verifier.verify(token);
     }
 }
