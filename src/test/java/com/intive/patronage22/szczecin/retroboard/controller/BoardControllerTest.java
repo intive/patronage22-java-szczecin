@@ -170,7 +170,7 @@ class BoardControllerTest {
 
         //then
         this.mockMvc.perform(get(boardDataUrl + "/" + boardId)
-                        .header("Authorization", "Bearer " + providedAccessToken))
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(2))).andExpect(result -> assertTrue(
                         result.getResponse().getContentAsString().contains(boardDataDto.getBoard().getId().toString())))
@@ -211,7 +211,7 @@ class BoardControllerTest {
         when(boardService.getBoardDataById(boardId, email)).thenThrow(new BadRequestException(exceptionMessage));
 
         //then
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + providedAccessToken))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof BadRequestException))
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
@@ -290,7 +290,7 @@ class BoardControllerTest {
     void patchBoardShouldReturnNotFoundWhenBoardDoesNotExist() throws Exception {
         // given
         final var boardName = "My first board.";
-        final var url = "/boards/1?userId=";
+        final var url = "/api/v1/boards/1?userId=";
         final var maximumNumberOfVotes = 1;
         when(boardService.patchBoard(eq(1), any(BoardPatchDto.class), anyString()))
                 .thenThrow(new NotFoundException("Board not found!"));
@@ -300,7 +300,7 @@ class BoardControllerTest {
                         .param("userId", "")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"" + boardName + "\"," +
-                                "\"maximumNumberOfVotes\":\"" + maximumNumberOfVotes + "\" }")
+                                 "\"maximumNumberOfVotes\":\"" + maximumNumberOfVotes + "\" }")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -317,7 +317,7 @@ class BoardControllerTest {
                 .maximumNumberOfVotes(maximumNumberOfVotes)
                 .build();
 
-        final var url = "/boards/1?userId=1";
+        final var url = "/api/v1/boards/1?userId=1";
         when(boardService.patchBoard(eq(1), any(BoardPatchDto.class), anyString()))
                 .thenReturn(boardDto);
 
