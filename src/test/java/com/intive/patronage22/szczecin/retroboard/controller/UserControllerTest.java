@@ -1,6 +1,8 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,7 +40,9 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
@@ -63,6 +68,9 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private FirebaseAuth firebaseAuth;
 
     @MockBean
     private AuthenticationManager authenticationManager;
@@ -388,14 +396,21 @@ class UserControllerTest {
     void privateShouldReturnOkWhenUserAuthenticated() throws Exception {
         // given
         final String url = "/private";
+        final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +
                 "eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9na" +
                 "W4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
 
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
         // then
         mockMvc
-                .perform(get(url).header("Authorization", "Bearer " + providedAccessToken))
-                .andExpect(jsonPath("$.name").value("someuser"))
+                .perform(get(url).header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(jsonPath("$.name").value("test22@test.com"))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
     }

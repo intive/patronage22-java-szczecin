@@ -31,14 +31,20 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardDataDto getBoardDataById(final Integer boardId, final String name) {
-        final User user =
-                userRepository.findUserByName(name).orElseThrow(() -> new BadRequestException("User not found"));
-        boardRepository.findById(boardId).orElseThrow(() -> new NotFoundException("Board not found"));
+        final User user = userRepository.findUserByName(name)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        boardRepository.findById(boardId)
+                .orElseThrow(() -> new NotFoundException("Board not found"));
+
         final Board board = boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)
                 .orElseThrow(() -> new BadRequestException("User doesn't have permissions to view board data"));
+
         final List<BoardCard> boardCards = boardCardsRepository.findAllByBoardId(board.getId());
         final List<BoardCardDto> boardCardDataDtos = new ArrayList<>();
+
         boardCards.forEach(boardCard -> boardCardDataDtos.add(BoardCardDto.createFrom(boardCard)));
+
         return BoardDataDto.createFrom(BoardDto.fromModel(board), boardCardDataDtos);
     }
 

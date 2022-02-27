@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface BoardRepository extends CrudRepository<Board, Integer> {
 
-    @Query(value = "SELECT b FROM Board b WHERE b.id=:id AND (b.creator=:user OR :user IN (b.users))")
+    @Query(value = "SELECT b FROM Board b WHERE b.id=:id AND (b.creator=:user OR :user IN elements(b.users))")
     Optional<Board> findBoardByIdAndCreatorOrAssignedUser(@Param("id") final Integer id,
                                                           @Param("user") final User user);
 
