@@ -17,6 +17,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -47,6 +48,9 @@ class BoardControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
+    @Value("${retroboard.api-version}")
+    private String apiVersion;
+
     @MockBean
     private BoardService boardService;
 
@@ -56,7 +60,7 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnOkWhenUserExist() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = apiVersion + "/boards";
         final String uid = "uid101";
 
         final List<BoardDto> boardList = List.of(
@@ -78,7 +82,7 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnBadRequestWhenUserDoesNotExist() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = apiVersion + "/boards";
         final String uid = "uid101";
 
         // when
@@ -93,7 +97,7 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnBadRequestWhenNoUserGiven() throws Exception {
         // given
-        final String url = "/boards?userId=";
+        final String url = apiVersion + "/boards?userId=";
 
         // when
         when(boardService.getUserBoards(anyString())).thenThrow(BadRequestException.class);
@@ -107,7 +111,7 @@ class BoardControllerTest {
     @Test
     void createBoardShouldReturnCreatedWhenUserExistsAndBoardNameIsValid() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = apiVersion + "/boards";
         final String uid = "uid101";
         final String boardName = "My first board.";
 
@@ -133,7 +137,7 @@ class BoardControllerTest {
     @Test
     void createBoardShouldReturnNotFoundWhenUserNotExist() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = apiVersion + "/boards";
         final String uid = "uid101";
         final String boardName = "My first board.";
 
@@ -155,7 +159,7 @@ class BoardControllerTest {
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
                                    ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/boards";
+        final String boardDataUrl = apiVersion + "/boards";
         final int boardId = 1;
 
         final BoardDto boardDto = new BoardDto(1, EnumStateDto.CREATED, "test1");
@@ -203,7 +207,7 @@ class BoardControllerTest {
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
                                    ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/boards";
+        final String boardDataUrl = apiVersion + "/boards";
         final int boardId = 1;
         final String exceptionMessage = "User doesn't have permissions to view board data.";
 
@@ -229,7 +233,7 @@ class BoardControllerTest {
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
                                    ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/boards";
+        final String boardDataUrl = apiVersion + "/boards";
         final int boardId = 1;
         final String exceptionMessage = "Board is not found.";
 
@@ -253,7 +257,7 @@ class BoardControllerTest {
             "01234567890123456789012345678901234567890123456789012345678912345"})
     void createNewBoardShouldReturnBadRequestWhenBoardNameIsNotValid(final String boardName) throws Exception {
         // given
-        final String url = "/boards";
+        final String url = apiVersion + "/boards";
         final String uid = "uid101";
 
         // then
@@ -273,7 +277,7 @@ class BoardControllerTest {
     @Test
     void createNewBoardShouldReturnBadRequestWhenBoardNameIsNull() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = apiVersion + "/boards";
         final String uid = "uid101";
         final String boardName = null;
 

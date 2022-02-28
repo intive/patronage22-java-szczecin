@@ -35,9 +35,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Value("${retroboard.jwt.secret}")
     private String jwtSecret;
+    @Value("${retroboard.api-version}")
+    private String apiVersion;
 
     @Override
-    protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
+    protected void configure(final AuthenticationManagerBuilder auth){
         auth.authenticationProvider(authenticationProvider);
     }
 
@@ -45,10 +47,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.authorizeRequests().antMatchers("/api/v1/register", "/api/v1/boards/**", "/swagger-ui/**", "/v3/api-docs/**",
-                "/h2-console/**", "/error", "/actuator/health").permitAll();
+        http.authorizeRequests().antMatchers(apiVersion + "/register",
+                apiVersion + "/boards/**", "/swagger-ui/**", "/v3/api-docs/**",
+                "/error", "/actuator/health").permitAll();
         http.authorizeRequests().antMatchers("/private").authenticated();
-
         http.addFilter(new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret));
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
