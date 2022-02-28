@@ -8,17 +8,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-
-import javax.validation.Valid;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import javax.validation.Valid;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -60,5 +52,17 @@ public class BoardController {
     public BoardDto createBoard(@RequestParam(name = "userId") final String uid,
                                 @RequestBody @Valid final BoardDto boardDto) {
         return boardService.createBoard(boardDto.getName(), uid);
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(OK)
+    @Operation(summary = "Delete retro board for given id.",
+            responses = {@ApiResponse(responseCode = "200", description = "Board deleted for given user"),
+                    @ApiResponse(responseCode = "400", description = "User is not the board owner"),
+                    @ApiResponse(responseCode = "404", description = "Board not found")})
+    public void deleteBoard(@RequestParam(name = "userId") final String uid,
+                            @PathVariable(name = "id") final int id){
+
+        boardService.delete(id, uid);
     }
 }
