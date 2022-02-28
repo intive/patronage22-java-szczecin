@@ -30,17 +30,6 @@ public class BoardService {
     private final BoardCardsRepository boardCardsRepository;
 
     @Transactional(readOnly = true)
-    public List<BoardDto> getUserBoards(final String uid) {
-        if (uid == null || uid.isBlank()) {
-            throw new BadRequestException("Invalid request - no uid given!");
-        }
-
-        final User user = userRepository.findById(uid).orElseThrow(() -> new BadRequestException("No such user!"));
-
-        return user.getUserBoards().stream().map(BoardDto::fromModel).collect(Collectors.toList());
-    }
-
-    @Transactional(readOnly = true)
     public BoardDataDto getBoardDataById(final Integer boardId, final String name) {
         final User user = userRepository.findUserByName(name)
                 .orElseThrow(() -> new BadRequestException("User not found"));
@@ -72,4 +61,27 @@ public class BoardService {
         return BoardDto.fromModel(boardRepository.save(newBoard));
     }
 
+    @Transactional(readOnly = true)
+    public List<BoardDto> getUserBoards(final String uid) {
+        if (uid == null || uid.isBlank()) {
+            throw new BadRequestException("Invalid request - no uid given!");
+        }
+
+        final User user = userRepository.findById(uid).orElseThrow(() -> new BadRequestException("No such user!"));
+
+        return user.getUserBoards().stream().map(BoardDto::fromModel).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void delete(final int boardId, final String uid) {
+
+        final Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new NotFoundException("Board not found"));
+
+        if(!(uid.equals(board.getCreator().getUid()))){
+            throw new BadRequestException("User is not owner");
+        }else{
+            boardRepository.deleteById(boardId);
+        }
+    }
 }
