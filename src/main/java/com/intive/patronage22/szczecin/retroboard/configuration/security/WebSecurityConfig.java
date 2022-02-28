@@ -39,7 +39,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private String apiVersion;
 
     @Override
-    protected void configure(final AuthenticationManagerBuilder auth){
+    protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider);
     }
 
@@ -48,10 +48,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
         http.authorizeRequests().antMatchers(apiVersion + "/register",
-                apiVersion + "/boards/**", "/swagger-ui/**", "/v3/api-docs/**",
+                apiVersion + "/boards/**", apiVersion + "/login", "/swagger-ui/**", "/v3/api-docs/**",
                 "/error", "/actuator/health").permitAll();
         http.authorizeRequests().antMatchers("/private").authenticated();
-        http.addFilter(new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret));
+
+        http.addFilter(getCustomAuthenticationFilter());
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
         http.headers().frameOptions().disable();
@@ -70,5 +71,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         objectMapper.writeValue(response.getOutputStream(), tokens);
 
         log.error("error while logging in. Error code: " + response.getStatus());
+    }
+
+    private CustomAuthenticationFilter getCustomAuthenticationFilter() throws Exception {
+        final var filter = new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret);
+        filter.setFilterProcessesUrl(apiVersion + "/login");
+        return filter;
     }
 }
