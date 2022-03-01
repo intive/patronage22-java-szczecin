@@ -2,9 +2,11 @@ package com.intive.patronage22.szczecin.retroboard.controller.advice;
 
 import com.google.firebase.auth.FirebaseAuthException;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
+import com.intive.patronage22.szczecin.retroboard.exception.InvalidArgumentException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.ConstraintViolationException;
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -54,5 +57,11 @@ public class ExceptionHandlerService {
     @ExceptionHandler(FirebaseAuthException.class)
     public String firebaseAuthHandler(final FirebaseAuthException exception) {
         return exception.getMessage();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(InvalidArgumentException.class)
+    public List<FieldError> invalidArgumentHandler(final InvalidArgumentException exception) {
+        return exception.getFieldErrors();
     }
 }

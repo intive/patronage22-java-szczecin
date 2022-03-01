@@ -1,9 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.*;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
@@ -13,6 +10,7 @@ import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
+import com.intive.patronage22.szczecin.retroboard.validation.BoardValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -43,6 +41,9 @@ class BoardServiceTest {
 
     @MockBean
     private BoardRepository boardRepository;
+
+    @MockBean
+    private BoardValidator boardValidator;
 
     @MockBean
     BoardCardsRepository boardCardsRepository;
@@ -154,13 +155,13 @@ class BoardServiceTest {
     void getBoardDataByIdShouldThrowBadRequestWhenUserDoesNotExist() {
         //given
         final int boardId = 1;
-        final String email = "testemail@example.com";
+        final String username = "testemail@example.com";
 
         //when
-        when(userRepository.findUserByEmail(email)).thenReturn(Optional.empty());
+        when(userRepository.findUserByName(username)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(BadRequestException.class, () -> boardService.getBoardDataById(boardId, email));
+        assertThrows(BadRequestException.class, () -> boardService.getBoardDataById(boardId, username));
     }
 
     @Test
@@ -302,5 +303,87 @@ class BoardServiceTest {
         assertEquals(uidOwner, board.getCreator().getUid());
         assertThrows(BadRequestException.class,
                 () -> boardService.delete(boardId, uid));
+    }
+
+    @Test
+    void patchBoardShouldReturnNotFoundWhenBoardDoesNotExist() {
+        // given
+        final var uid = "uid101";
+        final var id = 500;
+        final var boardPatchDto = new BoardPatchDto("testboard", 1500);
+        when(boardRepository.findById(id)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThrows(NotFoundException.class,
+                () -> boardService.patchBoard(id, boardPatchDto, uid));
+
+
+    }
+
+    @Test
+    void patchBoardShouldReturnUserIsNotAnOwner() {
+        // given
+        final var uid = "uid101";
+        final var user = new User(uid, "Josef", Set.of());
+        final var id = 10;
+        final var board = buildBoard(user);
+        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        final var boardPatchDto = new BoardPatchDto("testboard", 1500);
+
+
+        // when & then
+        assertThrows(BadRequestException.class,
+                () -> boardService.patchBoard(id, boardPatchDto, "uid102"));
+    }
+
+    @Test
+    void patchBoardShouldUpdateNameAndNumberOfVotesFields() {
+        // given
+        final var uid = "uid101";
+        final var boardName = "My first board.";
+        final var user = new User(uid, "Josef", Set.of());
+        final var board = buildBoard(user);
+        final var id = 10;
+        final var boardPatchDto = new BoardPatchDto(boardName, 1500);
+        when(boardRepository.save(any(Board.class))).thenReturn(board);
+        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+
+        // when
+        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, "uid101");
+
+        // then
+        assertEquals(BoardDto.fromModel(board), boardDtoResult);
+        verify(boardRepository).findById(id);
+        verify(boardRepository).save(any(Board.class));
+    }
+
+    @Test
+    void patchBoardShouldUpdateNumberOfVotesWithoutProvidingName() {
+        // given
+        final var uid = "uid101";
+        final var user = new User(uid, "Josef", Set.of());
+        final var board = buildBoard(user);
+        final var id = 10;
+        final var boardPatchDto = new BoardPatchDto(null, 1500);
+        when(boardRepository.save(any(Board.class))).thenReturn(board);
+        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+
+        // when
+        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, "uid101");
+
+        // then
+        assertEquals(BoardDto.fromModel(board), boardDtoResult);
+        verify(boardRepository).findById(id);
+        verify(boardRepository).save(any(Board.class));
+    }
+
+    private Board buildBoard(final User user) {
+        return Board.builder()
+                .id(10)
+                .name("My first board.")
+                .state(EnumStateDto.CREATED)
+                .creator(user)
+                .users(Set.of())
+                .build();
     }
 }

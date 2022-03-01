@@ -1,9 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.*;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
@@ -12,14 +9,18 @@ import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
+import com.intive.patronage22.szczecin.retroboard.validation.BoardValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.nonNull;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final BoardCardsRepository boardCardsRepository;
+    private final BoardValidator boardValidator;
 
     @Transactional(readOnly = true)
     public BoardDataDto getBoardDataById(final Integer boardId, final String email) {
@@ -56,9 +58,36 @@ public class BoardService {
                 .name(boardName)
                 .state(EnumStateDto.CREATED)
                 .creator(user)
+                .maximumNumberOfVotes(0)
                 .users(Set.of()).build();
 
         return BoardDto.fromModel(boardRepository.save(newBoard));
+    }
+
+    @Transactional
+    public BoardDto patchBoard(final Integer id, final BoardPatchDto boardPatchDto, final String uid) {
+        boardValidator.validateBoardParameters(boardPatchDto);
+        final Board boardReturn;
+        final Optional<Board> board = boardRepository.findById(id);
+
+        board.map(b -> Optional.ofNullable(b.getCreator()).filter(creator -> creator.getUid().equals(uid))
+                .orElseThrow(() -> new BadRequestException("Not a board owner!")));
+
+        boardReturn = board.map(b -> {
+            if (nonNull(boardPatchDto.getName()) && !boardPatchDto.getName().equals(b.getName())) {
+                b.setName(boardPatchDto.getName());
+
+            }
+
+            if (nonNull(boardPatchDto.getMaximumNumberOfVotes()) && !boardPatchDto
+                    .getMaximumNumberOfVotes().equals(b.getMaximumNumberOfVotes())) {
+                b.setMaximumNumberOfVotes(boardPatchDto.getMaximumNumberOfVotes());
+            }
+            boardRepository.save(b);
+            return b;
+        }).orElseThrow(() -> new NotFoundException("Board not found!"));
+
+        return BoardDto.fromModel(boardReturn);
     }
 
     @Transactional(readOnly = true)
