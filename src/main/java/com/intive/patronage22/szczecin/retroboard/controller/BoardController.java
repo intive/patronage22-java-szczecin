@@ -19,7 +19,7 @@ import static org.springframework.http.HttpStatus.OK;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(value = "${retroboard.api-version}/boards", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/boards", produces = MediaType.APPLICATION_JSON_VALUE)
 public class BoardController {
 
     private final BoardService boardService;

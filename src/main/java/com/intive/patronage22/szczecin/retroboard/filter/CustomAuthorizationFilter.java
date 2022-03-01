@@ -5,7 +5,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -32,16 +31,12 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
     private final ObjectMapper objectMapper;
     private final FirebaseAuth firebaseAuth;
 
-    @Value("${retroboard.api-version}")
-    private String apiVersion;
-
     @SuppressWarnings("NullableProblems")
     @Override
     protected void doFilterInternal(final HttpServletRequest request, final HttpServletResponse response,
                                     final FilterChain filterChain) throws ServletException, IOException {
 
-        if (request.getServletPath().equals(apiVersion + "/login") ||
-            request.getServletPath().equals(apiVersion + "/register")) {
+        if (request.getServletPath().equals("/api/v1/login") || request.getServletPath().equals("/api/v1/register")) {
             filterChain.doFilter(request, response);
         } else {
             final String authorizationHeader = request.getHeader(AUTHORIZATION);

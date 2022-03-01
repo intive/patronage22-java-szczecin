@@ -30,7 +30,6 @@ management:
         include: health
 
 retroboard:
-  api-version: /api/v1
   jwt:
     secret: secret
 

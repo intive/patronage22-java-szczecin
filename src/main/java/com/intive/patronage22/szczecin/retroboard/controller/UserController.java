@@ -30,7 +30,7 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Validated
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping(value = "${retroboard.api-version}", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1", produces = MediaType.APPLICATION_JSON_VALUE)
 public class UserController {
 
     private final UserService userService;

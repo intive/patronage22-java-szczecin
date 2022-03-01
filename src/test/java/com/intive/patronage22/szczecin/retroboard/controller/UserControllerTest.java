@@ -17,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -60,9 +59,6 @@ class UserControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Value("${retroboard.api-version}")
-    private String apiVersion;
-
     @MockBean
     private UserService userService;
 
@@ -85,7 +81,7 @@ class UserControllerTest {
     @Test
     void registerShouldReturnCreatedWhenUserInputsAreValid() throws Exception {
         // given
-        final String url = apiVersion + "/register";
+        final String url = "/api/v1/register";
         final String email = "someuser@test.com";
         final String displayName = "someuser";
         final String password = "123456";
@@ -118,7 +114,7 @@ class UserControllerTest {
     @Test
     void registerShouldReturnConflictWhenUserAlreadyExists() throws Exception {
         // given
-        final String url = apiVersion + "/register";
+        final String url = "/api/v1/register";
         final String email = "someuser@test.com";
         final String displayName = "someuser";
         final String password = "123456";
@@ -174,7 +170,7 @@ class UserControllerTest {
             throws Exception {
 
         // given
-        final String url = apiVersion + "/register";
+        final String url = "/api/v1/register";
 
         // then
         final MvcResult result = mockMvc
@@ -200,7 +196,7 @@ class UserControllerTest {
     @Test
     void loginShouldReturnAccessTokenWhenUserCredentialsAreCorrect() throws Exception {
         // given
-        final String url = apiVersion + "/login";
+        final String url = "/api/v1/login";
         final String email = "someuser@test.com";
         final String password = "1234";
         final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, password);
@@ -231,7 +227,7 @@ class UserControllerTest {
     @Test
     void loginShouldReturnUnauthorizedWhenUserNotFound() throws Exception {
         // given
-        final String url = apiVersion + "/login";
+        final String url = "/api/v1/login";
         final String email = "someuser@test.com";
         final String password = "1234";
         final UsernameNotFoundException expectedException = new UsernameNotFoundException(email);
@@ -269,7 +265,7 @@ class UserControllerTest {
     @Test
     void loginShouldReturnBadRequestWhenEmailIsMissing() throws Exception {
         // given
-        final String url = apiVersion + "/login";
+        final String url = "/api/v1/login";
         final String email = null;
         final String password = "1234";
         final MissingFieldException expectedException = new MissingFieldException("Missing email.");
@@ -306,7 +302,7 @@ class UserControllerTest {
     @Test
     void loginShouldReturnUnauthorizedWhenPasswordIsInvalid() throws Exception {
         // given
-        final String url = apiVersion + "/login";
+        final String url = "/api/v1/login";
         final String email = "someuser@test.com";
         final String password = "1234";
         final BadCredentialsException expectedException = new BadCredentialsException("Invalid password.");
@@ -342,7 +338,7 @@ class UserControllerTest {
     @Test
     void loginShouldReturnBadRequestWhenPasswordIsMissing() throws Exception {
         // given
-        final String url = apiVersion + "/login";
+        final String url = "/api/v1/login";
         final String email = "someuser@test.com";
         final String password = null;
         final MissingFieldException expectedException = new MissingFieldException("Missing password.");
@@ -379,7 +375,7 @@ class UserControllerTest {
     @Test
     void privateShouldReturnForbiddenWhenUserNotLogged_in() throws Exception {
         // given
-        final String url = apiVersion + "/private";
+        final String url = "/api/v1/private";
 
         // then
         mockMvc
@@ -392,7 +388,7 @@ class UserControllerTest {
     @Test
     void privateShouldReturnOkWhenUserAuthenticated() throws Exception {
         // given
-        final String url = apiVersion + "/private";
+        final String url = "/api/v1/private";
 
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +

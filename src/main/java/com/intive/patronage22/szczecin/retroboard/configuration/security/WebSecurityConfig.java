@@ -35,8 +35,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Value("${retroboard.jwt.secret}")
     private String jwtSecret;
-    @Value("${retroboard.api-version}")
-    private String apiVersion;
 
     @Override
     protected void configure(final AuthenticationManagerBuilder auth) throws Exception {
@@ -47,9 +45,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.authorizeRequests().antMatchers(apiVersion + "/register",
-                apiVersion + "/boards/**", apiVersion + "/login", "/swagger-ui/**", "/v3/api-docs/**",
-                "/error", "/actuator/health").permitAll();
+        http.authorizeRequests().antMatchers("/api/v1/register", "/api/v1/boards/**", "/api/v1/login",
+                "/swagger-ui/**", "/v3/api-docs/**", "/error", "/actuator/health").permitAll();
         http.authorizeRequests().antMatchers("/private").authenticated();
 
         http.addFilter(getCustomAuthenticationFilter());
@@ -75,7 +72,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private CustomAuthenticationFilter getCustomAuthenticationFilter() throws Exception {
         final var filter = new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret);
-        filter.setFilterProcessesUrl(apiVersion + "/login");
+        filter.setFilterProcessesUrl("/api/v1/login");
         return filter;
     }
 }
