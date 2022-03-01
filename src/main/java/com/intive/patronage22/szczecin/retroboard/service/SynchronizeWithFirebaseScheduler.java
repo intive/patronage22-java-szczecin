@@ -27,7 +27,7 @@ public class SynchronizeWithFirebaseScheduler {
 
     @Scheduled(fixedRate = 900000, initialDelay = 60000)
     public void synchronizeUsers() throws FirebaseAuthException {
-        log.info("*** starting the job ***");
+        log.info("starting the job");
 
         final Iterable<ExportedUserRecord> pagination = firebaseAuth
                 .listUsers(null, 20)
@@ -58,7 +58,7 @@ public class SynchronizeWithFirebaseScheduler {
 
         final List<User> createdUsers = (List<User>) userRepository.saveAll(firebaseUsersToCreate);
 
-        log.info("Created users count: {}", createdUsers.size());
-        log.info("*** finishing the job ***");
+        log.info("created users count: {}", createdUsers.size());
+        log.info("finishing the job");
     }
 }

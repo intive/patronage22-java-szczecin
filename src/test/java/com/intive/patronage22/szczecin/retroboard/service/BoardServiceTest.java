@@ -271,9 +271,9 @@ class BoardServiceTest {
         final String uid = "1234";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, "username", Set.of());
-        final User user = new User(uid, "username", Set.of());
-        final Board board = new Board(boardId,"board", EnumStateDto.CREATED, userOwner, Set.of(userOwner),Set.of(boardCard));
+        final User userOwner = new User(uidOwner, "username@test.pl", "displayName", Set.of());
+        final User user = new User(uid, "username@test.pl", "displayName", Set.of());
+        final Board board = new Board(boardId, "board", EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
 
         //when
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
@@ -281,19 +281,19 @@ class BoardServiceTest {
 
         //then
         assertThrows(BadRequestException.class,
-                () -> boardService.delete(boardId,uid));
+                () -> boardService.delete(boardId, uid));
     }
 
     @Test
-    void deleteBoardShouldReturnBadRequestWhenBoardFoundButUserIsNotOwner(){
+    void deleteBoardShouldReturnBadRequestWhenBoardFoundButUserIsNotOwner() {
 
         final String uidOwner = "123";
         final String uid = "1234";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, "username", Set.of());
-        final User user = new User(uid, "username", Set.of());
-        final Board board = new Board(boardId,"board", EnumStateDto.CREATED, userOwner, Set.of(userOwner),Set.of(boardCard));
+        final User userOwner = new User(uidOwner, "username@test.pl", "displayName", Set.of());
+        final User user = new User(uid, "username@test.pl", "displayName", Set.of());
+        final Board board = new Board(boardId, "board", EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
 
         //when
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
@@ -301,6 +301,6 @@ class BoardServiceTest {
         //then
         assertEquals(uidOwner, board.getCreator().getUid());
         assertThrows(BadRequestException.class,
-                () -> boardService.delete(boardId,uid));
+                () -> boardService.delete(boardId, uid));
     }
 }
