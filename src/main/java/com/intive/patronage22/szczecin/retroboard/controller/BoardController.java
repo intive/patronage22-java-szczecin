@@ -2,15 +2,19 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
+
 import javax.validation.Valid;
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -64,5 +68,21 @@ public class BoardController {
                             @PathVariable(name = "id") final int id){
 
         boardService.delete(id, uid);
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update board name and number of votes")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad request data"),
+            @ApiResponse(responseCode = "404", description = "User not found")
+    })
+
+    public ResponseEntity<BoardDto> update(
+            @PathVariable("id") final Integer id,
+            @RequestParam(name = "userId") final String uid,
+            @RequestBody final BoardPatchDto boardPatchDto) {
+        final BoardDto boardDto = boardService.patchBoard(id, boardPatchDto, uid);
+        return ResponseEntity.status(OK).body(boardDto);
     }
 }

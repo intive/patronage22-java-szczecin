@@ -1,26 +1,9 @@
 package com.intive.patronage22.szczecin.retroboard.model;
 
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,6 +22,9 @@ public class Board implements Serializable {
 
     @Column(name = "name", length = 32, nullable = false)
     private String name;
+
+    @Column(name = "maximum_number_of_votes", length = 16)
+    private Integer maximumNumberOfVotes;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "state", nullable = false)
