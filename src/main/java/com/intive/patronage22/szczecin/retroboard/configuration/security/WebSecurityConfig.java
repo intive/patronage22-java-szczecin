@@ -29,6 +29,9 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @Slf4j
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    public static final String URL_LOGIN = "/api/v1/login";
+    public static final String URL_REGISTER = "/api/v1/register";
+
     private final CustomAuthorizationFilter customAuthorizationFilter;
     private final ObjectMapper objectMapper;
     private final FirebaseAuthenticationProvider authenticationProvider;
@@ -45,7 +48,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.authorizeRequests().antMatchers("/api/v1/register", "/api/v1/boards/**", "/api/v1/login",
+        http.authorizeRequests().antMatchers(URL_REGISTER, "/api/v1/boards/**", URL_LOGIN,
                 "/swagger-ui/**", "/v3/api-docs/**", "/error", "/actuator/health").permitAll();
         http.authorizeRequests().antMatchers("/private").authenticated();
 
@@ -72,7 +75,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private CustomAuthenticationFilter getCustomAuthenticationFilter() throws Exception {
         final var filter = new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret);
-        filter.setFilterProcessesUrl("/api/v1/login");
+        filter.setFilterProcessesUrl(URL_LOGIN);
         return filter;
     }
 }
