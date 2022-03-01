@@ -30,7 +30,7 @@ public class User implements Serializable {
     @Column(name = "email", length = 64)
     private String email;
 
-    @Column(name = "displayName", length = 64)
+    @Column(name = "display_name", length = 64)
     private String displayName;
 
     @ManyToMany(mappedBy = "users")
