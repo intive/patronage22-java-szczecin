@@ -30,8 +30,8 @@ public class BoardService {
     private final BoardCardsRepository boardCardsRepository;
 
     @Transactional(readOnly = true)
-    public BoardDataDto getBoardDataById(final Integer boardId, final String name) {
-        final User user = userRepository.findUserByName(name)
+    public BoardDataDto getBoardDataById(final Integer boardId, final String email) {
+        final User user = userRepository.findUserByEmail(email)
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
         boardRepository.findById(boardId)
