@@ -32,7 +32,6 @@ public class BoardValidator {
 
     private List<FieldError> getFieldErrors(final BoardPatchDto boardPatchDto) {
 
-
         return Optional.ofNullable(boardPatchDto)
                 .map(boardPatch -> Stream
                         .of(checkName(boardPatch.getName()),
@@ -60,7 +59,5 @@ public class BoardValidator {
         } else {
             return null;
         }
-
     }
-
 }
