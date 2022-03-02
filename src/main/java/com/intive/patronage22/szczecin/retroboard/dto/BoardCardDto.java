@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,7 +30,7 @@ public class BoardCardDto {
                 .id(boardCard.getId())
                 .cardText(boardCard.getText())
                 .columnName(boardCard.getColumn())
-                .boardCardCreator(boardCard.getCreator().getName())
+                .boardCardCreator(boardCard.getCreator().getEmail())
                 .actionTexts(
                         boardCard.getBoardCardActions().stream().map(BoardCardAction::getText)
                                 .collect(Collectors.toList())).build();
