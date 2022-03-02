@@ -54,7 +54,7 @@ class BoardServiceTest {
     void getUserBoardsShouldReturnOk(){
         //given
         final String uid = "1234";
-        final User user = new User(uid, "John", Set.of());
+        final User user = new User(uid, "John@test.pl", "john14", Set.of());
         final Board board = Board.builder()
                 .id(1)
                 .name("board name")
@@ -115,7 +115,7 @@ class BoardServiceTest {
         final String uid = "uid101";
         final String boardName = "My first board.";
 
-        final User user = new User(uid, "Josef", Set.of());
+        final User user = new User(uid, "Josef@test.pl", "josef14", Set.of());
 
         final Board board = Board.builder()
                 .id(10)
@@ -154,13 +154,13 @@ class BoardServiceTest {
     void getBoardDataByIdShouldThrowBadRequestWhenUserDoesNotExist() {
         //given
         final int boardId = 1;
-        final String username = "testemail@example.com";
+        final String email = "testemail@example.com";
 
         //when
-        when(userRepository.findUserByName(username)).thenReturn(Optional.empty());
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(BadRequestException.class, () -> boardService.getBoardDataById(boardId, username));
+        assertThrows(BadRequestException.class, () -> boardService.getBoardDataById(boardId, email));
     }
 
     @Test
@@ -168,15 +168,16 @@ class BoardServiceTest {
     void getBoardDataByIdShouldThrowNotFoundWhenBoardDoesNotExist() {
         //given
         final int boardId = 1;
-        final String username = "testemail@example.com";
-        final User user = new User("123", username, Set.of());
+        final String email = "testemail@example.com";
+        final String displayName = "test";
+        final User user = new User("123", email, displayName, Set.of());
 
         //when
-        when(userRepository.findUserByName(username)).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(boardId)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(NotFoundException.class, () -> boardService.getBoardDataById(boardId, username));
+        assertThrows(NotFoundException.class, () -> boardService.getBoardDataById(boardId, email));
     }
 
     @Test
@@ -184,9 +185,10 @@ class BoardServiceTest {
     void getBoardDataByIdShouldThrowBadRequestWhenUserDoesntHavePermissions() {
         //given
         final int boardId = 1;
-        final String username = "testemail@example.com";
-        final User user = new User("123", username, Set.of());
-        final User assignUser = new User("1234", "assignUser", Set.of());
+        final String email = "testemail@example.com";
+        final String displayName = "test12";
+        final User user = new User("123", email, displayName, Set.of());
+        final User assignUser = new User("1234", "assignUser@test.pl", "test1", Set.of());
         final Board board = Board.builder()
                 .id(1)
                 .name("board name")
@@ -196,12 +198,12 @@ class BoardServiceTest {
                 .boardCards(Set.of()).build();
 
         //when
-        when(userRepository.findUserByName(username)).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(BadRequestException.class, () -> boardService.getBoardDataById(boardId, username));
+        assertThrows(BadRequestException.class, () -> boardService.getBoardDataById(boardId, email));
     }
 
     @Test
@@ -209,9 +211,10 @@ class BoardServiceTest {
     void getBoardDataByIdShouldReturnOk() {
         //given
         final int boardId = 1;
-        final String username = "testemail@example.com";
-        final User user = new User("123", username, Set.of());
-        final User assignUser = new User("1234", "assignUser", Set.of());
+        final String email = "testemail@example.com";
+        final String displayName = "testDisplayName";
+        final User user = new User("123", email, displayName, Set.of());
+        final User assignUser = new User("1234", "assignUser", "test1", Set.of());
         final Board board = Board.builder()
                 .id(boardId)
                 .name("board name")
@@ -226,12 +229,12 @@ class BoardServiceTest {
         final List<BoardCard> boardCards = List.of(boardCard);
 
         //when
-        when(userRepository.findUserByName(username)).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.of(board));
         when(boardCardsRepository.findAllByBoardId(boardId)).thenReturn(boardCards);
 
-        final BoardDataDto boardDataDto = boardService.getBoardDataById(boardId, username);
+        final BoardDataDto boardDataDto = boardService.getBoardDataById(boardId, email);
 
         //then
         assertEquals(boardDataDto.getBoard().getId(), board.getId());
@@ -241,7 +244,7 @@ class BoardServiceTest {
         assertEquals(boardDataDto.getBoardCards().get(0).getCardText(), boardCards.get(0).getText());
         assertEquals(boardDataDto.getBoardCards().get(0).getColumnName(), boardCards.get(0).getColumn());
         assertEquals(boardDataDto.getBoardCards().get(0).getBoardCardCreator(),
-                boardCards.get(0).getCreator().getName());
+                boardCards.get(0).getCreator().getEmail());
         assertEquals(boardDataDto.getBoardCards().get(0).getActionTexts(),
                 List.of(boardCards.get(0).getBoardCardActions().get(0).getText()));
     }
@@ -268,9 +271,9 @@ class BoardServiceTest {
         final String uid = "1234";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, "username", Set.of());
-        final User user = new User(uid, "username", Set.of());
-        final Board board = new Board(boardId,"board", EnumStateDto.CREATED, userOwner, Set.of(userOwner),Set.of(boardCard));
+        final User userOwner = new User(uidOwner, "username@test.pl", "displayName", Set.of());
+        final User user = new User(uid, "username@test.pl", "displayName", Set.of());
+        final Board board = new Board(boardId, "board", EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
 
         //when
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
@@ -278,19 +281,19 @@ class BoardServiceTest {
 
         //then
         assertThrows(BadRequestException.class,
-                () -> boardService.delete(boardId,uid));
+                () -> boardService.delete(boardId, uid));
     }
 
     @Test
-    void deleteBoardShouldReturnBadRequestWhenBoardFoundButUserIsNotOwner(){
+    void deleteBoardShouldReturnBadRequestWhenBoardFoundButUserIsNotOwner() {
 
         final String uidOwner = "123";
         final String uid = "1234";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, "username", Set.of());
-        final User user = new User(uid, "username", Set.of());
-        final Board board = new Board(boardId,"board", EnumStateDto.CREATED, userOwner, Set.of(userOwner),Set.of(boardCard));
+        final User userOwner = new User(uidOwner, "username@test.pl", "displayName", Set.of());
+        final User user = new User(uid, "username@test.pl", "displayName", Set.of());
+        final Board board = new Board(boardId, "board", EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
 
         //when
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
@@ -298,6 +301,6 @@ class BoardServiceTest {
         //then
         assertEquals(uidOwner, board.getCreator().getUid());
         assertThrows(BadRequestException.class,
-                () -> boardService.delete(boardId,uid));
+                () -> boardService.delete(boardId, uid));
     }
 }
