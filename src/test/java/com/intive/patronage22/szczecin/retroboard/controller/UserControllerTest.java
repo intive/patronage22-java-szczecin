@@ -80,7 +80,6 @@ class UserControllerTest {
     @Test
     void registerShouldReturnCreatedWhenUserInputsAreValid() throws Exception {
         // given
-        final String url = "/api/v1/register";
         final String email = "someuser@test.com";
         final String displayName = "someuser";
         final String password = "123456";
@@ -113,7 +112,6 @@ class UserControllerTest {
     @Test
     void registerShouldReturnConflictWhenUserAlreadyExists() throws Exception {
         // given
-        final String url = "/api/v1/register";
         final String email = "someuser@test.com";
         final String displayName = "someuser";
         final String password = "123456";
