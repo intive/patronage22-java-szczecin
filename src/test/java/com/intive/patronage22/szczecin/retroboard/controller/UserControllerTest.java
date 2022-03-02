@@ -47,10 +47,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest({UserController.class, SecurityConfig.class})
@@ -373,7 +370,7 @@ class UserControllerTest {
     }
 
     @Test
-    void privateShouldReturnForbiddenWhenUserNotLogged_in() throws Exception {
+    void privateShouldReturnForbiddenWhenUserNotLoggedin() throws Exception {
         // given
         final String url = "/api/v1/private";
 
