@@ -37,6 +37,8 @@ import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
 import java.util.stream.Stream;
 
+import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.URL_LOGIN;
+import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.URL_REGISTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
@@ -55,12 +57,6 @@ class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Value("${retroboard.jwt.secret}")
-    private String jwtSecret;
 
     @MockBean
     private UserService userService;
@@ -84,7 +80,6 @@ class UserControllerTest {
     @Test
     void registerShouldReturnCreatedWhenUserInputsAreValid() throws Exception {
         // given
-        final String url = "/register";
         final String email = "someuser@test.com";
         final String displayName = "someuser";
         final String password = "123456";
@@ -103,7 +98,7 @@ class UserControllerTest {
 
         // then
         mockMvc
-                .perform(post(url)
+                .perform(post(URL_REGISTER)
                         .param("email", email)
                         .param("password", password)
                         .param("displayName", displayName)
@@ -117,7 +112,6 @@ class UserControllerTest {
     @Test
     void registerShouldReturnConflictWhenUserAlreadyExists() throws Exception {
         // given
-        final String url = "/register";
         final String email = "someuser@test.com";
         final String displayName = "someuser";
         final String password = "123456";
@@ -128,7 +122,7 @@ class UserControllerTest {
 
         // then
         final MvcResult result = mockMvc
-                .perform(post(url)
+                .perform(post(URL_REGISTER)
                         .param("email", email)
                         .param("password", password)
                         .param("displayName", displayName)
@@ -172,12 +166,9 @@ class UserControllerTest {
                                                                 final String password, final String expectedIssue)
             throws Exception {
 
-        // given
-        final String url = "/register";
-
         // then
         final MvcResult result = mockMvc
-                .perform(post(url)
+                .perform(post(URL_REGISTER)
                         .param("email", email)
                         .param("password", password)
                         .param("displayName", displayName)
@@ -199,7 +190,6 @@ class UserControllerTest {
     @Test
     void loginShouldReturnAccessTokenWhenUserCredentialsAreCorrect() throws Exception {
         // given
-        final String url = "/login";
         final String email = "someuser@test.com";
         final String password = "1234";
         final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, password);
@@ -219,18 +209,17 @@ class UserControllerTest {
 
         //then
         mockMvc
-                .perform(post(url)
+                .perform(post(URL_LOGIN)
                         .param("email", email)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isOk())
-                .andExpect(header().string("Authorization", "Bearer [ID_TOKEN]"));
+                .andExpect(header().string(AUTHORIZATION, "Bearer [ID_TOKEN]"));
     }
 
     @Test
     void loginShouldReturnUnauthorizedWhenUserNotFound() throws Exception {
         // given
-        final String url = "/login";
         final String email = "someuser@test.com";
         final String password = "1234";
         final UsernameNotFoundException expectedException = new UsernameNotFoundException(email);
@@ -256,7 +245,7 @@ class UserControllerTest {
 
         // then
         mockMvc
-                .perform(post(url)
+                .perform(post(URL_LOGIN)
                         .param("email", email)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
@@ -268,7 +257,6 @@ class UserControllerTest {
     @Test
     void loginShouldReturnBadRequestWhenEmailIsMissing() throws Exception {
         // given
-        final String url = "/login";
         final String email = null;
         final String password = "1234";
         final MissingFieldException expectedException = new MissingFieldException("Missing email.");
@@ -294,7 +282,7 @@ class UserControllerTest {
 
         // then
         mockMvc
-                .perform(post(url)
+                .perform(post(URL_LOGIN)
                         .param("email", email)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
@@ -305,7 +293,6 @@ class UserControllerTest {
     @Test
     void loginShouldReturnUnauthorizedWhenPasswordIsInvalid() throws Exception {
         // given
-        final String url = "/login";
         final String email = "someuser@test.com";
         final String password = "1234";
         final BadCredentialsException expectedException = new BadCredentialsException("Invalid password.");
@@ -330,7 +317,7 @@ class UserControllerTest {
 
         // then
         mockMvc
-                .perform(post(url)
+                .perform(post(URL_LOGIN)
                         .param("email", email)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
@@ -341,7 +328,6 @@ class UserControllerTest {
     @Test
     void loginShouldReturnBadRequestWhenPasswordIsMissing() throws Exception {
         // given
-        final String url = "/login";
         final String email = "someuser@test.com";
         final String password = null;
         final MissingFieldException expectedException = new MissingFieldException("Missing password.");
@@ -367,7 +353,7 @@ class UserControllerTest {
 
         // then
         mockMvc
-                .perform(post(url)
+                .perform(post(URL_LOGIN)
                         .param("email", email)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
@@ -378,7 +364,7 @@ class UserControllerTest {
     @Test
     void privateShouldReturnForbiddenWhenUserNotLoggedin() throws Exception {
         // given
-        final String url = "/private";
+        final String url = "/api/v1/private";
 
         // then
         mockMvc
@@ -391,7 +377,7 @@ class UserControllerTest {
     @Test
     void privateShouldReturnOkWhenUserAuthenticated() throws Exception {
         // given
-        final String url = "/private";
+        final String url = "/api/v1/private";
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +
                 "eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9na" +

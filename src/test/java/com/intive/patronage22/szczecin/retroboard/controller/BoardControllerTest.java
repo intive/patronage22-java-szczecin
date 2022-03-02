@@ -13,6 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -49,7 +50,7 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnOkWhenUserExist() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
 
         final List<BoardDto> dtoList = List.of(
@@ -71,7 +72,7 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnBadRequestWhenUserDoesNotExist() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
 
         // when
@@ -86,7 +87,7 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnBadRequestWhenNoUserGiven() throws Exception {
         // given
-        final String url = "/boards?userId=";
+        final String url = "/api/v1/boards?userId=";
 
         // when
         when(boardService.getUserBoards(anyString())).thenThrow(BadRequestException.class);
@@ -100,7 +101,7 @@ class BoardControllerTest {
     @Test
     void createBoardShouldReturnCreatedWhenUserExistsAndBoardNameIsValid() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
         final String boardName = "My first board.";
 
@@ -126,7 +127,7 @@ class BoardControllerTest {
     @Test
     void createBoardShouldReturnNotFoundWhenUserNotExist() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
         final String boardName = "My first board.";
 
@@ -147,9 +148,8 @@ class BoardControllerTest {
         //given
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYW" +
-                "xob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/boards";
+                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
+        final String boardDataUrl = "/api/v1/boards";
         final int boardId = 1;
 
         final BoardDto boardDto = new BoardDto(1, EnumStateDto.CREATED, "test1", 0);
@@ -170,7 +170,7 @@ class BoardControllerTest {
 
         //then
         this.mockMvc.perform(get(boardDataUrl + "/" + boardId)
-                        .header("Authorization", "Bearer " + providedAccessToken))
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(2))).andExpect(result -> assertTrue(
                         result.getResponse().getContentAsString().contains(boardDataDto.getBoard().getId().toString())))
@@ -197,9 +197,8 @@ class BoardControllerTest {
         //given
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vb" +
-                "G9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/boards";
+                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
+        final String boardDataUrl = "/api/v1/boards";
         final int boardId = 1;
         final String exceptionMessage = "User doesn't have permissions to view board data.";
 
@@ -212,7 +211,7 @@ class BoardControllerTest {
         when(boardService.getBoardDataById(boardId, email)).thenThrow(new BadRequestException(exceptionMessage));
 
         //then
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + providedAccessToken))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof BadRequestException))
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
@@ -224,9 +223,8 @@ class BoardControllerTest {
         //given
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWx" +
-                "ob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/boards";
+                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
+        final String boardDataUrl = "/api/v1/boards";
         final int boardId = 1;
         final String exceptionMessage = "Board is not found.";
 
@@ -250,7 +248,7 @@ class BoardControllerTest {
             "01234567890123456789012345678901234567890123456789012345678912345"})
     void createNewBoardShouldReturnBadRequestWhenBoardNameIsNotValid(final String boardName) throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
 
         // then
@@ -270,7 +268,7 @@ class BoardControllerTest {
     @Test
     void createNewBoardShouldReturnBadRequestWhenBoardNameIsNull() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
         final String boardName = null;
 
@@ -292,7 +290,7 @@ class BoardControllerTest {
     void patchBoardShouldReturnNotFoundWhenBoardDoesNotExist() throws Exception {
         // given
         final var boardName = "My first board.";
-        final var url = "/boards/1?userId=";
+        final var url = "/api/v1/boards/1?userId=";
         final var maximumNumberOfVotes = 1;
         when(boardService.patchBoard(eq(1), any(BoardPatchDto.class), anyString()))
                 .thenThrow(new NotFoundException("Board not found!"));
@@ -302,7 +300,7 @@ class BoardControllerTest {
                         .param("userId", "")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"" + boardName + "\"," +
-                                "\"maximumNumberOfVotes\":\"" + maximumNumberOfVotes + "\" }")
+                                 "\"maximumNumberOfVotes\":\"" + maximumNumberOfVotes + "\" }")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }
@@ -319,7 +317,7 @@ class BoardControllerTest {
                 .maximumNumberOfVotes(maximumNumberOfVotes)
                 .build();
 
-        final var url = "/boards/1?userId=1";
+        final var url = "/api/v1/boards/1?userId=1";
         when(boardService.patchBoard(eq(1), any(BoardPatchDto.class), anyString()))
                 .thenReturn(boardDto);
 
