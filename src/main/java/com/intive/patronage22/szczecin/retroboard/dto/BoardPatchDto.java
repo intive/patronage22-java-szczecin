@@ -10,10 +10,8 @@ import lombok.Value;
 @RequiredArgsConstructor
 public class BoardPatchDto {
 
-
     @Schema(description = "Board name", required = true)
     String name;
-
 
     @Schema(description = "Maximum number of votes")
     Integer maximumNumberOfVotes;

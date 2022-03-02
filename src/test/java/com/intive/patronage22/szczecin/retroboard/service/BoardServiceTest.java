@@ -308,8 +308,6 @@ class BoardServiceTest {
         // when & then
         assertThrows(NotFoundException.class,
                 () -> boardService.patchBoard(id, boardPatchDto, uid));
-
-
     }
 
     @Test

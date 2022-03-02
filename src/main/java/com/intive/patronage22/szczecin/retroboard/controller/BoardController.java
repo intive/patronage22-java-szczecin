@@ -77,7 +77,6 @@ public class BoardController {
             @ApiResponse(responseCode = "400", description = "Bad request data"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-
     public ResponseEntity<BoardDto> update(
             @PathVariable("id") final Integer id,
             @RequestParam(name = "userId") final String uid,

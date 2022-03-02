@@ -25,16 +25,12 @@ class BoardValidatorTest {
     @MethodSource("validBoardNames")
     void validateBoardNamePassesThroughWhenNameIsValid(final BoardPatchDto boardPatchDto) {
         assertDoesNotThrow(() -> boardValidator.validateBoardParameters(boardPatchDto));
-
-
     }
 
     @ParameterizedTest
     @MethodSource("invalidBoardNames")
     void validateBoardNamesThrowsWhenBoardNameInvalid(final BoardPatchDto boardPatchDto) {
         assertThrows(InvalidArgumentException.class, () -> boardValidator.validateBoardParameters(boardPatchDto));
-
-
     }
 
     private static Stream<BoardPatchDto> validBoardNames() {
@@ -42,9 +38,7 @@ class BoardValidatorTest {
                 new BoardPatchDto("test board name", 0),
                 new BoardPatchDto("tęśt bóąrd nąmę", 0),
                 new BoardPatchDto("!@#$@#%$^&%*", 0),
-                new BoardPatchDto("1", 0))
-                ;
-
+                new BoardPatchDto("1", 0));
     }
 
     private static Stream<BoardPatchDto> invalidBoardNames() {

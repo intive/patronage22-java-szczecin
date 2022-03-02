@@ -36,6 +36,5 @@ public class BoardDto {
                 .name(board.getName())
                 .maximumNumberOfVotes(board.getMaximumNumberOfVotes())
                 .build();
-
     }
 }
