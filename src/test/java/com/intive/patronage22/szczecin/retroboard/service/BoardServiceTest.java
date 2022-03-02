@@ -326,7 +326,7 @@ class BoardServiceTest {
     void patchBoardShouldReturnUserIsNotAnOwner() {
         // given
         final var uid = "uid101";
-        final var user = new User(uid, "Josef", "Josef", Set.of());
+        final var user = new User(uid, "username@test.pl", "displayName", Set.of());
         final var id = 10;
         final var board = buildBoard(user);
         when(boardRepository.findById(id)).thenReturn(Optional.of(board));
