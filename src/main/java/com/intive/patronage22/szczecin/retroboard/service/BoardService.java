@@ -76,7 +76,6 @@ public class BoardService {
         boardReturn = board.map(b -> {
             if (nonNull(boardPatchDto.getName()) && !boardPatchDto.getName().equals(b.getName())) {
                 b.setName(boardPatchDto.getName());
-
             }
 
             if (nonNull(boardPatchDto.getMaximumNumberOfVotes()) && !boardPatchDto

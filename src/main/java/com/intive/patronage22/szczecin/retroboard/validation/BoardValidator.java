@@ -28,8 +28,6 @@ public class BoardValidator {
 
             throw new InvalidArgumentException(fieldErrors);
         }
-
-
     }
 
     private List<FieldError> getFieldErrors(final BoardPatchDto boardPatchDto) {
