@@ -4,6 +4,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
+import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import org.hamcrest.core.IsNull;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,9 @@ class UserControllerTest {
 
     @MockBean
     private AuthenticationManager authenticationManager;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Autowired
     private RestTemplate restTemplate;
