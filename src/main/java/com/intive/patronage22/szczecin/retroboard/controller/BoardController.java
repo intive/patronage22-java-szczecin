@@ -12,11 +12,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
-import javax.validation.Valid;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -35,8 +42,9 @@ public class BoardController {
                responses = {@ApiResponse(responseCode = "200", description = "OK"),
                        @ApiResponse(responseCode = "400", description = "Bad request data"),
                        @ApiResponse(responseCode = "404", description = "User not found")})
-    public List<BoardDto> getUserBoards(@RequestParam(name = "userId") final String uid) {
-        return boardService.getUserBoards(uid);
+    public List<BoardDto> getUserBoards(final Authentication authentication) {
+
+        return boardService.getUserBoards(authentication.getName());
     }
 
     @GetMapping("/{id}")
@@ -54,11 +62,12 @@ public class BoardController {
     @ResponseStatus(CREATED)
     @Operation(summary = "Create retro board for given user.",
             responses = {@ApiResponse(responseCode = "201", description = "Board created for given user"),
-                    @ApiResponse(responseCode = "404", description = "User not found"),
+                    @ApiResponse(responseCode = "400", description = "User not found"),
                     @ApiResponse(responseCode = "400", description = "Board name not valid")})
-    public BoardDto createBoard(@RequestParam(name = "userId") final String uid,
-                                @RequestBody @Valid final BoardDto boardDto) {
-        return boardService.createBoard(boardDto.getName(), uid);
+    public BoardDto createBoard(@RequestBody @Valid final BoardDto boardDto,
+                                final Authentication authentication) {
+
+        return boardService.createBoard(boardDto.getName(), authentication.getName());
     }
 
     @DeleteMapping("/{id}")
@@ -67,10 +76,10 @@ public class BoardController {
             responses = {@ApiResponse(responseCode = "200", description = "Board deleted for given user"),
                     @ApiResponse(responseCode = "400", description = "User is not the board owner"),
                     @ApiResponse(responseCode = "404", description = "Board not found")})
-    public void deleteBoard(@RequestParam(name = "userId") final String uid,
-                            @PathVariable(name = "id") final int id){
+    public void deleteBoard(@PathVariable(name = "id") final int id,
+                            final Authentication authentication) {
 
-        boardService.delete(id, uid);
+        boardService.delete(id, authentication.getName());
     }
 
     @PatchMapping("/{id}")
@@ -80,11 +89,10 @@ public class BoardController {
             @ApiResponse(responseCode = "400", description = "Bad request data"),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<BoardDto> update(
-            @PathVariable("id") final Integer id,
-            @RequestParam(name = "userId") final String uid,
-            @RequestBody final BoardPatchDto boardPatchDto) {
-        final BoardDto boardDto = boardService.patchBoard(id, boardPatchDto, uid);
+    public ResponseEntity<BoardDto> update(@PathVariable("id") final Integer id,
+                                           @RequestBody final BoardPatchDto boardPatchDto,
+                                           final Authentication authentication) {
+        final BoardDto boardDto = boardService.patchBoard(id, boardPatchDto, authentication.getName());
         return ResponseEntity.status(OK).body(boardDto);
     }
 }

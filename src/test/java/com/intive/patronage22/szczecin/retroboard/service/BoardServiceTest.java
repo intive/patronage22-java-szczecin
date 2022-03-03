@@ -55,7 +55,8 @@ class BoardServiceTest {
     void getUserBoardsShouldReturnOk() {
         //given
         final String uid = "1234";
-        final User user = new User(uid, "John@test.pl", "john14", Set.of());
+        final String email = "John@test.pl";
+        final User user = new User(uid, email, "john14", Set.of());
         final Board board = Board.builder()
                 .id(1)
                 .name("board name")
@@ -67,8 +68,8 @@ class BoardServiceTest {
         user.setUserBoards(Set.of(board));
 
         //when
-        when(userRepository.findById(uid)).thenReturn(Optional.of(user));
-        final List<BoardDto> boards = boardService.getUserBoards(uid);
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        final List<BoardDto> boards = boardService.getUserBoards(email);
 
         //then
         assertEquals(boards.get(0).getId(), board.getId());
@@ -77,46 +78,47 @@ class BoardServiceTest {
     }
 
     @Test
-    void getUserBoardsShouldThrowBadRequestWhenUidIsBlank() {
+    void getUserBoardsShouldThrowBadRequestWhenEmailIsBlank() {
         //given
-        final String uid = "";
+        final String email = "";
 
         //when
 
         //then
-        assertThrows(BadRequestException.class, () -> boardService.getUserBoards(uid));
+        assertThrows(BadRequestException.class, () -> boardService.getUserBoards(email));
     }
 
     @Test
-    void getUserBoardsShouldThrowBadRequestWhenUidIsNull() {
+    void getUserBoardsShouldThrowBadRequestWhenEmailIsNull() {
         //given
-        final String uid = null;
+        final String email = null;
 
         //when
 
         //then
-        assertThrows(BadRequestException.class, () -> boardService.getUserBoards(uid));
+        assertThrows(BadRequestException.class, () -> boardService.getUserBoards(email));
     }
 
     @Test
     void getUserBoardsShouldThrowBadRequestWhenUserDoesNotExist() {
         //given
-        final String uid = "123";
+        final String email = "some@test.com";
 
         //when
-        when(userRepository.findById(uid)).thenThrow(BadRequestException.class);
+        when(userRepository.findUserByEmail(email)).thenThrow(BadRequestException.class);
 
         //then
-        assertThrows(BadRequestException.class, () -> boardService.getUserBoards(uid));
+        assertThrows(BadRequestException.class, () -> boardService.getUserBoards(email));
     }
 
     @Test
     void createBoardShouldReturnBoardDtoWhenUserExistsAndBoardNameIsValid() {
         // given
         final String uid = "uid101";
+        final String email = "Josef@test.pl";
         final String boardName = "My first board.";
 
-        final User user = new User(uid, "Josef@test.pl", "josef14", Set.of());
+        final User user = new User(uid, email, "josef14", Set.of());
 
         final Board board = Board.builder()
                 .id(10)
@@ -127,27 +129,27 @@ class BoardServiceTest {
                 .build();
 
         // when
-        when(userRepository.findById(uid)).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.save(any(Board.class))).thenReturn(board);
-        final BoardDto boardDtoResult = boardService.createBoard(boardName, uid);
+        final BoardDto boardDtoResult = boardService.createBoard(boardName, email);
 
         // then
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
-        verify(userRepository).findById(uid);
+        verify(userRepository).findUserByEmail(email);
         verify(boardRepository).save(any(Board.class));
     }
 
     @Test
-    void createBoardShouldReturnNotFoundWhenUserDoesNotExist() {
+    void createBoardShouldReturnBadRequestWhenUserDoesNotExist() {
         // given
-        final String uid = "uid101";
+        final String email = "some@test.com";
         final String boardName = "My first board.";
 
         // when
-        when(userRepository.findById(uid)).thenReturn(Optional.empty());
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.empty());
 
         // then
-        assertThrows(NotFoundException.class, () -> boardService.createBoard(boardName, uid));
+        assertThrows(BadRequestException.class, () -> boardService.createBoard(boardName, email));
     }
 
     @Test
@@ -255,7 +257,7 @@ class BoardServiceTest {
     void deleteBoardShouldReturnNotFoundWhenBoardNotExist() {
 
         //given
-        final String uid = "uid101";
+        final String email = "some@test.com";
         final int boardId = 101;
 
         //when
@@ -263,7 +265,7 @@ class BoardServiceTest {
 
         //then
         assertThrows(NotFoundException.class,
-                () -> boardService.delete(boardId, uid));
+                () -> boardService.delete(boardId, email));
     }
 
     @Test
@@ -271,20 +273,22 @@ class BoardServiceTest {
 
         final String uidOwner = "123";
         final String uid = "1234";
+        final String emailOwner = "owner@test.pl";
+        final String email = "username@test.pl";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, "username@test.pl", "displayName", Set.of());
-        final User user = new User(uid, "username@test.pl", "displayName", Set.of());
+        final User userOwner = new User(uidOwner, emailOwner, "displayName", Set.of());
+        final User user = new User(uid, email, "displayName", Set.of());
         final Board board = new Board(boardId, "board", 0,
                 EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
 
         //when
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
-        when(userRepository.findById(uid)).thenReturn(Optional.of(board.getCreator()));
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(board.getCreator()));
 
         //then
         assertThrows(BadRequestException.class,
-                () -> boardService.delete(boardId, uid));
+                () -> boardService.delete(boardId, email));
     }
 
     @Test
@@ -292,10 +296,12 @@ class BoardServiceTest {
 
         final String uidOwner = "123";
         final String uid = "1234";
+        final String emailOwner = "owner@test.pl";
+        final String email = "username@test.pl";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, "username@test.pl", "displayName", Set.of());
-        final User user = new User(uid, "username@test.pl", "displayName", Set.of());
+        final User userOwner = new User(uidOwner, emailOwner, "displayName", Set.of());
+        final User user = new User(uid, email, "displayName", Set.of());
         final Board board = new Board
                 (boardId, "board", 0,
                         EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
@@ -304,29 +310,30 @@ class BoardServiceTest {
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
 
         //then
-        assertEquals(uidOwner, board.getCreator().getUid());
+        assertEquals(emailOwner, board.getCreator().getEmail());
         assertThrows(BadRequestException.class,
-                () -> boardService.delete(boardId, uid));
+                () -> boardService.delete(boardId, email));
     }
 
     @Test
     void patchBoardShouldReturnNotFoundWhenBoardDoesNotExist() {
         // given
-        final var uid = "uid101";
+        final var email = "username@test.pl";
         final var id = 500;
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
         when(boardRepository.findById(id)).thenReturn(Optional.empty());
 
         // when & then
         assertThrows(NotFoundException.class,
-                () -> boardService.patchBoard(id, boardPatchDto, uid));
+                () -> boardService.patchBoard(id, boardPatchDto, email));
     }
 
     @Test
     void patchBoardShouldReturnUserIsNotAnOwner() {
         // given
         final var uid = "uid101";
-        final var user = new User(uid, "username@test.pl", "displayName", Set.of());
+        final var email = "username@test.pl";
+        final var user = new User(uid, email, "displayName", Set.of());
         final var id = 10;
         final var board = buildBoard(user);
         when(boardRepository.findById(id)).thenReturn(Optional.of(board));
@@ -335,25 +342,27 @@ class BoardServiceTest {
 
         // when & then
         assertThrows(BadRequestException.class,
-                () -> boardService.patchBoard(id, boardPatchDto, "uid102"));
+                () -> boardService.patchBoard(id, boardPatchDto, "some@test.pl"));
     }
 
     @Test
     void patchBoardShouldUpdateNameAndNumberOfVotesFields() {
         // given
         final var uid = "uid101";
+        final var email = "username@test.pl";
         final var boardName = "My first board.";
-        final var userOwner = new User(uid, "username@test.pl", "displayName", Set.of());
+        final var userOwner = new User(uid, email, "displayName", Set.of());
         final var board = buildBoard(userOwner);
         final var id = 10;
         final var boardPatchDto = new BoardPatchDto(boardName, 1500);
+
+        // when
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(id)).thenReturn(Optional.of(board));
 
-        // when
-        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, "uid101");
-
         // then
+        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, email);
+        
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
         verify(boardRepository).findById(id);
         verify(boardRepository).save(any(Board.class));
@@ -363,17 +372,19 @@ class BoardServiceTest {
     void patchBoardShouldUpdateNumberOfVotesWithoutProvidingName() {
         // given
         final var uid = "uid101";
-        final var user = new User(uid, "username@test.pl", "displayName", Set.of());
+        final var email = "username@test.pl";
+        final var user = new User(uid, email, "displayName", Set.of());
         final var board = buildBoard(user);
         final var id = 10;
         final var boardPatchDto = new BoardPatchDto(null, 1500);
+
+        // when
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(id)).thenReturn(Optional.of(board));
 
-        // when
-        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, "uid101");
-
         // then
+        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, email);
+
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
         verify(boardRepository).findById(id);
         verify(boardRepository).save(any(Board.class));
