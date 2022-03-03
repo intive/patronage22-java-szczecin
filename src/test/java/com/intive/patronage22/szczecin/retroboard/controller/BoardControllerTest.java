@@ -57,14 +57,14 @@ class BoardControllerTest {
     @MockBean
     private FirebaseAuth firebaseAuth;
 
+    private static final String email = "test22@test.com";
+    private static final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
+                                       ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
+    private static final String boardDataUrl = "/api/v1/boards";
+
     @Test
     void getUserBoardsShouldReturnOkWhenUserExist() throws Exception {
         // given
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                           ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/api/v1/boards";
-
         final List<BoardDto> dtoList = List.of(
                 new BoardDto(1, EnumStateDto.CREATED, "test1", 1),
                 new BoardDto(2, EnumStateDto.CREATED, "test2", 2)
@@ -88,11 +88,6 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnBadRequestWhenUserDoesNotExist() throws Exception {
         // given
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                           ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/api/v1/boards";
-
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
         // when
@@ -110,10 +105,6 @@ class BoardControllerTest {
     @Test
     void createBoardShouldReturnCreatedWhenUserExistsAndBoardNameIsValid() throws Exception {
         // given
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                           ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/api/v1/boards";
         final String boardName = "My first board.";
 
         final BoardDto boardDto = BoardDto.builder()
@@ -143,10 +134,6 @@ class BoardControllerTest {
     @Test
     void createBoardShouldReturnBadRequestWhenUserDoesNotExist() throws Exception {
         // given
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                           ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/api/v1/boards";
         final String boardName = "My first board.";
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
@@ -169,10 +156,6 @@ class BoardControllerTest {
     @DisplayName("getBoardDataById should return 200 when board data is collected")
     void getBoardDataByIdShouldReturnOk() throws Exception {
         //given
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/api/v1/boards";
         final int boardId = 1;
 
         final BoardDto boardDto = new BoardDto(1, EnumStateDto.CREATED, "test1", 0);
@@ -218,10 +201,6 @@ class BoardControllerTest {
     @DisplayName("getBoardDataById should return 400 when user has no permission to view board data")
     void getBoardDataByIdShouldThrowBadRequestWhenUserDoesntHavePermissions() throws Exception {
         //given
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/api/v1/boards";
         final int boardId = 1;
         final String exceptionMessage = "User doesn't have permissions to view board data.";
 
@@ -244,10 +223,6 @@ class BoardControllerTest {
     @DisplayName("getBoardDataById should return 404 when board does not exist")
     void getBoardDataByIdShouldThrowNotFoundWhenBoardDoesNotExist() throws Exception {
         //given
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                   ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/api/v1/boards";
         final int boardId = 1;
         final String exceptionMessage = "Board is not found.";
 
@@ -271,11 +246,6 @@ class BoardControllerTest {
             "01234567890123456789012345678901234567890123456789012345678912345"})
     void createNewBoardShouldReturnBadRequestWhenBoardNameIsNotValid(final String boardName) throws Exception {
         // given
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                           ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/api/v1/boards";
-
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
         // when
@@ -299,10 +269,6 @@ class BoardControllerTest {
     @Test
     void createNewBoardShouldReturnBadRequestWhenBoardNameIsNull() throws Exception {
         // given
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                           ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/api/v1/boards";
         final String boardName = null;
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
@@ -328,10 +294,7 @@ class BoardControllerTest {
     @Test
     void patchBoardShouldReturnNotFoundWhenBoardDoesNotExist() throws Exception {
         // given
-        final var email = "test22@test.com";
-        final var providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                           ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final var boardDataUrl = "/api/v1/boards/1";
+        final var boardDataUrl = this.boardDataUrl + "/1";
         final var boardName = "My first board.";
         final var maximumNumberOfVotes = 1;
 
@@ -356,10 +319,7 @@ class BoardControllerTest {
     @Test
     void patchBoardShouldReturnBoardIfDataIsCorrect() throws Exception {
         // given
-        final var email = "test22@test.com";
-        final var providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                        ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final var boardDataUrl = "/api/v1/boards/1";
+        final var boardDataUrl = this.boardDataUrl + "/1";
         final var boardName = "My first board.";
         final var maximumNumberOfVotes = 1;
         final BoardDto boardDto = BoardDto.builder()
