@@ -1,8 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
@@ -14,7 +12,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpMethod;
@@ -41,15 +38,16 @@ import static com.intive.patronage22.szczecin.retroboard.configuration.security.
 import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.URL_REGISTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest({UserController.class, SecurityConfig.class})
@@ -359,41 +357,5 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error_message").value("Missing password."));
-    }
-
-    @Test
-    void privateShouldReturnForbiddenWhenUserNotLoggedin() throws Exception {
-        // given
-        final String url = "/api/v1/private";
-
-        // then
-        mockMvc
-                .perform(get(url).contentType(MediaType.APPLICATION_FORM_URLENCODED))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.error_message").value("Access Denied"));
-    }
-
-    @Test
-    void privateShouldReturnOkWhenUserAuthenticated() throws Exception {
-        // given
-        final String url = "/api/v1/private";
-        final String email = "test22@test.com";
-        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +
-                "eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9na" +
-                "W4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-
-        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
-
-        // when
-        when(firebaseToken.getEmail()).thenReturn(email);
-        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
-
-        // then
-        mockMvc
-                .perform(get(url).header(AUTHORIZATION, "Bearer " + providedAccessToken))
-                .andExpect(jsonPath("$.name").value("test22@test.com"))
-                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
     }
 }
