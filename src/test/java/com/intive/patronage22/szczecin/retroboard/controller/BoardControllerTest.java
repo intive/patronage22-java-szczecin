@@ -6,6 +6,7 @@ import com.intive.patronage22.szczecin.retroboard.configuration.security.Securit
 import com.intive.patronage22.szczecin.retroboard.dto.*;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
+import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -46,6 +47,9 @@ class BoardControllerTest {
 
     @MockBean
     private FirebaseAuth firebaseAuth;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @Test
     void getUserBoardsShouldReturnOkWhenUserExist() throws Exception {

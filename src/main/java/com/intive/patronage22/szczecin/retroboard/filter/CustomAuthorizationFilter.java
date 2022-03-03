@@ -3,6 +3,8 @@ package com.intive.patronage22.szczecin.retroboard.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
+import com.intive.patronage22.szczecin.retroboard.model.User;
+import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,9 +17,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 
 import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -31,6 +31,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
     private final ObjectMapper objectMapper;
     private final FirebaseAuth firebaseAuth;
+    private final UserRepository userRepository;
 
     @SuppressWarnings("NullableProblems")
     @Override
@@ -53,6 +54,16 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                                     null,
                                     new HashSet<>());
 
+                    if(userRepository.findUserByEmail(firebaseToken.getEmail()).isPresent())
+                    {
+                        log.info("already in database");
+                    }else{
+                        User user = new User(firebaseToken.getUid(),
+                                firebaseToken.getEmail(),firebaseToken.getName(), Set.of());
+                        userRepository.save(user);
+                        log.info("added to database");
+
+                    }
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
                     filterChain.doFilter(request, response);
