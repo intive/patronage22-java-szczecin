@@ -2,11 +2,13 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardFailedEmailsDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -68,6 +70,19 @@ public class BoardController {
                                 final Authentication authentication) {
 
         return boardService.createBoard(boardDto.getName(), authentication.getName());
+    }
+
+    @PostMapping("/{board_id}/users")
+    @ResponseStatus(CREATED)
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Assign users to given board.",
+               responses = {@ApiResponse(responseCode = "201", description = "Users assigned to the board"),
+                       @ApiResponse(responseCode = "400", description = "User is not the board owner"),
+                       @ApiResponse(responseCode = "404", description = "Board/user not found")})
+    public ResponseEntity<BoardFailedEmailsDto> assignUsersToBoard(@PathVariable final Integer board_id,
+                                                                   @RequestBody final List<String> usersEmails,
+                                                                   final Authentication authentication) {
+        return ResponseEntity.status(OK)
+                .body(boardService.assignUsersToBoard(board_id, usersEmails, authentication.getName()));
     }
 
     @DeleteMapping("/{id}")
