@@ -1,6 +1,11 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.*;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardFailedEmailsDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
+import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
@@ -15,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -109,5 +115,29 @@ public class BoardService {
         }else{
             boardRepository.deleteById(boardId);
         }
+    }
+
+    @Transactional
+    public BoardFailedEmailsDto assignUsersToBoard(final Integer boardId, final List<String> usersEmails,
+                                                   final String email) {
+        final User boardOwner =
+                userRepository.findUserByEmail(email).orElseThrow(() -> new NotFoundException("User is not found"));
+        final Board board =
+                boardRepository.findById(boardId).orElseThrow(() -> new NotFoundException("Board is not found."));
+        if (! board.getCreator().equals(boardOwner)) {
+            throw new BadRequestException("User is not the board owner.");
+        }
+        final Set<User> usersToAssign = new HashSet<>();
+        final List<String> failedEmails = new ArrayList<>();
+
+        for (final String userEmail : usersEmails) {
+            userRepository.findUserByEmail(userEmail)
+                    .ifPresentOrElse(usersToAssign::add, () -> failedEmails.add(userEmail));
+        }
+        usersToAssign.removeIf(user -> user.getUserBoards().contains(board));
+        board.setUsers(usersToAssign);
+        boardRepository.save(board);
+
+        return BoardFailedEmailsDto.createFrom(failedEmails);
     }
 }
