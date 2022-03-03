@@ -3,11 +3,7 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.*;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
@@ -17,6 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -30,15 +27,12 @@ import java.util.List;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest({BoardController.class, SecurityConfig.class})
@@ -56,16 +50,16 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnOkWhenUserExist() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
 
-        final List<BoardDto> boardList = List.of(
-                new BoardDto(1, EnumStateDto.CREATED, "test1"),
-                new BoardDto(2, EnumStateDto.CREATED, "test2")
+        final List<BoardDto> dtoList = List.of(
+                new BoardDto(1, EnumStateDto.CREATED, "test1", 1),
+                new BoardDto(2, EnumStateDto.CREATED, "test2", 2)
         );
 
         // when
-        when(boardService.getUserBoards(uid)).thenReturn(boardList);
+        when(boardService.getUserBoards(uid)).thenReturn(dtoList);
 
         // then
         mockMvc.perform(get(url)
@@ -78,7 +72,7 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnBadRequestWhenUserDoesNotExist() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
 
         // when
@@ -93,7 +87,7 @@ class BoardControllerTest {
     @Test
     void getUserBoardsShouldReturnBadRequestWhenNoUserGiven() throws Exception {
         // given
-        final String url = "/boards?userId=";
+        final String url = "/api/v1/boards?userId=";
 
         // when
         when(boardService.getUserBoards(anyString())).thenThrow(BadRequestException.class);
@@ -107,7 +101,7 @@ class BoardControllerTest {
     @Test
     void createBoardShouldReturnCreatedWhenUserExistsAndBoardNameIsValid() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
         final String boardName = "My first board.";
 
@@ -133,7 +127,7 @@ class BoardControllerTest {
     @Test
     void createBoardShouldReturnNotFoundWhenUserNotExist() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
         final String boardName = "My first board.";
 
@@ -155,10 +149,10 @@ class BoardControllerTest {
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
                                    ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/boards";
+        final String boardDataUrl = "/api/v1/boards";
         final int boardId = 1;
 
-        final BoardDto boardDto = new BoardDto(1, EnumStateDto.CREATED, "test1");
+        final BoardDto boardDto = new BoardDto(1, EnumStateDto.CREATED, "test1", 0);
         final List<String> actionTexts = List.of("action text 1", "action text 2");
         final BoardCardDto boardCardDataDto =
                 new BoardCardDto(2, "cardText", BoardCardsColumn.SUCCESS, email, actionTexts);
@@ -176,7 +170,7 @@ class BoardControllerTest {
 
         //then
         this.mockMvc.perform(get(boardDataUrl + "/" + boardId)
-                        .header("Authorization", "Bearer " + providedAccessToken))
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(2))).andExpect(result -> assertTrue(
                         result.getResponse().getContentAsString().contains(boardDataDto.getBoard().getId().toString())))
@@ -185,7 +179,8 @@ class BoardControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(boardDataDto.getBoardCards().get(0).getId().toString()))).andExpect(
                         result -> assertTrue(result.getResponse().getContentAsString()
-                                .contains(boardDataDto.getBoardCards().get(0).getCardText()))).andExpect(result -> assertTrue(
+                                .contains(boardDataDto.getBoardCards().get(0).getCardText())))
+                .andExpect(result -> assertTrue(
                         result.getResponse().getContentAsString()
                                 .contains(boardDataDto.getBoardCards().get(0).getColumnName().toString()))).andExpect(
                         result -> assertTrue(result.getResponse().getContentAsString()
@@ -203,7 +198,7 @@ class BoardControllerTest {
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
                                    ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/boards";
+        final String boardDataUrl = "/api/v1/boards";
         final int boardId = 1;
         final String exceptionMessage = "User doesn't have permissions to view board data.";
 
@@ -216,7 +211,7 @@ class BoardControllerTest {
         when(boardService.getBoardDataById(boardId, email)).thenThrow(new BadRequestException(exceptionMessage));
 
         //then
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header("Authorization", "Bearer " + providedAccessToken))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof BadRequestException))
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
@@ -229,7 +224,7 @@ class BoardControllerTest {
         final String email = "test22@test.com";
         final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
                                    ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-        final String boardDataUrl = "/boards";
+        final String boardDataUrl = "/api/v1/boards";
         final int boardId = 1;
         final String exceptionMessage = "Board is not found.";
 
@@ -253,7 +248,7 @@ class BoardControllerTest {
             "01234567890123456789012345678901234567890123456789012345678912345"})
     void createNewBoardShouldReturnBadRequestWhenBoardNameIsNotValid(final String boardName) throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
 
         // then
@@ -273,7 +268,7 @@ class BoardControllerTest {
     @Test
     void createNewBoardShouldReturnBadRequestWhenBoardNameIsNull() throws Exception {
         // given
-        final String url = "/boards";
+        final String url = "/api/v1/boards";
         final String uid = "uid101";
         final String boardName = null;
 
@@ -289,5 +284,49 @@ class BoardControllerTest {
         final Exception resultException = result.getResolvedException();
 
         assertInstanceOf(MethodArgumentNotValidException.class, resultException);
+    }
+
+    @Test
+    void patchBoardShouldReturnNotFoundWhenBoardDoesNotExist() throws Exception {
+        // given
+        final var boardName = "My first board.";
+        final var url = "/api/v1/boards/1?userId=";
+        final var maximumNumberOfVotes = 1;
+        when(boardService.patchBoard(eq(1), any(BoardPatchDto.class), anyString()))
+                .thenThrow(new NotFoundException("Board not found!"));
+
+        // when & then
+        mockMvc.perform(patch(url)
+                        .param("userId", "")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + boardName + "\"," +
+                                 "\"maximumNumberOfVotes\":\"" + maximumNumberOfVotes + "\" }")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void patchBoardShouldReturnBoardIfDataIsCorrect() throws Exception {
+        // given
+        final var boardName = "My first board.";
+        final var maximumNumberOfVotes = 1;
+        final BoardDto boardDto = BoardDto.builder()
+                .id(1)
+                .state(EnumStateDto.CREATED)
+                .name(boardName)
+                .maximumNumberOfVotes(maximumNumberOfVotes)
+                .build();
+
+        final var url = "/api/v1/boards/1?userId=1";
+        when(boardService.patchBoard(eq(1), any(BoardPatchDto.class), anyString()))
+                .thenReturn(boardDto);
+
+        // when & then
+        mockMvc.perform(patch(url)
+                        .param("userId", "1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"maximumNumberOfVotes\":\"" + maximumNumberOfVotes + "\" }")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
     }
 }

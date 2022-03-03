@@ -29,6 +29,9 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @Slf4j
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    public static final String URL_LOGIN = "/api/v1/login";
+    public static final String URL_REGISTER = "/api/v1/register";
+
     private final CustomAuthorizationFilter customAuthorizationFilter;
     private final ObjectMapper objectMapper;
     private final FirebaseAuthenticationProvider authenticationProvider;
@@ -45,11 +48,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(final HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.sessionManagement().sessionCreationPolicy(STATELESS);
-        http.authorizeRequests().antMatchers("/register", "/boards/**", "/swagger-ui/**", "/v3/api-docs/**",
-                "/h2-console/**", "/error", "/actuator/health").permitAll();
+        http.authorizeRequests().antMatchers(URL_REGISTER, URL_LOGIN, "/api/v1/boards/**",
+                "/swagger-ui/**", "/v3/api-docs/**", "/error", "/actuator/health").permitAll();
         http.authorizeRequests().antMatchers("/private").authenticated();
 
-        http.addFilter(new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret));
+        http.addFilter(getCustomAuthenticationFilter());
         http.authorizeRequests().anyRequest().authenticated();
         http.addFilterBefore(customAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
         http.headers().frameOptions().disable();
@@ -68,5 +71,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         objectMapper.writeValue(response.getOutputStream(), tokens);
 
         log.error("error while logging in. Error code: " + response.getStatus());
+    }
+
+    private CustomAuthenticationFilter getCustomAuthenticationFilter() throws Exception {
+        final var filter = new CustomAuthenticationFilter(authenticationManager(), objectMapper, jwtSecret);
+        filter.setFilterProcessesUrl(URL_LOGIN);
+        return filter;
     }
 }

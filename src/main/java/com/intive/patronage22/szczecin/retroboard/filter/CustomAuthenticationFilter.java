@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -53,7 +54,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             throws IOException {
         
         final FirebaseUserDto userDto = (FirebaseUserDto)authentication.getPrincipal();
-        response.addHeader("Authorization", "Bearer " + userDto.getIdToken());
+        response.addHeader(AUTHORIZATION, "Bearer " + userDto.getIdToken());
         response.addHeader("Expires", userDto.getExpiresIn());
     }
 
