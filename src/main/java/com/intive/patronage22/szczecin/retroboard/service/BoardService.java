@@ -51,8 +51,9 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardDto createBoard(final String boardName, final String uid) {
-        final User user = userRepository.findById(uid).orElseThrow(() -> new NotFoundException("User not found"));
+    public BoardDto createBoard(final String boardName, final String email) {
+        final User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new BadRequestException("User not found"));
 
         final Board newBoard = Board.builder()
                 .name(boardName)
@@ -65,12 +66,12 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardDto patchBoard(final Integer id, final BoardPatchDto boardPatchDto, final String uid) {
+    public BoardDto patchBoard(final Integer id, final BoardPatchDto boardPatchDto, final String email) {
         boardValidator.validateBoardParameters(boardPatchDto);
         final Board boardReturn;
         final Optional<Board> board = boardRepository.findById(id);
 
-        board.map(b -> Optional.ofNullable(b.getCreator()).filter(creator -> creator.getUid().equals(uid))
+        board.map(b -> Optional.ofNullable(b.getCreator()).filter(creator -> creator.getEmail().equals(email))
                 .orElseThrow(() -> new BadRequestException("Not a board owner!")));
 
         boardReturn = board.map(b -> {
@@ -90,23 +91,20 @@ public class BoardService {
     }
 
     @Transactional(readOnly = true)
-    public List<BoardDto> getUserBoards(final String uid) {
-        if (uid == null || uid.isBlank()) {
-            throw new BadRequestException("Invalid request - no uid given!");
-        }
-
-        final User user = userRepository.findById(uid).orElseThrow(() -> new BadRequestException("No such user!"));
+    public List<BoardDto> getUserBoards(final String email) {
+        final User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new BadRequestException("User not found"));
 
         return user.getUserBoards().stream().map(BoardDto::fromModel).collect(Collectors.toList());
     }
 
     @Transactional
-    public void delete(final int boardId, final String uid) {
+    public void delete(final int boardId, final String email) {
 
         final Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Board not found"));
 
-        if(!(uid.equals(board.getCreator().getUid()))){
+        if(!(email.equals(board.getCreator().getEmail()))){
             throw new BadRequestException("User is not owner");
         }else{
             boardRepository.deleteById(boardId);
