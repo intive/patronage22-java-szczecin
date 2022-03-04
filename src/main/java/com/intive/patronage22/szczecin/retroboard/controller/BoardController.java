@@ -7,6 +7,7 @@ import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -38,10 +39,10 @@ public class BoardController {
 
     @GetMapping
     @ResponseStatus(OK)
-    @Operation(summary = "Get retro board for given user.",
-               responses = {@ApiResponse(responseCode = "200", description = "OK"),
-                       @ApiResponse(responseCode = "400", description = "Bad request data"),
-                       @ApiResponse(responseCode = "404", description = "User not found")})
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retro board for given user.",
+            responses = {@ApiResponse(responseCode = "200", description = "OK"),
+                    @ApiResponse(responseCode = "400", description = "Bad request data"),
+                    @ApiResponse(responseCode = "404", description = "User not found")})
     public List<BoardDto> getUserBoards(final Authentication authentication) {
 
         return boardService.getUserBoards(authentication.getName());
@@ -49,10 +50,10 @@ public class BoardController {
 
     @GetMapping("/{id}")
     @ResponseStatus(OK)
-    @Operation(summary = "Get retro board data for user by id",
-               responses = {@ApiResponse(responseCode = "200", description = "OK"),
-                       @ApiResponse(responseCode = "400", description = "User has no access to board."),
-                       @ApiResponse(responseCode = "404", description = "Board is not found")})
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retro board data for user by id",
+            responses = {@ApiResponse(responseCode = "200", description = "OK"),
+                    @ApiResponse(responseCode = "400", description = "User has no access to board."),
+                    @ApiResponse(responseCode = "404", description = "Board is not found")})
     public BoardDataDto getBoardDataById(@PathVariable final Integer id, final Authentication authentication) {
 
         return boardService.getBoardDataById(id, authentication.getName());
@@ -60,7 +61,7 @@ public class BoardController {
 
     @PostMapping
     @ResponseStatus(CREATED)
-    @Operation(summary = "Create retro board for given user.",
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Create retro board for given user.",
             responses = {@ApiResponse(responseCode = "201", description = "Board created for given user"),
                     @ApiResponse(responseCode = "400", description = "User not found"),
                     @ApiResponse(responseCode = "400", description = "Board name not valid")})
@@ -72,7 +73,7 @@ public class BoardController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(OK)
-    @Operation(summary = "Delete retro board for given id.",
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Delete retro board for given id.",
             responses = {@ApiResponse(responseCode = "200", description = "Board deleted for given user"),
                     @ApiResponse(responseCode = "400", description = "User is not the board owner"),
                     @ApiResponse(responseCode = "404", description = "Board not found")})
@@ -83,7 +84,7 @@ public class BoardController {
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Update board name and number of votes")
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Update board name and number of votes")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
             @ApiResponse(responseCode = "400", description = "Bad request data"),
