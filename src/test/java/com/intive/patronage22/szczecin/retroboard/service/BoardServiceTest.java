@@ -1,6 +1,10 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.*;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
+import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
@@ -11,6 +15,8 @@ import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepositor
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.validation.BoardValidator;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -442,8 +448,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("assignUsersToBoard should return 201")
-    void assignUsersToBoardShouldReturnOk() {
+    @DisplayName("assignUsersToBoard should return List of unsuccessfully emails ")
+    void assignUsersToBoardShouldReturnFailedEmails() throws JSONException {
         //given
         final int boardId = 1;
         final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com");
@@ -458,12 +464,11 @@ class BoardServiceTest {
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(userRepository.findUserByEmail(usersEmails.get(0))).thenReturn(Optional.of(user));
         when(userRepository.findUserByEmail(usersEmails.get(1))).thenReturn(Optional.empty());
-        final BoardFailedEmailsDto boardFailedEmailsDto =
-                boardService.assignUsersToBoard(boardId, usersEmails, ownerEmail);
+        final JSONArray failedEmails = new JSONArray(boardService.assignUsersToBoard(boardId, usersEmails, ownerEmail));
 
         //then
         verify(boardRepository).save(any(Board.class));
-        assertEquals(boardFailedEmailsDto.getFailedEmails().get(0), usersEmails.get(1));
+        assertEquals(failedEmails.get(0), usersEmails.get(1));
     }
 
     private Board buildBoard(final User user) {
