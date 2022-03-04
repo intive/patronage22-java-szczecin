@@ -13,6 +13,7 @@ import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
+import org.json.JSONArray;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -348,5 +349,108 @@ class BoardControllerTest {
                         .content("{ \"maximumNumberOfVotes\":\"" + maximumNumberOfVotes + "\" }")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should return 201 when users are assigned to board")
+    void assignUsersToBoardShouldReturnCreated() throws Exception {
+        final int boardId = 1;
+        final String assignUsersUrl = boardDataUrl + "/" + boardId + "/users";
+        final String failedEmail = "testfailemail@example.com";
+        final List<String> usersEmails = List.of("testemail@example.com", failedEmail);
+        final List<String> failedEmails = List.of(failedEmail);
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.assignUsersToBoard(boardId, usersEmails, email)).thenReturn(failedEmails);
+
+        //then
+        this.mockMvc.perform(post(assignUsersUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new JSONArray(usersEmails).toString()))
+                .andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.*", hasSize(1))).andExpect(result -> assertTrue(
+                        result.getResponse().getContentAsString().contains(failedEmails.get(0))));
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should return 400 when user is not an owner of the board")
+    void assignUsersToBoardShouldThrowBadRequestWhenUserIsNotOwner() throws Exception {
+        //given
+        final int boardId = 1;
+        final String assignUsersUrl = boardDataUrl + "/" + boardId + "/users";
+        final List<String> usersEmails = List.of("testemail@example.com", "testfailemail@example.com");
+        final String exceptionMessage = "User is not the board owner.";
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.assignUsersToBoard(boardId, usersEmails, email)).thenThrow(
+                new BadRequestException(exceptionMessage));
+
+        //then
+        this.mockMvc.perform(post(assignUsersUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new JSONArray(usersEmails).toString()))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof BadRequestException))
+                .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should return 404 when board does not exist")
+    void assignUsersToBoardShouldThrowNotFoundWhenBoardDoesNotExist() throws Exception {
+        //given
+        final int boardId = 1;
+        final String assignUsersUrl = boardDataUrl + "/" + boardId + "/users";
+        final List<String> usersEmails = List.of("testemail@example.com", "testfailemail@example.com");
+        final String exceptionMessage = "Board is not found.";
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.assignUsersToBoard(boardId, usersEmails, email)).thenThrow(
+                new NotFoundException(exceptionMessage));
+
+        //then
+        this.mockMvc.perform(post(assignUsersUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new JSONArray(usersEmails).toString()))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException))
+                .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should return 404 when user does not exist")
+    void assignUsersToBoardShouldThrowNotFoundWhenUserDoesNotExist() throws Exception {
+        //given
+        final int boardId = 1;
+        final String assignUsersUrl = boardDataUrl + "/" + boardId + "/users";
+        final List<String> usersEmails = List.of("testemail@example.com", "testfailemail@example.com");
+        final String exceptionMessage = "User is not found.";
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.assignUsersToBoard(boardId, usersEmails, email)).thenThrow(
+                new NotFoundException(exceptionMessage));
+
+        //then
+        this.mockMvc.perform(post(assignUsersUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new JSONArray(usersEmails).toString()))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException))
+                .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
     }
 }
