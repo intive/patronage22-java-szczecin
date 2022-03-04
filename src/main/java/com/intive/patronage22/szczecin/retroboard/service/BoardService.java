@@ -134,7 +134,6 @@ public class BoardService {
             userRepository.findUserByEmail(userEmail)
                     .ifPresentOrElse(usersToAssign::add, () -> failedEmails.add(userEmail));
         }
-        usersToAssign.removeIf(user -> user.getUserBoards().contains(board));
         board.setUsers(usersToAssign);
         boardRepository.save(board);
 
