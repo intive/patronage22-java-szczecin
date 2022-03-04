@@ -7,7 +7,6 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardFailedEmailsDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
@@ -349,29 +348,28 @@ class BoardControllerTest {
     }
 
     @Test
-    @DisplayName("assignUsersToBoard should return 200 when users are assigned to board")
-    void assignUsersToBoardShouldReturnOk() throws Exception {
+    @DisplayName("assignUsersToBoard should return 201 when users are assigned to board")
+    void assignUsersToBoardShouldReturnCreated() throws Exception {
         final int boardId = 1;
         final String assignUsersUrl = boardDataUrl + "/" + boardId + "/users";
         final String failedEmail = "testfailemail@example.com";
         final List<String> usersEmails = List.of("testemail@example.com", failedEmail);
         final List<String> failedEmails = List.of(failedEmail);
-        final BoardFailedEmailsDto boardFailedEmailsDto = new BoardFailedEmailsDto(failedEmails);
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
         //when
         when(firebaseToken.getEmail()).thenReturn(email);
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
-        when(boardService.assignUsersToBoard(boardId, usersEmails, email)).thenReturn(boardFailedEmailsDto);
+        when(boardService.assignUsersToBoard(boardId, usersEmails, email)).thenReturn(failedEmails);
 
         //then
         this.mockMvc.perform(post(assignUsersUrl)
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(new JSONArray(usersEmails).toString()))
-                .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(1))).andExpect(result -> assertTrue(
-                        result.getResponse().getContentAsString().contains(boardFailedEmailsDto.getFailedEmails().get(0))));
+                        result.getResponse().getContentAsString().contains(failedEmails.get(0))));
     }
 
     @Test

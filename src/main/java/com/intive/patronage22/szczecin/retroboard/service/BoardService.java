@@ -3,7 +3,6 @@ package com.intive.patronage22.szczecin.retroboard.service;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardFailedEmailsDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
@@ -118,8 +117,7 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardFailedEmailsDto assignUsersToBoard(final Integer boardId, final List<String> usersEmails,
-                                                   final String email) {
+    public List<String> assignUsersToBoard(final Integer boardId, final List<String> usersEmails, final String email) {
         final User boardOwner =
                 userRepository.findUserByEmail(email).orElseThrow(() -> new NotFoundException("User is not found"));
         final Board board =
@@ -137,6 +135,6 @@ public class BoardService {
         board.setUsers(usersToAssign);
         boardRepository.save(board);
 
-        return BoardFailedEmailsDto.createFrom(failedEmails);
+        return failedEmails;
     }
 }

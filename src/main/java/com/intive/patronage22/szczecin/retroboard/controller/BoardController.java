@@ -2,7 +2,6 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardFailedEmailsDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -72,17 +71,17 @@ public class BoardController {
         return boardService.createBoard(boardDto.getName(), authentication.getName());
     }
 
-    @PostMapping("/{board_id}/users")
+    @PostMapping("/{id}/users")
     @ResponseStatus(CREATED)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Assign users to given board.",
                responses = {@ApiResponse(responseCode = "201", description = "Users assigned to the board"),
                        @ApiResponse(responseCode = "400", description = "User is not the board owner"),
                        @ApiResponse(responseCode = "404", description = "Board/user not found")})
-    public ResponseEntity<BoardFailedEmailsDto> assignUsersToBoard(@PathVariable final Integer board_id,
-                                                                   @RequestBody final List<String> usersEmails,
-                                                                   final Authentication authentication) {
-        return ResponseEntity.status(OK)
-                .body(boardService.assignUsersToBoard(board_id, usersEmails, authentication.getName()));
+    public ResponseEntity<List<String>> assignUsersToBoard(@PathVariable final Integer id,
+                                                           @RequestBody final List<String> usersEmails,
+                                                           final Authentication authentication) {
+        return ResponseEntity.status(CREATED)
+                .body(boardService.assignUsersToBoard(id, usersEmails, authentication.getName()));
     }
 
     @DeleteMapping("/{id}")
