@@ -1,6 +1,10 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.*;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
+import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
@@ -11,6 +15,8 @@ import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepositor
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.validation.BoardValidator;
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +25,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -388,6 +395,80 @@ class BoardServiceTest {
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
         verify(boardRepository).findById(id);
         verify(boardRepository).save(any(Board.class));
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should throw 404 when user does not exist")
+    void assignUsersToBoardShouldThrowNotFoundWhenUserDoesNotExist() {
+        //given
+        final int boardId = 1;
+        final List<String> usersEmails = List.of();
+        final String email = "testemail@example.com";
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(NotFoundException.class, () -> boardService.assignUsersToBoard(boardId, usersEmails, email));
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should throw 404 when user does not exist")
+    void assignUsersToBoardShouldThrowNotFoundWhenBoardDoesNotExist() {
+        //given
+        final int boardId = 1;
+        final List<String> usersEmails = List.of();
+        final String email = "testemail@example.com";
+        final User user = new User("123", email, "test name", Set.of());
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(NotFoundException.class, () -> boardService.assignUsersToBoard(boardId, usersEmails, email));
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should throw 400 when user is not an owner")
+    void assignUsersToBoardShouldThrowBadRequestWhenUserIsNotOwner() {
+        //given
+        final int boardId = 1;
+        final List<String> usersEmails = List.of();
+        final String email = "testemail@example.com";
+        final User user = new User("123", email, "test name", Set.of());
+        final User boardOwner = new User("1234", "testemail1@example.com", "test name", Set.of());
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(buildBoard(boardOwner)));
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.assignUsersToBoard(boardId, usersEmails, email));
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should return List of unsuccessfully emails ")
+    void assignUsersToBoardShouldReturnFailedEmails() throws JSONException {
+        //given
+        final int boardId = 1;
+        final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com");
+        final String ownerEmail = "owner@example.com";
+        final String displayName = "testDisplayName";
+        final User owner = new User("123", ownerEmail, displayName, Set.of());
+        final User user = new User("1234", usersEmails.get(0), displayName, new HashSet<>());
+        final Board board = buildBoard(owner);
+
+        //when
+        when(userRepository.findUserByEmail(ownerEmail)).thenReturn(Optional.of(owner));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
+        when(userRepository.findUserByEmail(usersEmails.get(0))).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmail(usersEmails.get(1))).thenReturn(Optional.empty());
+        final JSONArray failedEmails = new JSONArray(boardService.assignUsersToBoard(boardId, usersEmails, ownerEmail));
+
+        //then
+        verify(boardRepository).save(any(Board.class));
+        assertEquals(failedEmails.get(0), usersEmails.get(1));
     }
 
     private Board buildBoard(final User user) {

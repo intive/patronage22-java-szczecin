@@ -71,6 +71,19 @@ public class BoardController {
         return boardService.createBoard(boardDto.getName(), authentication.getName());
     }
 
+    @PostMapping("/{id}/users")
+    @ResponseStatus(CREATED)
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Assign users to given board.",
+               responses = {@ApiResponse(responseCode = "201", description = "Users assigned to the board"),
+                       @ApiResponse(responseCode = "400", description = "User is not the board owner"),
+                       @ApiResponse(responseCode = "404", description = "Board/user not found")})
+    public ResponseEntity<List<String>> assignUsersToBoard(@PathVariable final Integer id,
+                                                           @RequestBody final List<String> usersEmails,
+                                                           final Authentication authentication) {
+        return ResponseEntity.status(CREATED)
+                .body(boardService.assignUsersToBoard(id, usersEmails, authentication.getName()));
+    }
+
     @DeleteMapping("/{id}")
     @ResponseStatus(OK)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Delete retro board for given id.",
