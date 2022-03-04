@@ -36,6 +36,8 @@ import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.URL_LOGIN;
@@ -391,6 +393,60 @@ class UserControllerTest {
 
         // when
         when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        // then
+        mockMvc
+                .perform(get(url).header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(jsonPath("$.name").value("test22@test.com"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void privateShouldReturnOkWhenUserAuthenticatedIsInDatabase() throws Exception {
+        // given
+        final String url = "/api/v1/private";
+        final String email = "test22@test.com";
+        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +
+                "eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9na" +
+                "W4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+        final UserRepository userRepository = mock(UserRepository.class);
+        com.intive.patronage22.szczecin.retroboard.model.User user =
+                new com.intive.patronage22.szczecin.retroboard.model.User
+                        ("123", email, "displayName", Set.of());
+
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.of(user));
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        // then
+        mockMvc
+                .perform(get(url).header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(jsonPath("$.name").value("test22@test.com"))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void privateShouldReturnOkWhenUserAuthenticatedIsNotInDatabase() throws Exception {
+        // given
+        final String url = "/api/v1/private";
+        final String email = "test22@test.com";
+        final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9." +
+                "eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9na" +
+                "W4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+        final UserRepository userRepository = mock(UserRepository.class);
+        com.intive.patronage22.szczecin.retroboard.model.User user =
+                new com.intive.patronage22.szczecin.retroboard.model.User
+                        ("123", "email@email.com", "displayName", Set.of());
+
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.of(user));
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
 
         // then
