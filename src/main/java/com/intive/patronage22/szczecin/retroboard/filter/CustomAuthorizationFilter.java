@@ -54,7 +54,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                                     null,
                                     new HashSet<>());
 
-                    Optional<User> optionalUser = userRepository.findById(firebaseToken.getUid());
+                    final Optional<User> optionalUser = userRepository.findUserByEmail(firebaseToken.getEmail());
 
                     if(optionalUser.isEmpty()){
                         User user = new User(firebaseToken.getUid(),

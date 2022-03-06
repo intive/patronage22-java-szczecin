@@ -31,18 +31,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -468,7 +467,7 @@ class BoardControllerTest {
                 new BoardDto(1, EnumStateDto.CREATED, "test1", 1),
                 new BoardDto(2, EnumStateDto.CREATED, "test2", 2)
         );
-        User user = new User("123", email, "displayName", Set.of());
+        final User user = new User();
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
         // when
@@ -482,22 +481,24 @@ class BoardControllerTest {
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.*", hasSize(2)));
+                .andExpect(jsonPath("$.*", hasSize(2)))
+                .andExpect(result -> verify(userRepository, times(0)).save(any()));
+        ;
     }
 
     @Test
-    void getUserBoardsShouldReturnOkWhenUserNotExistsInDatabase() throws Exception {
+    void getUserBoardShouldSaveUserAndReturnOkWhenUserNotExistsInDatabase() throws Exception {
         // given
         final List<BoardDto> dtoList = List.of(
                 new BoardDto(1, EnumStateDto.CREATED, "test1", 1),
                 new BoardDto(2, EnumStateDto.CREATED, "test2", 2)
         );
-        User user = new User("123", "email@email.com", "displayName", Set.of());
+
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
         // when
         when(firebaseToken.getEmail()).thenReturn(email);
-        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.empty());
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
         when(boardService.getUserBoards(email)).thenReturn(dtoList);
 
@@ -506,7 +507,9 @@ class BoardControllerTest {
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.*", hasSize(2)));
+                .andExpect(jsonPath("$.*", hasSize(2)))
+                .andExpect(result -> verify(userRepository, times(1)).findUserByEmail(email))
+                .andExpect(result -> verify(userRepository, times(1)).save(any()));
     }
 
     @Test
@@ -520,7 +523,7 @@ class BoardControllerTest {
                 .name(boardName)
                 .build();
 
-        User user = new User("123", email, "displayName", Set.of());
+        final User user = new User();
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
         // when
@@ -551,7 +554,7 @@ class BoardControllerTest {
                 .name(boardName)
                 .build();
 
-        User user = new User("123", "email@email.com", "displayName", Set.of());
+        final User user = new User();
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
         // when
@@ -580,7 +583,7 @@ class BoardControllerTest {
         final List<String> usersEmails = List.of("testemail@example.com", failedEmail);
         final List<String> failedEmails = List.of(failedEmail);
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
-        User user = new User("123", email, "displayName", Set.of());
+        final User user = new User();
 
         //when
         when(firebaseToken.getEmail()).thenReturn(email);
@@ -607,7 +610,7 @@ class BoardControllerTest {
         final List<String> usersEmails = List.of("testemail@example.com", failedEmail);
         final List<String> failedEmails = List.of(failedEmail);
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
-        User user = new User("123", "email@email.com", "displayName", Set.of());
+        final User user = new User();
 
         //when
         when(firebaseToken.getEmail()).thenReturn(email);
