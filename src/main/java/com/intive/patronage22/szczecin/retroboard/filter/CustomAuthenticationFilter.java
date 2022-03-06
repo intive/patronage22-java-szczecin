@@ -2,9 +2,11 @@ package com.intive.patronage22.szczecin.retroboard.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intive.patronage22.szczecin.retroboard.dto.FirebaseUserDto;
+import com.intive.patronage22.szczecin.retroboard.exception.EmailFormatException;
 import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -36,11 +38,14 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 
         final String email = request.getParameter("email");
         final String password = request.getParameter("password");
-        
-        if (email == null || email.isBlank())
-            throw new MissingFieldException("Missing email.");
-        if (password == null || password.isBlank())
+
+        if (!EmailValidator.getInstance().isValid(email)) {
+            throw new EmailFormatException("Invalid email.");
+        }
+
+        if (password == null || password.isBlank()) {
             throw new MissingFieldException("Missing password.");
+        }
 
         final UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(email, password);
@@ -50,10 +55,9 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 
     @Override
     protected void successfulAuthentication(final HttpServletRequest request, final HttpServletResponse response,
-                                            final FilterChain chain, final Authentication authentication)
-            throws IOException {
-        
-        final FirebaseUserDto userDto = (FirebaseUserDto)authentication.getPrincipal();
+                                            final FilterChain chain, final Authentication authentication) {
+
+        final FirebaseUserDto userDto = (FirebaseUserDto) authentication.getPrincipal();
         response.addHeader(AUTHORIZATION, "Bearer " + userDto.getIdToken());
         response.addHeader("Expires", userDto.getExpiresIn());
     }
@@ -62,10 +66,14 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     protected void unsuccessfulAuthentication(final HttpServletRequest request, final HttpServletResponse response,
                                               final AuthenticationException failed) throws IOException {
 
-        if (failed instanceof MissingFieldException)
+        if (failed instanceof MissingFieldException) {
             response.setStatus(BAD_REQUEST.value());
-        else
+        } else if (failed instanceof EmailFormatException) {
+            response.setStatus(BAD_REQUEST.value());
+        } else {
             response.setStatus(UNAUTHORIZED.value());
+        }
+
         simpleJsonBodyWriter(response, "error_message", failed.getMessage());
     }
 
