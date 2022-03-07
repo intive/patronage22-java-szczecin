@@ -55,7 +55,7 @@ public class BoardController {
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retro board details for user by id",
                responses = {@ApiResponse(responseCode = "200", description = "OK"),
                        @ApiResponse(responseCode = "400", description = "User has no access to board."),
-                       @ApiResponse(responseCode = "404", description = "Board is not found")})
+                       @ApiResponse(responseCode = "404", description = "Board not found")})
     public Map<String, List<BoardDetailsDto>> getBoardDetailsById(@PathVariable final Integer id,
                                                                   final Authentication authentication) {
 
@@ -67,7 +67,7 @@ public class BoardController {
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retro board data for user by id",
                responses = {@ApiResponse(responseCode = "200", description = "OK"),
                        @ApiResponse(responseCode = "400", description = "User has no access to board."),
-                       @ApiResponse(responseCode = "404", description = "Board is not found")})
+                       @ApiResponse(responseCode = "404", description = "Board not found")})
     public BoardDataDto getBoardDataById(@PathVariable final Integer id, final Authentication authentication) {
 
         return boardService.getBoardDataById(id, authentication.getName());
