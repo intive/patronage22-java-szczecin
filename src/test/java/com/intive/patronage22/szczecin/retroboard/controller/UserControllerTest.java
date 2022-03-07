@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -258,40 +259,36 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.error_message").value("Email not found."));
     }
 
-    @Test
-    void loginShouldReturnBadRequestWhenEmailIsMissing() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings = {"test", "t@e.p", "123@", "test@o2.", "test@o2.l", "", " "})
+    void loginShouldReturnBadRequestWhenEmailIsInvalid(final String email) throws Exception {
         // given
-        final String email = null;
         final String password = "1234";
-        final MissingFieldException expectedException = new MissingFieldException("Missing email.");
-        final UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, password);
-        firebaseRestServiceServer.expect(method(HttpMethod.POST))
-                .andRespond(withBadRequest()
-                        .body("{\n" +
-                                "  \"error\": {\n" +
-                                "    \"code\": 400,\n" +
-                                "    \"message\": \"MISSING_EMAIL\",\n" +
-                                "    \"errors\": [\n" +
-                                "      {\n" +
-                                "        \"message\": \"MISSING_EMAIL\",\n" +
-                                "        \"domain\": \"global\",\n" +
-                                "        \"reason\": \"invalid\"\n" +
-                                "      }\n" +
-                                "    ]\n" +
-                                "  }\n" +
-                                "}").contentType(MediaType.APPLICATION_JSON));
 
-        // when
-        when(authenticationManager.authenticate(token)).thenThrow(expectedException);
-
-        // then
+        // when then
         mockMvc
                 .perform(post(URL_LOGIN)
                         .param("email", email)
                         .param("password", password)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error_message").value("Missing email."));
+                .andExpect(jsonPath("$.error_message").value("Invalid email."));
+    }
+
+    @Test
+    void loginShouldReturnBadRequestWhenEmailIsNull() throws Exception {
+        // given
+        final String email = null;
+        final String password = "1234";
+
+        // when then
+        mockMvc
+                .perform(post(URL_LOGIN)
+                        .param("email", email)
+                        .param("password", password)
+                        .contentType(MediaType.APPLICATION_FORM_URLENCODED))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error_message").value("Invalid email."));
     }
 
     @Test
