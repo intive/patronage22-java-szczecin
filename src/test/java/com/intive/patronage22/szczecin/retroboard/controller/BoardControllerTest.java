@@ -482,7 +482,7 @@ class BoardControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(2)))
-                .andExpect(result -> verify(userRepository, times(0)).save(any()));
+                .andExpect(result -> verify(userRepository, never()).save(any()));
         ;
     }
 
