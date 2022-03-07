@@ -3,6 +3,7 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
+import com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
@@ -11,7 +12,10 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
+import com.intive.patronage22.szczecin.retroboard.model.User;
+import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
+import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import org.json.JSONArray;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,16 +31,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -57,6 +62,11 @@ class BoardControllerTest {
 
     @MockBean
     private FirebaseAuth firebaseAuth;
+
+    @MockBean
+    private UserRepository userRepository;
+
+    private WebSecurityConfig webSecurityConfig;
 
     private static final String email = "test22@test.com";
     private static final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
@@ -448,5 +458,173 @@ class BoardControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException))
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
+    }
+
+    @Test
+    void getUserBoardsShouldReturnOkWhenUserExistsInDatabase() throws Exception {
+        // given
+        final List<BoardDto> dtoList = List.of(
+                new BoardDto(1, EnumStateDto.CREATED, "test1", 1),
+                new BoardDto(2, EnumStateDto.CREATED, "test2", 2)
+        );
+        final User user = new User();
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.of(user));
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.getUserBoards(email)).thenReturn(dtoList);
+
+        // then
+        mockMvc.perform(get(boardDataUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.*", hasSize(2)))
+                .andExpect(result -> verify(userRepository, never()).save(any()));
+        ;
+    }
+
+    @Test
+    void getUserBoardShouldSaveUserAndReturnOkWhenUserNotExistsInDatabase() throws Exception {
+        // given
+        final List<BoardDto> dtoList = List.of(
+                new BoardDto(1, EnumStateDto.CREATED, "test1", 1),
+                new BoardDto(2, EnumStateDto.CREATED, "test2", 2)
+        );
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.empty());
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.getUserBoards(email)).thenReturn(dtoList);
+
+        // then
+        mockMvc.perform(get(boardDataUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.*", hasSize(2)))
+                .andExpect(result -> verify(userRepository, times(1)).findUserByEmail(email))
+                .andExpect(result -> verify(userRepository, times(1)).save(any()));
+    }
+
+    @Test
+    void createBoardShouldReturnCreatedWhenUserExistsInDatabaseAndBoardNameIsValid() throws Exception {
+        // given
+        final String boardName = "My first board.";
+
+        final BoardDto boardDto = BoardDto.builder()
+                .id(1004)
+                .state(EnumStateDto.CREATED)
+                .name(boardName)
+                .build();
+
+        final User user = new User();
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.of(user));
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.createBoard(boardName, email)).thenReturn(boardDto);
+
+        // then
+        mockMvc.perform(post(boardDataUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + boardName + "\"}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value(boardName));
+    }
+
+    @Test
+    void createBoardShouldReturnCreatedWhenUserNotExistsInDatabaseAndBoardNameIsValid() throws Exception {
+        // given
+        final String boardName = "My first board.";
+
+        final BoardDto boardDto = BoardDto.builder()
+                .id(1004)
+                .state(EnumStateDto.CREATED)
+                .name(boardName)
+                .build();
+
+        final User user = new User();
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.of(user));
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.createBoard(boardName, email)).thenReturn(boardDto);
+
+        // then
+        mockMvc.perform(post(boardDataUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"" + boardName + "\"}")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value(boardName));
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should return 201 when users are assigned to board")
+    void assignUsersToBoardShouldReturnCreatedWhenUserExistsInDatabase() throws Exception {
+        final int boardId = 1;
+        final String assignUsersUrl = boardDataUrl + "/" + boardId + "/users";
+        final String failedEmail = "testfailemail@example.com";
+        final List<String> usersEmails = List.of("testemail@example.com", failedEmail);
+        final List<String> failedEmails = List.of(failedEmail);
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+        final User user = new User();
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.of(user));
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.assignUsersToBoard(boardId, usersEmails, email)).thenReturn(failedEmails);
+
+        //then
+        this.mockMvc.perform(post(assignUsersUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new JSONArray(usersEmails).toString()))
+                .andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.*", hasSize(1))).andExpect(result -> assertTrue(
+                        result.getResponse().getContentAsString().contains(failedEmails.get(0))));
+    }
+
+    @Test
+    @DisplayName("assignUsersToBoard should return 201 when users are assigned to board")
+    void assignUsersToBoardShouldReturnCreatedWhenUserNotExistsInDatabase() throws Exception {
+        final int boardId = 1;
+        final String assignUsersUrl = boardDataUrl + "/" + boardId + "/users";
+        final String failedEmail = "testfailemail@example.com";
+        final List<String> usersEmails = List.of("testemail@example.com", failedEmail);
+        final List<String> failedEmails = List.of(failedEmail);
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+        final User user = new User();
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.of(user));
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.assignUsersToBoard(boardId, usersEmails, email)).thenReturn(failedEmails);
+
+        //then
+        this.mockMvc.perform(post(assignUsersUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(new JSONArray(usersEmails).toString()))
+                .andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.*", hasSize(1))).andExpect(result -> assertTrue(
+                        result.getResponse().getContentAsString().contains(failedEmails.get(0))));
     }
 }
