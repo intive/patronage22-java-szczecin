@@ -54,11 +54,14 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                                     null,
                                     new HashSet<>());
 
-                    userRepository.findUserByEmail(firebaseToken.getEmail()).ifPresentOrElse(
-                            user -> {},
-                            () ->{userRepository.save(new User(firebaseToken.getUid(),
-                                    firebaseToken.getEmail(), firebaseToken.getName(), Set.of()));
-                                log.info("{} added to database",firebaseToken.getEmail());});
+                    final Optional<User> optionalUser = userRepository.findUserByEmail(firebaseToken.getEmail());
+
+                    if(optionalUser.isEmpty()){
+                        final User user = new User(firebaseToken.getUid(),
+                                firebaseToken.getEmail(), firebaseToken.getName(), Set.of());
+                        userRepository.save(user);
+                        log.info("{} added to database",firebaseToken.getEmail());
+                    }
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
