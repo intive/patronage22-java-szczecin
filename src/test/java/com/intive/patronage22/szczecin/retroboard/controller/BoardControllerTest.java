@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.util.Optional.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -482,7 +483,7 @@ class BoardControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(2)))
-                .andExpect(result -> verify(userRepository, times(0)).save(any()));
+                .andExpect(result -> verify(userRepository, never()).save(any()));
         ;
     }
 
@@ -498,7 +499,7 @@ class BoardControllerTest {
 
         // when
         when(firebaseToken.getEmail()).thenReturn(email);
-        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(Optional.empty());
+        when(userRepository.findUserByEmail(firebaseToken.getEmail())).thenReturn(empty());
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
         when(boardService.getUserBoards(email)).thenReturn(dtoList);
 
