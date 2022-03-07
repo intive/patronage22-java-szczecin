@@ -68,13 +68,16 @@ public class BoardService {
         final Board boardReturn;
         final Optional<Board> board = boardRepository.findById(id);
 
-        board.filter(b -> b.getState() == EnumStateDto.CREATED)
-                .map(b -> Optional.ofNullable(b.getCreator())
-                        .filter(creator -> creator.getEmail().equals(email))
-                        .orElseThrow(() -> new BadRequestException("Not a board owner!")))
-                .orElseThrow(() -> new BadRequestException("State of board does not allow to change number of votes!"));
-
         boardReturn = board.map(b -> {
+            if (b.getState() == EnumStateDto.CREATED) {
+                Optional.ofNullable(b.getCreator())
+                        .filter(creator -> creator.getEmail().equals(email))
+                        .orElseThrow(() -> new BadRequestException
+                                ("Not a board owner!"));
+            } else {
+                throw new BadRequestException
+                        ("State of board does not allow to change number of votes!");
+            }
             if (nonNull(boardPatchDto.getName()) && !boardPatchDto.getName().equals(b.getName())) {
                 b.setName(boardPatchDto.getName());
             }
