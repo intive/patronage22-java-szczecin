@@ -1,6 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDetailsDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Map;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -48,12 +50,24 @@ public class BoardController {
         return boardService.getUserBoards(authentication.getName());
     }
 
+    @GetMapping("/{id}/details")
+    @ResponseStatus(OK)
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retro board details for user by id",
+               responses = {@ApiResponse(responseCode = "200", description = "OK"),
+                       @ApiResponse(responseCode = "400", description = "User has no access to board."),
+                       @ApiResponse(responseCode = "404", description = "Board is not found")})
+    public Map<String, List<BoardDetailsDto>> getBoardDetailsById(@PathVariable final Integer id,
+                                                                  final Authentication authentication) {
+
+        return boardService.getBoardDetailsById(id, authentication.getName());
+    }
+
     @GetMapping("/{id}")
     @ResponseStatus(OK)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retro board data for user by id",
-            responses = {@ApiResponse(responseCode = "200", description = "OK"),
-                    @ApiResponse(responseCode = "400", description = "User has no access to board."),
-                    @ApiResponse(responseCode = "404", description = "Board is not found")})
+               responses = {@ApiResponse(responseCode = "200", description = "OK"),
+                       @ApiResponse(responseCode = "400", description = "User has no access to board."),
+                       @ApiResponse(responseCode = "404", description = "Board is not found")})
     public BoardDataDto getBoardDataById(@PathVariable final Integer id, final Authentication authentication) {
 
         return boardService.getBoardDataById(id, authentication.getName());
