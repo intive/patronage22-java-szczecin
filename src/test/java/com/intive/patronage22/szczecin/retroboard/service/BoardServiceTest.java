@@ -1,10 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
-import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.*;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
@@ -342,7 +338,8 @@ class BoardServiceTest {
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of());
         final var id = 10;
-        final var board = buildBoard(user);
+        final var state = EnumStateDto.CREATED;
+        final var board = buildBoard(user, state);
         when(boardRepository.findById(id)).thenReturn(Optional.of(board));
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
 
@@ -359,7 +356,8 @@ class BoardServiceTest {
         final var email = "username@test.pl";
         final var boardName = "My first board.";
         final var userOwner = new User(uid, email, "displayName", Set.of());
-        final var board = buildBoard(userOwner);
+        final var state = EnumStateDto.CREATED;
+        final var board = buildBoard(userOwner, state);
         final var id = 10;
         final var boardPatchDto = new BoardPatchDto(boardName, 1500);
 
@@ -369,7 +367,7 @@ class BoardServiceTest {
 
         // then
         final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, email);
-        
+
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
         verify(boardRepository).findById(id);
         verify(boardRepository).save(any(Board.class));
@@ -381,7 +379,8 @@ class BoardServiceTest {
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of());
-        final var board = buildBoard(user);
+        final var state = EnumStateDto.CREATED;
+        final var board = buildBoard(user, state);
         final var id = 10;
         final var boardPatchDto = new BoardPatchDto(null, 1500);
 
@@ -438,10 +437,11 @@ class BoardServiceTest {
         final String email = "testemail@example.com";
         final User user = new User("123", email, "test name", Set.of());
         final User boardOwner = new User("1234", "testemail1@example.com", "test name", Set.of());
+        final var state = EnumStateDto.CREATED;
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
-        when(boardRepository.findById(boardId)).thenReturn(Optional.of(buildBoard(boardOwner)));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(buildBoard(boardOwner, state)));
 
         //then
         assertThrows(BadRequestException.class, () -> boardService.assignUsersToBoard(boardId, usersEmails, email));
@@ -457,7 +457,8 @@ class BoardServiceTest {
         final String displayName = "testDisplayName";
         final User owner = new User("123", ownerEmail, displayName, Set.of());
         final User user = new User("1234", usersEmails.get(0), displayName, new HashSet<>());
-        final Board board = buildBoard(owner);
+        final var state = EnumStateDto.CREATED;
+        final Board board = buildBoard(owner, state);
 
         //when
         when(userRepository.findUserByEmail(ownerEmail)).thenReturn(Optional.of(owner));
@@ -471,11 +472,50 @@ class BoardServiceTest {
         assertEquals(failedEmails.get(0), usersEmails.get(1));
     }
 
-    private Board buildBoard(final User user) {
+    @Test
+    void patchBoardShouldReturnBadRequestWhenBoardStateNotCreated() {
+        // given
+        final var uid = "1234";
+        final var email = "John@test.pl";
+        final var user = new User(uid, email, "john14", Set.of());
+        final var state = EnumStateDto.VOTING;
+        final var board = buildBoard(user, state);
+        final var id = 10;
+        final var boardPatchDto = new BoardPatchDto("testboard", 1500);
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+
+        // when & then
+        assertThrows(BadRequestException.class,
+                () -> boardService.patchBoard(id, boardPatchDto, email));
+    }
+
+    @Test
+    void patchBoardShouldReturnOkWhenStateIsCreated() {
+        // given
+        final var uid = "1234";
+        final var email = "John@test.pl";
+        final var user = new User(uid, email, "john14", Set.of());
+        final var state = EnumStateDto.CREATED;
+        final var board = buildBoard(user, state);
+        final var id = 10;
+        final var boardPatchDto = new BoardPatchDto("testboard", 1500);
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+
+        // when & then
+        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, email);
+
+        assertEquals(BoardDto.fromModel(board), boardDtoResult);
+        verify(boardRepository).findById(id);
+        verify(boardRepository).save(any(Board.class));
+    }
+
+    private Board buildBoard(final User user, final EnumStateDto state) {
         return Board.builder()
                 .id(10)
                 .name("My first board.")
-                .state(EnumStateDto.CREATED)
+                .state(state)
                 .creator(user)
                 .users(Set.of())
                 .build();
