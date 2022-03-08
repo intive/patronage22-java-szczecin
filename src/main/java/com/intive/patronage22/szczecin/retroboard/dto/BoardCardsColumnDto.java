@@ -22,9 +22,9 @@ public class BoardCardsColumnDto {
     public static BoardCardsColumnDto createFrom(final BoardCardsColumn boardCardsColumn) {
         return BoardCardsColumnDto.builder()
                 .name(boardCardsColumn.name())
-                .id(boardCardsColumn.orderNumber)
-                .position(boardCardsColumn.orderNumber)
-                .colour(boardCardsColumn.colour)
+                .id(boardCardsColumn.getOrderNumber())
+                .position(boardCardsColumn.getOrderNumber())
+                .colour(boardCardsColumn.getColour())
                 .build();
     }
 }

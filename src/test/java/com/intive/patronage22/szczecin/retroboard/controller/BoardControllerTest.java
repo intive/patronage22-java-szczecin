@@ -259,9 +259,9 @@ class BoardControllerTest {
         final List<BoardCardDto> failuresBoardCardsDtos = List.of(new BoardCardDto(2, "failure", creatorEmail, List.of("test failure")));
         final List<BoardCardDto> kudosBoardCardsDtos = List.of(new BoardCardDto(3, "kudos", creatorEmail, List.of("test kudos")));
         final List<BoardDetailsDto> boardDetailsDtos =
-                List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.orderNumber, successBoardCardsDtos),
-                        BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.orderNumber, failuresBoardCardsDtos),
-                        BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.orderNumber, kudosBoardCardsDtos));
+                List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getOrderNumber(), successBoardCardsDtos),
+                        BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getOrderNumber(), failuresBoardCardsDtos),
+                        BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.getOrderNumber(), kudosBoardCardsDtos));
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
@@ -432,8 +432,11 @@ class BoardControllerTest {
         final var boardDataUrl = this.boardDataUrl + "/1";
         final var boardName = "My first board.";
         final var maximumNumberOfVotes = 1;
-        final BoardDto boardDto =
-                BoardDto.builder().id(1).state(EnumStateDto.CREATED).name(boardName).numberOfVotes(maximumNumberOfVotes)
+        final BoardDto boardDto = BoardDto.builder()
+                .id(1)
+                .state(EnumStateDto.CREATED)
+                .name(boardName)
+                .numberOfVotes(maximumNumberOfVotes)
                 .build();
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);

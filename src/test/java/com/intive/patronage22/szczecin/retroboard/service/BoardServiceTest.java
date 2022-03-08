@@ -255,9 +255,9 @@ class BoardServiceTest {
         assertEquals(boardDataDto.getBoard().getName(), board.getName());
         assertEquals(boardDataDto.getBoard().getNumberOfVotes(), board.getMaximumNumberOfVotes());
         assertEquals(boardDataDto.getColumns().get(0).getName(), BoardCardsColumn.SUCCESS.name());
-        assertEquals(boardDataDto.getColumns().get(0).getId(), BoardCardsColumn.SUCCESS.orderNumber);
-        assertEquals(boardDataDto.getColumns().get(0).getPosition(), BoardCardsColumn.SUCCESS.orderNumber);
-        assertEquals(boardDataDto.getColumns().get(0).getColour(), BoardCardsColumn.SUCCESS.colour);
+        assertEquals(boardDataDto.getColumns().get(0).getId(), BoardCardsColumn.SUCCESS.getOrderNumber());
+        assertEquals(boardDataDto.getColumns().get(0).getPosition(), BoardCardsColumn.SUCCESS.getOrderNumber());
+        assertEquals(boardDataDto.getColumns().get(0).getColour(), BoardCardsColumn.SUCCESS.getColour());
         assertTrue(boardDataDto.getUsers().toString().contains(user.getEmail()));
         assertTrue(boardDataDto.getUsers().toString().contains(user.getUid()));
         assertTrue(boardDataDto.getUsers().toString().contains(assignUser.getEmail()));
@@ -362,7 +362,7 @@ class BoardServiceTest {
         final List<BoardDetailsDto> boardDetailsDto = boardService.getBoardDetailsById(boardId, userEmail);
 
         //then
-        assertEquals(boardDetailsDto.get(0).getId(), BoardCardsColumn.SUCCESS.orderNumber);
+        assertEquals(boardDetailsDto.get(0).getId(), BoardCardsColumn.SUCCESS.getOrderNumber());
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getId(), successBoardCard.getId());
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getCardText(), successBoardCard.getText());
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getBoardCardCreator(),
@@ -370,7 +370,7 @@ class BoardServiceTest {
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getActionTexts().get(0),
                 successBoardCard.getBoardCardActions().get(0).getText());
 
-        assertEquals(boardDetailsDto.get(1).getId(), BoardCardsColumn.FAILURES.orderNumber);
+        assertEquals(boardDetailsDto.get(1).getId(), BoardCardsColumn.FAILURES.getOrderNumber());
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getId(), failureBoardCard.getId());
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getCardText(), failureBoardCard.getText());
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getBoardCardCreator(),
@@ -378,7 +378,7 @@ class BoardServiceTest {
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getActionTexts().get(0),
                 failureBoardCard.getBoardCardActions().get(0).getText());
 
-        assertEquals(boardDetailsDto.get(2).getId(), BoardCardsColumn.KUDOS.orderNumber);
+        assertEquals(boardDetailsDto.get(2).getId(), BoardCardsColumn.KUDOS.getOrderNumber());
         assertEquals(boardDetailsDto.get(2).getBoardCards().get(0).getId(), kudosBoardCard.getId());
         assertEquals(boardDetailsDto.get(2).getBoardCards().get(0).getCardText(), kudosBoardCard.getText());
         assertEquals(boardDetailsDto.get(2).getBoardCards().get(0).getBoardCardCreator(),
@@ -430,7 +430,7 @@ class BoardServiceTest {
         final List<BoardDetailsDto> boardDetailsDto = boardService.getBoardDetailsById(boardId, userEmail);
 
         //then
-        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.SUCCESS.orderNumber)));
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.SUCCESS.getOrderNumber())));
         assertTrue(boardDetailsDto.toString().contains(successBoardCard.getId().toString()));
         assertTrue(boardDetailsDto.toString().contains(successBoardCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(successBoardCard.getCreator().getEmail()));
@@ -440,13 +440,13 @@ class BoardServiceTest {
         assertTrue(boardDetailsDto.toString().contains(assignedUserCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(assignedUserCard.getCreator().getEmail()));
 
-        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.FAILURES.orderNumber)));
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.FAILURES.getOrderNumber())));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getId().toString()));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getCreator().getEmail()));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getBoardCardActions().get(0).getText()));
 
-        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.KUDOS.orderNumber)));
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.KUDOS.getOrderNumber())));
         assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getId().toString()));
         assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getCreator().getEmail()));

@@ -90,9 +90,9 @@ public class BoardService {
             }
         });
 
-        return List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.orderNumber, successBoardCardsDtos),
-                BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.orderNumber, failuresBoardCardsDtos),
-                BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.orderNumber, kudosBoardCardsDtos));
+        return List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getOrderNumber(), successBoardCardsDtos),
+                BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getOrderNumber(), failuresBoardCardsDtos),
+                BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.getOrderNumber(), kudosBoardCardsDtos));
     }
 
     @Transactional
