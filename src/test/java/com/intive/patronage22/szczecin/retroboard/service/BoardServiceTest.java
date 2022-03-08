@@ -356,7 +356,7 @@ class BoardServiceTest {
         when(userRepository.findUserByEmail(userEmail)).thenReturn(Optional.of(user));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.of(board));
-        when(boardCardsRepository.findAllByCreatorOrderByIdAsc(user)).thenReturn(
+        when(boardCardsRepository.findAllByBoardIdAndCreatorOrderByIdAsc(boardId, user)).thenReturn(
                 List.of(successBoardCard, failureBoardCard, kudosBoardCard));
 
         final List<BoardDetailsDto> boardDetailsDto = boardService.getBoardDetailsById(boardId, userEmail);
