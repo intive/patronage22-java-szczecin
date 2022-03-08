@@ -3,19 +3,20 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
-import com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumnDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDetailsDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.UserDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
-import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import org.json.JSONArray;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -31,10 +32,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
@@ -65,8 +65,6 @@ class BoardControllerTest {
 
     @MockBean
     private UserRepository userRepository;
-
-    private WebSecurityConfig webSecurityConfig;
 
     private static final String email = "test22@test.com";
     private static final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
@@ -169,13 +167,14 @@ class BoardControllerTest {
         //given
         final int boardId = 1;
 
-        final BoardDto boardDto = new BoardDto(1, EnumStateDto.CREATED, "test1", 0);
-        final List<String> actionTexts = List.of("action text 1", "action text 2");
-        final BoardCardDto boardCardDataDto =
-                new BoardCardDto(2, "cardText", BoardCardsColumn.SUCCESS, email, actionTexts);
-        final BoardCardDto boardCardDataDto1 =
-                new BoardCardDto(3, "cardText3", BoardCardsColumn.FAILURES, email, actionTexts);
-        final BoardDataDto boardDataDto = new BoardDataDto(boardDto, List.of(boardCardDataDto, boardCardDataDto1));
+        final List<BoardCardsColumnDto> boardCardsColumnDtos =
+                List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),
+                        BoardCardsColumnDto.createFrom(BoardCardsColumn.FAILURES),
+                        BoardCardsColumnDto.createFrom(BoardCardsColumn.KUDOS));
+        final List<UserDto> userDtos =
+                List.of(new UserDto("test@example.com", "uid123"), new UserDto("test1@example.com", "uid1235"));
+        final BoardDataDto boardDataDto =
+                new BoardDataDto(1, EnumStateDto.CREATED, "board name", 5, boardCardsColumnDtos, userDtos);
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
@@ -186,26 +185,23 @@ class BoardControllerTest {
         when(boardService.getBoardDataById(boardId, email)).thenReturn(boardDataDto);
 
         //then
-        this.mockMvc.perform(get(boardDataUrl + "/" + boardId)
-                        .header(AUTHORIZATION, "Bearer " + providedAccessToken))
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.*", hasSize(2))).andExpect(result -> assertTrue(
-                        result.getResponse().getContentAsString().contains(boardDataDto.getBoard().getId().toString())))
-                .andExpect(result -> assertTrue(
-                        result.getResponse().getContentAsString().contains(boardDataDto.getBoard().getName())))
+                .andExpect(jsonPath("$.*", hasSize(6)))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDataDto.getBoardCards().get(0).getId().toString()))).andExpect(
-                        result -> assertTrue(result.getResponse().getContentAsString()
-                                .contains(boardDataDto.getBoardCards().get(0).getCardText())))
-                .andExpect(result -> assertTrue(
-                        result.getResponse().getContentAsString()
-                                .contains(boardDataDto.getBoardCards().get(0).getColumnName().toString()))).andExpect(
-                        result -> assertTrue(result.getResponse().getContentAsString()
-                                .contains(boardDataDto.getBoardCards().get(1).getBoardCardCreator()))).andExpect(
-                        result -> assertTrue(result.getResponse().getContentAsString()
-                                .contains(boardDataDto.getBoardCards().get(1).getId().toString()))).andExpect(
-                        result -> assertTrue(result.getResponse().getContentAsString()
-                                .contains(boardDataDto.getBoardCards().get(1).getActionTexts().get(1))));
+                        .contains(boardDataDto.getId().toString())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDataDto.getName())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDataDto.getColumns().get(0).getName())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDataDto.getColumns().get(1).getId().toString())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDataDto.getColumns().get(2).getColour())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDataDto.getUsers().get(0).getEmail())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDataDto.getUsers().get(1).getId())));
     }
 
     @Test
@@ -246,6 +242,109 @@ class BoardControllerTest {
 
         //then
         this.mockMvc.perform(get(boardDataUrl + "/" + boardId)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException))
+                .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
+    }
+
+    @Test
+    @DisplayName("getBoardDetailsById should return 200 when board details is collected")
+    void getBoardDetailsByIdShouldReturnOk() throws Exception {
+        //given
+        final int boardId = 1;
+        final String creatorEmail = "test@example.com";
+        final List<BoardCardDto> successBoardCardsDtos = List.of(new BoardCardDto(1, "success", creatorEmail, List.of("test success")));
+        final List<BoardCardDto> failuresBoardCardsDtos = List.of(new BoardCardDto(2, "failure", creatorEmail, List.of("test failure")));
+        final List<BoardCardDto> kudosBoardCardsDtos = List.of(new BoardCardDto(3, "kudos", creatorEmail, List.of("test kudos")));
+        final List<BoardDetailsDto> boardDetailsDtos =
+                List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.orderNumber, successBoardCardsDtos),
+                        BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.orderNumber, failuresBoardCardsDtos),
+                        BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.orderNumber, kudosBoardCardsDtos));
+        final Map<String, List<BoardDetailsDto>> boardDetailsDto = Map.of("columns", boardDetailsDtos);
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        when(boardService.getBoardDetailsById(boardId, email)).thenReturn(boardDetailsDto);
+
+        //then
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId + "/details").header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.*", hasSize(1)))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(0).getId().toString())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(0).getBoardCards().get(0).getId().toString())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(0).getBoardCards().get(0).getCardText())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(0).getBoardCards().get(0).getBoardCardCreator())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(0).getBoardCards().get(0).getActionTexts().get(0))))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(1).getId().toString())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(1).getBoardCards().get(0).getId().toString())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(1).getBoardCards().get(0).getCardText())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(1).getBoardCards().get(0).getBoardCardCreator())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(1).getBoardCards().get(0).getActionTexts().get(0))))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(2).getId().toString())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(2).getBoardCards().get(0).getId().toString())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(2).getBoardCards().get(0).getCardText())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(2).getBoardCards().get(0).getBoardCardCreator())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(boardDetailsDto.get("columns").get(2).getBoardCards().get(0).getActionTexts().get(0))));
+    }
+
+    @Test
+    @DisplayName("getBoardDetailsById should return 400 when user has no access to the board")
+    void getBoardDetailsByIdShouldThrowBadRequestWhenUserHasNoAccessToBoard() throws Exception {
+        //given
+        final int boardId = 1;
+        final String exceptionMessage = "User has no access to board.";
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        when(boardService.getBoardDetailsById(boardId, email)).thenThrow(new BadRequestException(exceptionMessage));
+
+        //then
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId + "/details").header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof BadRequestException))
+                .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
+    }
+
+    @Test
+    @DisplayName("getBoardDataById should return 404 when board does not exist")
+    void getBoardDetailsByIdShouldThrowNotFoundWhenBoardDoesNotExist() throws Exception {
+        //given
+        final int boardId = 1;
+        final String exceptionMessage = "Board not found.";
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+        // when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        when(boardService.getBoardDetailsById(boardId, email)).thenThrow(new NotFoundException(exceptionMessage));
+
+        //then
+        this.mockMvc.perform(get(boardDataUrl + "/" + boardId + "/details")
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof NotFoundException))
@@ -483,7 +582,6 @@ class BoardControllerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(2)))
                 .andExpect(result -> verify(userRepository, never()).save(any()));
-        ;
     }
 
     @Test

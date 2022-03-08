@@ -2,6 +2,7 @@ package com.intive.patronage22.szczecin.retroboard.service;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDetailsDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
@@ -27,11 +28,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -191,8 +195,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("getBoardDataById should throw 400 when user has no permission to view board")
-    void getBoardDataByIdShouldThrowBadRequestWhenUserDoesntHavePermissions() {
+    @DisplayName("getBoardDataById should throw 400 when user has no access to view board")
+    void getBoardDataByIdShouldThrowBadRequestWhenUserHasNoAccessToBoard() {
         //given
         final int boardId = 1;
         final String email = "testemail@example.com";
@@ -217,8 +221,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("getBoardDataById should return 200")
-    void getBoardDataByIdShouldReturnOk() {
+    @DisplayName("getBoardDataById should return board data")
+    void getBoardDataByIdShouldReturnBoardData() {
         //given
         final int boardId = 1;
         final String email = "testemail@example.com";
@@ -243,21 +247,196 @@ class BoardServiceTest {
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.of(board));
-        when(boardCardsRepository.findAllByBoardId(boardId)).thenReturn(boardCards);
 
         final BoardDataDto boardDataDto = boardService.getBoardDataById(boardId, email);
 
         //then
-        assertEquals(boardDataDto.getBoard().getId(), board.getId());
-        assertEquals(boardDataDto.getBoard().getName(), board.getName());
-        assertEquals(boardDataDto.getBoard().getState(), board.getState());
-        assertEquals(boardDataDto.getBoardCards().get(0).getId(), boardCards.get(0).getId());
-        assertEquals(boardDataDto.getBoardCards().get(0).getCardText(), boardCards.get(0).getText());
-        assertEquals(boardDataDto.getBoardCards().get(0).getColumnName(), boardCards.get(0).getColumn());
-        assertEquals(boardDataDto.getBoardCards().get(0).getBoardCardCreator(),
-                boardCards.get(0).getCreator().getEmail());
-        assertEquals(boardDataDto.getBoardCards().get(0).getActionTexts(),
-                List.of(boardCards.get(0).getBoardCardActions().get(0).getText()));
+        assertEquals(boardDataDto.getId(), board.getId());
+        assertEquals(boardDataDto.getState(), board.getState());
+        assertEquals(boardDataDto.getName(), board.getName());
+        assertEquals(boardDataDto.getNumberOfVotes(), board.getMaximumNumberOfVotes());
+        assertEquals(boardDataDto.getColumns().get(0).getName(), BoardCardsColumn.SUCCESS.name());
+        assertEquals(boardDataDto.getColumns().get(0).getId(), BoardCardsColumn.SUCCESS.orderNumber);
+        assertEquals(boardDataDto.getColumns().get(0).getPosition(),
+                String.valueOf(BoardCardsColumn.SUCCESS.orderNumber));
+        assertEquals(boardDataDto.getColumns().get(0).getColour(), BoardCardsColumn.SUCCESS.colour);
+        assertTrue(boardDataDto.getUsers().toString().contains(user.getEmail()));
+        assertTrue(boardDataDto.getUsers().toString().contains(user.getUid()));
+        assertTrue(boardDataDto.getUsers().toString().contains(assignUser.getEmail()));
+        assertTrue(boardDataDto.getUsers().toString().contains(assignUser.getUid()));
+    }
+
+    @Test
+    @DisplayName("getBoardDetailsById should throw 400 when user does not exist")
+    void getBoardDetailsByIdShouldThrowBadRequestWhenUserDoesNotExist() {
+        //given
+        final int boardId = 1;
+        final String email = "testemail@example.com";
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.getBoardDetailsById(boardId, email));
+    }
+
+    @Test
+    @DisplayName("getBoardDetailsById should throw 404 when board does not exist")
+    void getBoardDetailsByIdShouldThrowNotFoundWhenBoardDoesNotExist() {
+        //given
+        final int boardId = 1;
+        final String email = "testemail@example.com";
+        final String displayName = "test";
+        final User user = new User("123", email, displayName, Set.of());
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(NotFoundException.class, () -> boardService.getBoardDetailsById(boardId, email));
+    }
+
+    @Test
+    @DisplayName("getBoardDetailsById should throw 400 when user has no access to the board")
+    void getBoardDetailsByIdShouldThrowBadRequestWhenUserHasNoAccessToBoard() {
+        //given
+        final int boardId = 1;
+        final String email = "testemail@example.com";
+        final String displayName = "test12";
+        final User user = new User("123", email, displayName, Set.of());
+        final User assignUser = new User("1234", "assignUser@test.pl", "test1", Set.of());
+        final Board board = Board.builder()
+                .id(1)
+                .name("board name")
+                .state(EnumStateDto.CREATED)
+                .creator(user)
+                .users(Set.of(assignUser))
+                .boardCards(Set.of())
+                .build();
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
+        when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.getBoardDetailsById(boardId, email));
+    }
+
+    @Test
+    @DisplayName("getBoardDetailsById should return board cards created by user when board state is created")
+    void getBoardDetailsByIdShouldReturnUserBoardCardsWhenBoardStateIsCreated() {
+        //given
+        final int boardId = 1;
+        final String userEmail = "testemail@example.com";
+        final String assignedUserEmail = "test@example.com";
+        final String displayName = "testDisplayName";
+        final User user = new User("123", userEmail, displayName, Set.of());
+        final User assignedUser = new User("1234", assignedUserEmail, displayName, Set.of());
+        final Board board = Board.builder()
+                .id(boardId)
+                .name("board name")
+                .state(EnumStateDto.CREATED)
+                .creator(user)
+                .users(Set.of(assignedUser))
+                .boardCards(Set.of())
+                .build();
+        final BoardCardAction successAction = new BoardCardAction(6, null, "happy");
+        final BoardCardAction failureAction = new BoardCardAction(7, null, "help");
+        final BoardCardAction kudosAction = new BoardCardAction(8, null, "awesome");
+        final BoardCard successBoardCard =
+                new BoardCard(3, board, "success", BoardCardsColumn.SUCCESS, user, List.of(successAction));
+        final BoardCard failureBoardCard =
+                new BoardCard(4, board, "failure", BoardCardsColumn.FAILURES, user, List.of(failureAction));
+        final BoardCard kudosBoardCard =
+                new BoardCard(5, board, "kudos", BoardCardsColumn.KUDOS, user, List.of(kudosAction));
+        final BoardCard assignedUserCard =
+                new BoardCard(9, board, "success", BoardCardsColumn.SUCCESS, assignedUser, List.of());
+
+        //when
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(Optional.of(user));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
+        when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.of(board));
+        when(boardCardsRepository.findAllByCreatorOrderByIdAsc(user)).thenReturn(
+                List.of(successBoardCard, failureBoardCard, kudosBoardCard));
+
+        final Map<String, List<BoardDetailsDto>> boardDetailsDto = boardService.getBoardDetailsById(boardId, userEmail);
+
+        //then
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.SUCCESS.orderNumber)));
+        assertTrue(boardDetailsDto.toString().contains(successBoardCard.getId().toString()));
+        assertTrue(boardDetailsDto.toString().contains(successBoardCard.getText()));
+        assertTrue(boardDetailsDto.toString().contains(successBoardCard.getCreator().getEmail()));
+        assertTrue(boardDetailsDto.toString().contains(successBoardCard.getBoardCardActions().get(0).getText()));
+        assertFalse(boardDetailsDto.toString().contains(assignedUserCard.getCreator().getEmail()));
+        assertFalse(boardDetailsDto.toString().contains(assignedUserCard.getId().toString()));
+        assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getId().toString()));
+        assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getText()));
+        assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getCreator().getEmail()));
+        assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getBoardCardActions().get(0).getText()));
+        assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getId().toString()));
+        assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getText()));
+        assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getCreator().getEmail()));
+        assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getBoardCardActions().get(0).getText()));
+    }
+
+    @Test
+    @DisplayName("getBoardDetailsById should return all board cards when board state is other than created")
+    void getBoardDetailsByIdShouldReturnAllBoardCardsWhenBoardStateIsOtherThanCreated() {
+        //given
+        final int boardId = 1;
+        final String userEmail = "testemail@example.com";
+        final String assignedUserEmail = "test@example.com";
+        final String displayName = "testDisplayName";
+        final User user = new User("123", userEmail, displayName, Set.of());
+        final User assignedUser = new User("1234", assignedUserEmail, displayName, Set.of());
+        final Board board = Board.builder()
+                .id(boardId)
+                .name("board name")
+                .state(EnumStateDto.ACTIONS)
+                .creator(user)
+                .users(Set.of(assignedUser))
+                .boardCards(Set.of())
+                .build();
+        final BoardCardAction successAction = new BoardCardAction(6, null, "happy");
+        final BoardCardAction failureAction = new BoardCardAction(7, null, "help");
+        final BoardCardAction kudosAction = new BoardCardAction(8, null, "awesome");
+        final BoardCard successBoardCard =
+                new BoardCard(3, board, "success", BoardCardsColumn.SUCCESS, user, List.of(successAction));
+        final BoardCard failureBoardCard =
+                new BoardCard(4, board, "failure", BoardCardsColumn.FAILURES, user, List.of(failureAction));
+        final BoardCard kudosBoardCard =
+                new BoardCard(5, board, "kudos", BoardCardsColumn.KUDOS, user, List.of(kudosAction));
+        final BoardCard assignedUserCard =
+                new BoardCard(9, board, "success", BoardCardsColumn.SUCCESS, assignedUser, List.of());
+
+        //when
+        when(userRepository.findUserByEmail(userEmail)).thenReturn(Optional.of(user));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
+        when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.of(board));
+        when(boardCardsRepository.findAllByBoardIdOrderByIdAsc(boardId)).thenReturn(
+                List.of(successBoardCard, assignedUserCard, failureBoardCard, kudosBoardCard));
+
+        final Map<String, List<BoardDetailsDto>> boardDetailsDto = boardService.getBoardDetailsById(boardId, userEmail);
+
+        //then
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.SUCCESS.orderNumber)));
+        assertTrue(boardDetailsDto.toString().contains(successBoardCard.getId().toString()));
+        assertTrue(boardDetailsDto.toString().contains(successBoardCard.getText()));
+        assertTrue(boardDetailsDto.toString().contains(successBoardCard.getCreator().getEmail()));
+        assertTrue(boardDetailsDto.toString().contains(successBoardCard.getBoardCardActions().get(0).getText()));
+        assertTrue(boardDetailsDto.toString().contains(assignedUserCard.getId().toString()));
+        assertTrue(boardDetailsDto.toString().contains(assignedUserCard.getText()));
+        assertTrue(boardDetailsDto.toString().contains(assignedUserCard.getCreator().getEmail()));
+        assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getId().toString()));
+        assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getText()));
+        assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getCreator().getEmail()));
+        assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getBoardCardActions().get(0).getText()));
+        assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getId().toString()));
+        assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getText()));
+        assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getCreator().getEmail()));
+        assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getBoardCardActions().get(0).getText()));
     }
 
     @Test
