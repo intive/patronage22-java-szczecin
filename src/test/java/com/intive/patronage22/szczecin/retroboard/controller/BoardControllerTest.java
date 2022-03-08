@@ -33,7 +33,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -173,8 +172,8 @@ class BoardControllerTest {
                         BoardCardsColumnDto.createFrom(BoardCardsColumn.KUDOS));
         final List<UserDto> userDtos =
                 List.of(new UserDto("test@example.com", "uid123"), new UserDto("test1@example.com", "uid1235"));
-        final BoardDataDto boardDataDto =
-                new BoardDataDto(1, EnumStateDto.CREATED, "board name", 5, boardCardsColumnDtos, userDtos);
+        final BoardDto boardDto = new BoardDto(1, EnumStateDto.CREATED, "board name", 5);
+        final BoardDataDto boardDataDto = new BoardDataDto(boardDto, boardCardsColumnDtos, userDtos);
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
@@ -187,11 +186,13 @@ class BoardControllerTest {
         //then
         this.mockMvc.perform(get(boardDataUrl + "/" + boardId).header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.*", hasSize(6)))
+                .andExpect(jsonPath("$.*", hasSize(3)))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDataDto.getId().toString())))
+                        .contains(boardDataDto.getBoard().getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDataDto.getName())))
+                        .contains(boardDataDto.getBoard().getName())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(String.valueOf(boardDataDto.getBoard().getNumberOfVotes()))))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(boardDataDto.getColumns().get(0).getName())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
@@ -261,7 +262,6 @@ class BoardControllerTest {
                 List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.orderNumber, successBoardCardsDtos),
                         BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.orderNumber, failuresBoardCardsDtos),
                         BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.orderNumber, kudosBoardCardsDtos));
-        final Map<String, List<BoardDetailsDto>> boardDetailsDto = Map.of("columns", boardDetailsDtos);
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
@@ -269,42 +269,42 @@ class BoardControllerTest {
         when(firebaseToken.getEmail()).thenReturn(email);
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
 
-        when(boardService.getBoardDetailsById(boardId, email)).thenReturn(boardDetailsDto);
+        when(boardService.getBoardDetailsById(boardId, email)).thenReturn(boardDetailsDtos);
 
         //then
         this.mockMvc.perform(get(boardDataUrl + "/" + boardId + "/details").header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.*", hasSize(1)))
+                .andExpect(jsonPath("$.*", hasSize(3)))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(0).getId().toString())))
+                        .contains(boardDetailsDtos.get(0).getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(0).getBoardCards().get(0).getId().toString())))
+                        .contains(boardDetailsDtos.get(0).getBoardCards().get(0).getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(0).getBoardCards().get(0).getCardText())))
+                        .contains(boardDetailsDtos.get(0).getBoardCards().get(0).getCardText())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(0).getBoardCards().get(0).getBoardCardCreator())))
+                        .contains(boardDetailsDtos.get(0).getBoardCards().get(0).getBoardCardCreator())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(0).getBoardCards().get(0).getActionTexts().get(0))))
+                        .contains(boardDetailsDtos.get(0).getBoardCards().get(0).getActionTexts().get(0))))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(1).getId().toString())))
+                        .contains(boardDetailsDtos.get(1).getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(1).getBoardCards().get(0).getId().toString())))
+                        .contains(boardDetailsDtos.get(1).getBoardCards().get(0).getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(1).getBoardCards().get(0).getCardText())))
+                        .contains(boardDetailsDtos.get(1).getBoardCards().get(0).getCardText())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(1).getBoardCards().get(0).getBoardCardCreator())))
+                        .contains(boardDetailsDtos.get(1).getBoardCards().get(0).getBoardCardCreator())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(1).getBoardCards().get(0).getActionTexts().get(0))))
+                        .contains(boardDetailsDtos.get(1).getBoardCards().get(0).getActionTexts().get(0))))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(2).getId().toString())))
+                        .contains(boardDetailsDtos.get(2).getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(2).getBoardCards().get(0).getId().toString())))
+                        .contains(boardDetailsDtos.get(2).getBoardCards().get(0).getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(2).getBoardCards().get(0).getCardText())))
+                        .contains(boardDetailsDtos.get(2).getBoardCards().get(0).getCardText())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(2).getBoardCards().get(0).getBoardCardCreator())))
+                        .contains(boardDetailsDtos.get(2).getBoardCards().get(0).getBoardCardCreator())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDto.get("columns").get(2).getBoardCards().get(0).getActionTexts().get(0))));
+                        .contains(boardDetailsDtos.get(2).getBoardCards().get(0).getActionTexts().get(0))));
     }
 
     @Test
@@ -432,11 +432,8 @@ class BoardControllerTest {
         final var boardDataUrl = this.boardDataUrl + "/1";
         final var boardName = "My first board.";
         final var maximumNumberOfVotes = 1;
-        final BoardDto boardDto = BoardDto.builder()
-                .id(1)
-                .state(EnumStateDto.CREATED)
-                .name(boardName)
-                .maximumNumberOfVotes(maximumNumberOfVotes)
+        final BoardDto boardDto =
+                BoardDto.builder().id(1).state(EnumStateDto.CREATED).name(boardName).numberOfVotes(maximumNumberOfVotes)
                 .build();
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);

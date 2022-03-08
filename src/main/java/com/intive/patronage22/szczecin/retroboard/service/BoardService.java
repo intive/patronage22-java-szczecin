@@ -25,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -60,11 +59,11 @@ public class BoardService {
         board.getUsers().forEach(user1 -> assignedUsersDtoList.add(UserDto.createFrom(user1)));
         assignedUsersDtoList.add(UserDto.createFrom(user));
 
-        return BoardDataDto.createFrom(board, boardCardsColumnDtos, assignedUsersDtoList);
+        return BoardDataDto.createFrom(BoardDto.fromModel(board), boardCardsColumnDtos, assignedUsersDtoList);
     }
 
     @Transactional(readOnly = true)
-    public Map<String, List<BoardDetailsDto>> getBoardDetailsById(final Integer boardId, final String email) {
+    public List<BoardDetailsDto> getBoardDetailsById(final Integer boardId, final String email) {
         final User user =
                 userRepository.findUserByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
 
@@ -91,12 +90,9 @@ public class BoardService {
             }
         });
 
-        final List<BoardDetailsDto> boardDetailsDtos =
-                List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.orderNumber, successBoardCardsDtos),
-                        BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.orderNumber, failuresBoardCardsDtos),
-                        BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.orderNumber, kudosBoardCardsDtos));
-
-        return Map.of("columns", boardDetailsDtos);
+        return List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.orderNumber, successBoardCardsDtos),
+                BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.orderNumber, failuresBoardCardsDtos),
+                BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.orderNumber, kudosBoardCardsDtos));
     }
 
     @Transactional

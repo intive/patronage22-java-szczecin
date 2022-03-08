@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Map;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -56,7 +55,7 @@ public class BoardController {
                responses = {@ApiResponse(responseCode = "200", description = "OK"),
                        @ApiResponse(responseCode = "400", description = "User has no access to board."),
                        @ApiResponse(responseCode = "404", description = "Board not found")})
-    public Map<String, List<BoardDetailsDto>> getBoardDetailsById(@PathVariable final Integer id,
+    public List<BoardDetailsDto> getBoardDetailsById(@PathVariable final Integer id,
                                                                   final Authentication authentication) {
 
         return boardService.getBoardDetailsById(id, authentication.getName());

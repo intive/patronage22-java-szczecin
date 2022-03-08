@@ -15,7 +15,7 @@ public class BoardCardsColumnDto {
     @Schema(description = "Column id")
     Integer id;
     @Schema(description = "Column position")
-    String position;
+    Integer position;
     @Schema(description = "Column colour")
     String colour;
 
@@ -23,7 +23,7 @@ public class BoardCardsColumnDto {
         return BoardCardsColumnDto.builder()
                 .name(boardCardsColumn.name())
                 .id(boardCardsColumn.orderNumber)
-                .position(String.valueOf(boardCardsColumn.orderNumber))
+                .position(boardCardsColumn.orderNumber)
                 .colour(boardCardsColumn.colour)
                 .build();
     }
