@@ -17,7 +17,7 @@ public class BoardDetailsDto {
     @Schema(description = "List of board cards")
     List<BoardCardDto> boardCards;
 
-    public static BoardDetailsDto createFrom(final Integer columnId, List<BoardCardDto> boardCards) {
+    public static BoardDetailsDto createFrom(final Integer columnId, final List<BoardCardDto> boardCards) {
         return BoardDetailsDto.builder()
                 .id(columnId)
                 .boardCards(boardCards)
