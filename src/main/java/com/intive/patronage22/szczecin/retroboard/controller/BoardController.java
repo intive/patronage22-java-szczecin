@@ -44,9 +44,9 @@ public class BoardController {
             responses = {@ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "400", description = "Bad request data"),
                     @ApiResponse(responseCode = "404", description = "User not found")})
-    public List<BoardDto> getUserBoards(final Authentication authentication) {
+    public List<BoardDto> getUserBoards(final Authentication authenticationn) {
 
-        return boardService.getUserBoards(authentication.getName());
+        return boardService.getUserBoards(authenticationn.getName());
     }
 
     @GetMapping("/{id}/details")
