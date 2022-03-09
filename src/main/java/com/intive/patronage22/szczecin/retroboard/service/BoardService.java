@@ -1,10 +1,14 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumnDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDetailsDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.UserDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
@@ -38,21 +42,57 @@ public class BoardService {
 
     @Transactional(readOnly = true)
     public BoardDataDto getBoardDataById(final Integer boardId, final String email) {
-        final User user = userRepository.findUserByEmail(email)
-                .orElseThrow(() -> new BadRequestException("User not found"));
+        final User user =
+                userRepository.findUserByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
 
-        boardRepository.findById(boardId)
-                .orElseThrow(() -> new NotFoundException("Board not found"));
+        boardRepository.findById(boardId).orElseThrow(() -> new NotFoundException("Board not found"));
 
         final Board board = boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)
-                .orElseThrow(() -> new BadRequestException("User doesn't have permissions to view board data"));
+                .orElseThrow(() -> new BadRequestException("User has no access to board"));
 
-        final List<BoardCard> boardCards = boardCardsRepository.findAllByBoardId(board.getId());
-        final List<BoardCardDto> boardCardDataDtos = new ArrayList<>();
+        final List<BoardCardsColumnDto> boardCardsColumnDtos =
+                List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),
+                        BoardCardsColumnDto.createFrom(BoardCardsColumn.FAILURES),
+                        BoardCardsColumnDto.createFrom(BoardCardsColumn.KUDOS));
 
-        boardCards.forEach(boardCard -> boardCardDataDtos.add(BoardCardDto.createFrom(boardCard)));
+        final List<UserDto> assignedUsersDtoList = new ArrayList<>();
+        board.getUsers().forEach(user1 -> assignedUsersDtoList.add(UserDto.createFrom(user1)));
+        assignedUsersDtoList.add(UserDto.createFrom(user));
 
-        return BoardDataDto.createFrom(BoardDto.fromModel(board), boardCardDataDtos);
+        return BoardDataDto.createFrom(BoardDto.fromModel(board), boardCardsColumnDtos, assignedUsersDtoList);
+    }
+
+    @Transactional(readOnly = true)
+    public List<BoardDetailsDto> getBoardDetailsById(final Integer boardId, final String email) {
+        final User user =
+                userRepository.findUserByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
+
+        boardRepository.findById(boardId).orElseThrow(() -> new NotFoundException("Board not found"));
+
+        final Board board = boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)
+                .orElseThrow(() -> new BadRequestException("User has no access to board"));
+
+        final List<BoardCard> boardCards = board.getState().equals(EnumStateDto.CREATED) ?
+                boardCardsRepository.findAllByBoardIdAndCreatorOrderByIdAsc(boardId, user) :
+                boardCardsRepository.findAllByBoardIdOrderByIdAsc(boardId);
+
+        final List<BoardCardDto> successBoardCardsDtos = new ArrayList<>();
+        final List<BoardCardDto> failuresBoardCardsDtos = new ArrayList<>();
+        final List<BoardCardDto> kudosBoardCardsDtos = new ArrayList<>();
+
+        boardCards.forEach(boardCard -> {
+            if (boardCard.getColumn().equals(BoardCardsColumn.SUCCESS)) {
+                successBoardCardsDtos.add(BoardCardDto.createFrom(boardCard));
+            } else if (boardCard.getColumn().equals(BoardCardsColumn.FAILURES)) {
+                failuresBoardCardsDtos.add(BoardCardDto.createFrom(boardCard));
+            } else {
+                kudosBoardCardsDtos.add(BoardCardDto.createFrom(boardCard));
+            }
+        });
+
+        return List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getOrderNumber(), successBoardCardsDtos),
+                BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getOrderNumber(), failuresBoardCardsDtos),
+                BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.getOrderNumber(), kudosBoardCardsDtos));
     }
 
     @Transactional

@@ -26,7 +26,7 @@ public class BoardDto {
     @Schema(description = "Board name", required = true)
     String name;
     @Schema(description = "Maximum number of votes")
-    Integer maximumNumberOfVotes;
+    Integer numberOfVotes;
 
     // convert Entity into DTO
     public static BoardDto fromModel(final Board board) {
@@ -34,7 +34,7 @@ public class BoardDto {
                 .id(board.getId())
                 .state(board.getState())
                 .name(board.getName())
-                .maximumNumberOfVotes(board.getMaximumNumberOfVotes())
+                .numberOfVotes(board.getMaximumNumberOfVotes())
                 .build();
     }
 }
