@@ -51,8 +51,8 @@ public class BoardService {
                 .orElseThrow(() -> new BadRequestException("User has no access to board"));
 
         final List<BoardCardsColumnDto> boardCardsColumnDtos =
-                List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),
-                        BoardCardsColumnDto.createFrom(BoardCardsColumn.FAILURES),
+                List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.FAILURES),
+                        BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),
                         BoardCardsColumnDto.createFrom(BoardCardsColumn.KUDOS));
 
         final List<UserDto> assignedUsersDtoList = new ArrayList<>();
