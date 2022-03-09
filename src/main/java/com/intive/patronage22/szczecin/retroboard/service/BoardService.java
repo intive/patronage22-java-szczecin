@@ -76,6 +76,7 @@ public class BoardService {
             } else {
                 throw new BadRequestException("State of board does not allow to change number of votes!");
             }
+
             if (nonNull(boardPatchDto.getName()) && !boardPatchDto.getName().equals(b.getName())) {
                 b.setName(boardPatchDto.getName());
             }
