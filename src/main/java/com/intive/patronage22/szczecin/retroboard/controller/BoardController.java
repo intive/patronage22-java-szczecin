@@ -42,7 +42,7 @@ public class BoardController {
     @ResponseStatus(OK)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retro board for given user.",
             responses = {@ApiResponse(responseCode = "200", description = "OK"),
-                    @ApiResponse(responseCode = "400", description = "Bad request data"),
+                    @ApiResponse(responseCode = "400", description = "Baddddddd request data"),
                     @ApiResponse(responseCode = "404", description = "User not found")})
     public List<BoardDto> getUserBoards(final Authentication authentication) {
 
