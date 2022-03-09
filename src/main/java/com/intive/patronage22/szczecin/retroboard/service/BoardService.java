@@ -58,7 +58,9 @@ public class BoardService {
         final List<UserDto> assignedUsersDtoList = new ArrayList<>();
         board.getUsers().forEach(user1 -> assignedUsersDtoList.add(UserDto.createFrom(user1)));
         assignedUsersDtoList.add(UserDto.createFrom(user));
-
+        //some changes
+        ///dasdadasd
+        //asdasdd
         return BoardDataDto.createFrom(BoardDto.fromModel(board), boardCardsColumnDtos, assignedUsersDtoList);
     }
 
