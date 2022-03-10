@@ -14,13 +14,17 @@ public class BoardDataDto {
 
     @Schema(description = "Board data")
     BoardDto board;
-    @Schema(description = "Board cards data")
-    List<BoardCardDto> boardCards;
+    @Schema(description = "Information about columns")
+    List<BoardCardsColumnDto> columns;
+    @Schema(description = "Assigned users")
+    List<UserDto> users;
 
-    public static BoardDataDto createFrom(final BoardDto boardDto, final List<BoardCardDto> boardCards) {
+    public static BoardDataDto createFrom(final BoardDto boardDto, final List<BoardCardsColumnDto> boardCardsColumnDtos,
+                                          final List<UserDto> usersList) {
         return BoardDataDto.builder()
                 .board(boardDto)
-                .boardCards(boardCards)
+                .columns(boardCardsColumnDtos)
+                .users(usersList)
                 .build();
     }
 }
