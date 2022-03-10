@@ -533,15 +533,14 @@ class BoardServiceTest {
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var id = 10;
         final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
-        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
 
 
         // when & then
         assertThrows(BadRequestException.class,
-                () -> boardService.patchBoard(id, boardPatchDto, "some@test.pl"));
+                () -> boardService.patchBoard(board.getId(), boardPatchDto, "some@test.pl"));
     }
 
     @Test
@@ -552,18 +551,17 @@ class BoardServiceTest {
         final var boardName = "My first board.";
         final var userOwner = new User(uid, email, "displayName", Set.of(), Set.of());
         final var board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
-        final var id = 10;
         final var boardPatchDto = new BoardPatchDto(boardName, 1500);
 
         // when
         when(boardRepository.save(any(Board.class))).thenReturn(board);
-        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         // then
-        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, email);
+        final var boardDtoResult = boardService.patchBoard(board.getId(), boardPatchDto, email);
 
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
-        verify(boardRepository).findById(id);
+        verify(boardRepository).findById(board.getId());
         verify(boardRepository).save(any(Board.class));
     }
 
@@ -574,18 +572,17 @@ class BoardServiceTest {
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of(), Set.of());
         final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
-        final var id = 10;
         final var boardPatchDto = new BoardPatchDto(null, 1500);
 
         // when
         when(boardRepository.save(any(Board.class))).thenReturn(board);
-        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         // then
-        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, email);
+        final var boardDtoResult = boardService.patchBoard(board.getId(), boardPatchDto, email);
 
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
-        verify(boardRepository).findById(id);
+        verify(boardRepository).findById(board.getId());
         verify(boardRepository).save(any(Board.class));
     }
 
@@ -671,14 +668,13 @@ class BoardServiceTest {
         final var email = "John@test.pl";
         final var user = new User(uid, email, "john14", Set.of(), Set.of());
         final var board = buildBoard(user, EnumStateDto.VOTING, 10, Set.of());
-        final var id = 10;
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
-        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         // when & then
         assertThrows(BadRequestException.class,
-                () -> boardService.patchBoard(id, boardPatchDto, email));
+                () -> boardService.patchBoard(board.getId(), boardPatchDto, email));
     }
 
     @Test
