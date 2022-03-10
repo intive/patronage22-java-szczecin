@@ -22,11 +22,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
@@ -116,14 +112,18 @@ public class BoardService {
         final Board boardReturn;
         final Optional<Board> board = boardRepository.findById(id);
 
-        board.map(b -> Optional.ofNullable(b.getCreator()).filter(creator -> creator.getEmail().equals(email))
-                .orElseThrow(() -> new BadRequestException("Not a board owner!")));
-
         boardReturn = board.map(b -> {
+            if (b.getState() == EnumStateDto.CREATED) {
+                Optional.ofNullable(b.getCreator())
+                        .filter(creator -> creator.getEmail().equals(email))
+                        .orElseThrow(() -> new BadRequestException("Not a board owner!"));
+            } else {
+                throw new BadRequestException("State of board does not allow to change number of votes!");
+            }
+
             if (nonNull(boardPatchDto.getName()) && !boardPatchDto.getName().equals(b.getName())) {
                 b.setName(boardPatchDto.getName());
             }
-
             if (nonNull(boardPatchDto.getMaximumNumberOfVotes()) && !boardPatchDto
                     .getMaximumNumberOfVotes().equals(b.getMaximumNumberOfVotes())) {
                 b.setMaximumNumberOfVotes(boardPatchDto.getMaximumNumberOfVotes());
@@ -149,9 +149,9 @@ public class BoardService {
         final Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Board not found"));
 
-        if(!(email.equals(board.getCreator().getEmail()))){
+        if (!(email.equals(board.getCreator().getEmail()))) {
             throw new BadRequestException("User is not owner");
-        }else{
+        } else {
             boardRepository.deleteById(boardId);
         }
     }
@@ -162,7 +162,7 @@ public class BoardService {
                 userRepository.findUserByEmail(email).orElseThrow(() -> new NotFoundException("User is not found"));
         final Board board =
                 boardRepository.findById(boardId).orElseThrow(() -> new NotFoundException("Board is not found."));
-        if (! board.getCreator().equals(boardOwner)) {
+        if (!board.getCreator().equals(boardOwner)) {
             throw new BadRequestException("User is not the board owner.");
         }
         final Set<User> usersToAssign = new HashSet<>();
