@@ -30,7 +30,7 @@ public class Board implements Serializable {
     @Column(name = "state", nullable = false)
     private EnumStateDto state = EnumStateDto.CREATED;
 
-    @OneToOne
+    @ManyToOne
     private User creator;
 
     @ManyToMany(cascade = CascadeType.ALL)
