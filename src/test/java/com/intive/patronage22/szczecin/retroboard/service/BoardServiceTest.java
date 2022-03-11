@@ -769,7 +769,7 @@ class BoardServiceTest {
     void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete(){
         //given
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED,5, Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED,10, Set.of());
 
         //when
         when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
