@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Objects.nonNull;
 
@@ -139,8 +140,14 @@ public class BoardService {
     public List<BoardDto> getUserBoards(final String email) {
         final User user = userRepository.findUserByEmail(email)
                 .orElseThrow(() -> new BadRequestException("User not found"));
+        final List<BoardDto> assignedBoards = user
+                .getUserBoards().stream().map(BoardDto::fromModel).collect(Collectors.toList());
+        final List<BoardDto> createdBoards = user
+                .getCreatedBoards().stream().map(BoardDto::fromModel).collect(Collectors.toList());
 
-        return user.getUserBoards().stream().map(BoardDto::fromModel).collect(Collectors.toList());
+        return Stream.concat(createdBoards.stream(), assignedBoards.stream())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Transactional
