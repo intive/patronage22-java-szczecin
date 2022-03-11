@@ -1,6 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intive.patronage22.szczecin.retroboard.dto.exception.ErrorResponse;
 import com.intive.patronage22.szczecin.retroboard.dto.FirebaseUserDto;
 import com.intive.patronage22.szczecin.retroboard.exception.EmailFormatException;
 import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
@@ -17,8 +18,8 @@ import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 
+import static org.springframework.http.HttpHeaders.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.UNAUTHORIZED;
@@ -59,7 +60,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 
         final FirebaseUserDto userDto = (FirebaseUserDto) authentication.getPrincipal();
         response.addHeader(AUTHORIZATION, "Bearer " + userDto.getIdToken());
-        response.addHeader("Expires", userDto.getExpiresIn());
+        response.addHeader(EXPIRES, userDto.getExpiresIn());
     }
 
     @Override
@@ -74,14 +75,14 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             response.setStatus(UNAUTHORIZED.value());
         }
 
-        simpleJsonBodyWriter(response, "error_message", failed.getMessage());
+        simpleJsonBodyWriter(response, failed.getMessage());
     }
 
-    private void simpleJsonBodyWriter(final HttpServletResponse response, final String key, final String value)
+    private void simpleJsonBodyWriter(final HttpServletResponse response, final String exceptionMessage)
             throws IOException {
 
-        final Map<String, String> tokens = Map.of(key, value);
+        final var exceptionResponse = new ErrorResponse(exceptionMessage);
         response.setContentType(APPLICATION_JSON_VALUE);
-        objectMapper.writeValue(response.getOutputStream(), tokens);
+        objectMapper.writeValue(response.getOutputStream(), exceptionResponse);
     }
 }
