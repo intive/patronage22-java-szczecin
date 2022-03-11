@@ -31,10 +31,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -709,5 +706,85 @@ class BoardServiceTest {
                 .creator(user)
                 .users(Set.of())
                 .build();
+    }
+
+    @Test
+    @DisplayName("removeAssignedUserShouldThrowNotFoundWhenUserOrBoardAreNotExist should throw Not Found")
+    void removeAssignedUserShouldThrowNotFoundWhenUserOrBoardAreNotExist(){
+        //given
+        final User user = new User("123", "test@test.com", "userTest", Set.of());
+        final User user_ = new User("456", "test@test.com", "userTest", Set.of());
+
+        final Board board = buildBoard(user);
+
+        //when
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertThrows(NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(user_.getUid(), board.getId(), user_.getEmail()));
+    }
+
+    @Test
+    @DisplayName("removeAssignedUserShouldThrowBadRequestWhenUserIsBoardOwner should throw Bad Request")
+    void removeAssignedUserShouldThrowBadRequestWhenUserIsBoardOwner(){
+        //given
+        final User user = new User("123", "test@test.com", "userTest", Set.of());
+        final Board board = buildBoard(user);
+
+        //when
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(user.getUid(), board.getId(), user.getEmail()));
+    }
+
+    @Test
+    @DisplayName("removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndItTriesToDeleteOtherUser should throw Bad Request")
+    void removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndItTriesToDeleteOtherUser(){
+        //given
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of());
+        final User userCurrentlyLogged  = new User("456", "test2@test2.com", "userTest", Set.of());
+        final User user = new User("789", "test3@test3.com", "userTest", Set.of());
+        final Board board = buildBoard(userOwner);
+
+        //when
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(user.getUid(), board.getId(), userCurrentlyLogged.getEmail()));
+    }
+
+    @Test
+    @DisplayName("removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete should throw Bad Request")
+    void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete(){
+        //given
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of());
+        final Board board = buildBoard(userOwner);
+
+        //when
+        when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(userOwner.getUid(), board.getId(), userOwner.getEmail()));
+    }
+
+    @Test
+    @DisplayName("removeAssignedUserShouldReturnOkWhenBoardOwnerTriesToDeleteOtherUser should throw Bad Request")
+    void removeAssignedUserShouldReturnOkWhenBoardOwnerTriesToDeleteOtherUser(){
+        //given
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of());
+        final User user = new User("456", "test2@test2.com", "userTest", Set.of());
+        final Board board = buildBoard(userOwner);
+
+        //when
+        when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertFalse(board.getUsers().contains(user));
     }
 }
