@@ -58,7 +58,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
                     if(optionalUser.isEmpty()){
                         final User user = new User(firebaseToken.getUid(),
-                                firebaseToken.getEmail(), firebaseToken.getName(), Set.of());
+                                firebaseToken.getEmail(), firebaseToken.getName(), Set.of(), Set.of());
                         userRepository.save(user);
                         log.info("{} added to database",firebaseToken.getEmail());
                     }
