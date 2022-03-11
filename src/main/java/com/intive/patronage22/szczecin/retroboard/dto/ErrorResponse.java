@@ -1,4 +1,4 @@
-package com.intive.patronage22.szczecin.retroboard.dto.exception;
+package com.intive.patronage22.szczecin.retroboard.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

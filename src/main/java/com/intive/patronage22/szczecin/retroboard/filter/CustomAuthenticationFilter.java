@@ -1,7 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intive.patronage22.szczecin.retroboard.dto.exception.ErrorResponse;
+import com.intive.patronage22.szczecin.retroboard.dto.ErrorResponse;
 import com.intive.patronage22.szczecin.retroboard.dto.FirebaseUserDto;
 import com.intive.patronage22.szczecin.retroboard.exception.EmailFormatException;
 import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;

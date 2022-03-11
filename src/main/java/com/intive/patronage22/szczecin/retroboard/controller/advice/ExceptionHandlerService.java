@@ -1,7 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.controller.advice;
 
 import com.google.firebase.auth.FirebaseAuthException;
-import com.intive.patronage22.szczecin.retroboard.dto.exception.ErrorResponse;
+import com.intive.patronage22.szczecin.retroboard.dto.ErrorResponse;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.InvalidArgumentException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.ConstraintViolationException;
 
-import static com.intive.patronage22.szczecin.retroboard.dto.exception.ErrorResponse.buildErrorResponse;
+import static com.intive.patronage22.szczecin.retroboard.dto.ErrorResponse.buildErrorResponse;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
 

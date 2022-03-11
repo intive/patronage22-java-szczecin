@@ -1,7 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.intive.patronage22.szczecin.retroboard.dto.exception.ErrorResponse;
+import com.intive.patronage22.szczecin.retroboard.dto.ErrorResponse;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthenticationFilter;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthorizationFilter;
 import com.intive.patronage22.szczecin.retroboard.provider.FirebaseAuthenticationProvider;
