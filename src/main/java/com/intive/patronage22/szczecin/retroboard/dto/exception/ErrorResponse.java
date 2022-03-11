@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
+import org.springframework.validation.FieldError;
 
 @Value
 @Builder
@@ -16,6 +17,12 @@ public class ErrorResponse {
     public static ErrorResponse buildErrorResponse(Exception exception) {
         return ErrorResponse.builder()
                 .message(exception.getMessage())
+                .build();
+    }
+
+    public static ErrorResponse buildErrorResponse(FieldError fieldError) {
+        return ErrorResponse.builder()
+                .message(fieldError.getDefaultMessage())
                 .build();
     }
 }

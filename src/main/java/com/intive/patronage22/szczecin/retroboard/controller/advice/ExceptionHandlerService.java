@@ -7,7 +7,6 @@ import com.intive.patronage22.szczecin.retroboard.exception.InvalidArgumentExcep
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import org.springframework.http.HttpStatus;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.validation.ConstraintViolationException;
-import java.util.List;
 
 import static com.intive.patronage22.szczecin.retroboard.dto.exception.ErrorResponse.buildErrorResponse;
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
@@ -63,11 +61,7 @@ public class ExceptionHandlerService {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(InvalidArgumentException.class)
-    public List<FieldError> invalidArgumentHandler(final InvalidArgumentException exception) {
-        return exception.getFieldErrors();
+    public ErrorResponse invalidArgumentHandler(final InvalidArgumentException exception) {
+        return buildErrorResponse(exception);
     }
 }
-
-
-
-
