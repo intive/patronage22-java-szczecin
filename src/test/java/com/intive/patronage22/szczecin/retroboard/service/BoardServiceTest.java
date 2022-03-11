@@ -697,7 +697,7 @@ class BoardServiceTest {
     }
 
     @Test
-    void getUserBoardsShouldReturnResultSizeTwoIfUserHasOneOfEachAssignedAndCreatedBoards() {
+    void getUserBoardsShouldReturnTwoBoardsIfUserCreatedOneAndIsAssignedToTheOtherOne() {
         // given
         final var uid1 = "uid101";
         final var email1 = "username@test.pl";
