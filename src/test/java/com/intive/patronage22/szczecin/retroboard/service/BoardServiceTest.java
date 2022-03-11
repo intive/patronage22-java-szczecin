@@ -715,7 +715,7 @@ class BoardServiceTest {
         final User user = new User("123", "test@test.com", "userTest", Set.of());
         final User user_ = new User("456", "test@test.com", "userTest", Set.of());
 
-        final Board board = buildBoard(user);
+        final Board board = buildBoard(user, EnumStateDto.CREATED);
 
         //when
         when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
@@ -730,7 +730,7 @@ class BoardServiceTest {
     void removeAssignedUserShouldThrowBadRequestWhenUserIsBoardOwner(){
         //given
         final User user = new User("123", "test@test.com", "userTest", Set.of());
-        final Board board = buildBoard(user);
+        final Board board = buildBoard(user, EnumStateDto.CREATED);
 
         //when
         when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
@@ -747,7 +747,7 @@ class BoardServiceTest {
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of());
         final User userCurrentlyLogged  = new User("456", "test2@test2.com", "userTest", Set.of());
         final User user = new User("789", "test3@test3.com", "userTest", Set.of());
-        final Board board = buildBoard(userOwner);
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED);
 
         //when
         when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
@@ -762,7 +762,7 @@ class BoardServiceTest {
     void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete(){
         //given
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of());
-        final Board board = buildBoard(userOwner);
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED);
 
         //when
         when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
@@ -778,7 +778,7 @@ class BoardServiceTest {
         //given
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of());
         final User user = new User("456", "test2@test2.com", "userTest", Set.of());
-        final Board board = buildBoard(userOwner);
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED);
 
         //when
         when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
