@@ -26,10 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,7 +60,7 @@ class BoardServiceTest {
         //given
         final String uid = "1234";
         final String email = "John@test.pl";
-        final User user = new User(uid, email, "john14", Set.of());
+        final User user = new User(uid, email, "john14", Set.of(), Set.of());
         final Board board = Board.builder()
                 .id(1)
                 .name("board name")
@@ -125,7 +122,7 @@ class BoardServiceTest {
         final String email = "Josef@test.pl";
         final String boardName = "My first board.";
 
-        final User user = new User(uid, email, "josef14", Set.of());
+        final User user = new User(uid, email, "josef14", Set.of(), Set.of());
 
         final Board board = Board.builder()
                 .id(10)
@@ -180,7 +177,7 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "test";
-        final User user = new User("123", email, displayName, Set.of());
+        final User user = new User("123", email, displayName, Set.of(),Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -197,8 +194,8 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "test12";
-        final User user = new User("123", email, displayName, Set.of());
-        final User assignUser = new User("1234", "assignUser@test.pl", "test1", Set.of());
+        final User user = new User("123", email, displayName, Set.of(),Set.of());
+        final User assignUser = new User("1234", "assignUser@test.pl", "test1", Set.of(),Set.of());
         final Board board = Board.builder()
                 .id(1)
                 .name("board name")
@@ -223,8 +220,8 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "testDisplayName";
-        final User user = new User("123", email, displayName, Set.of());
-        final User assignUser = new User("1234", "assignUser", "test1", Set.of());
+        final User user = new User("123", email, displayName, Set.of(),Set.of());
+        final User assignUser = new User("1234", "assignUser", "test1", Set.of(),Set.of());
         final Board board = Board.builder()
                 .id(boardId)
                 .name("board name")
@@ -282,7 +279,7 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "test";
-        final User user = new User("123", email, displayName, Set.of());
+        final User user = new User("123", email, displayName, Set.of(),Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -299,8 +296,8 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "test12";
-        final User user = new User("123", email, displayName, Set.of());
-        final User assignUser = new User("1234", "assignUser@test.pl", "test1", Set.of());
+        final User user = new User("123", email, displayName, Set.of(),Set.of());
+        final User assignUser = new User("1234", "assignUser@test.pl", "test1", Set.of(),Set.of());
         final Board board = Board.builder()
                 .id(1)
                 .name("board name")
@@ -327,8 +324,8 @@ class BoardServiceTest {
         final String userEmail = "testemail@example.com";
         final String assignedUserEmail = "test@example.com";
         final String displayName = "testDisplayName";
-        final User user = new User("123", userEmail, displayName, Set.of());
-        final User assignedUser = new User("1234", assignedUserEmail, displayName, Set.of());
+        final User user = new User("123", userEmail, displayName, Set.of(),Set.of());
+        final User assignedUser = new User("1234", assignedUserEmail, displayName, Set.of(),Set.of());
         final Board board = Board.builder()
                 .id(boardId)
                 .name("board name")
@@ -395,8 +392,8 @@ class BoardServiceTest {
         final String userEmail = "testemail@example.com";
         final String assignedUserEmail = "test@example.com";
         final String displayName = "testDisplayName";
-        final User user = new User("123", userEmail, displayName, Set.of());
-        final User assignedUser = new User("1234", assignedUserEmail, displayName, Set.of());
+        final User user = new User("123", userEmail, displayName, Set.of(),Set.of());
+        final User assignedUser = new User("1234", assignedUserEmail, displayName, Set.of(), Set.of());
         final Board board = Board.builder()
                 .id(boardId)
                 .name("board name")
@@ -474,8 +471,8 @@ class BoardServiceTest {
         final String email = "username@test.pl";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, emailOwner, "displayName", Set.of());
-        final User user = new User(uid, email, "displayName", Set.of());
+        final User userOwner = new User(uidOwner, emailOwner, "displayName", Set.of(),Set.of());
+        final User user = new User(uid, email, "displayName", Set.of(),Set.of());
         final Board board = new Board(boardId, "board", 0,
                 EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
 
@@ -497,8 +494,8 @@ class BoardServiceTest {
         final String email = "username@test.pl";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, emailOwner, "displayName", Set.of());
-        final User user = new User(uid, email, "displayName", Set.of());
+        final User userOwner = new User(uidOwner, emailOwner, "displayName", Set.of(),Set.of());
+        final User user = new User(uid, email, "displayName", Set.of(), Set.of());
         final Board board = new Board
                 (boardId, "board", 0,
                         EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
@@ -530,16 +527,15 @@ class BoardServiceTest {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
-        final var user = new User(uid, email, "displayName", Set.of());
-        final var id = 10;
-        final var board = buildBoard(user, EnumStateDto.CREATED);
-        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
 
 
         // when & then
         assertThrows(BadRequestException.class,
-                () -> boardService.patchBoard(id, boardPatchDto, "some@test.pl"));
+                () -> boardService.patchBoard(board.getId(), boardPatchDto, "some@test.pl"));
     }
 
     @Test
@@ -548,20 +544,19 @@ class BoardServiceTest {
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var boardName = "My first board.";
-        final var userOwner = new User(uid, email, "displayName", Set.of());
-        final var board = buildBoard(userOwner, EnumStateDto.CREATED);
-        final var id = 10;
+        final var userOwner = new User(uid, email, "displayName", Set.of(), Set.of());
+        final var board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
         final var boardPatchDto = new BoardPatchDto(boardName, 1500);
 
         // when
         when(boardRepository.save(any(Board.class))).thenReturn(board);
-        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         // then
-        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, email);
+        final var boardDtoResult = boardService.patchBoard(board.getId(), boardPatchDto, email);
 
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
-        verify(boardRepository).findById(id);
+        verify(boardRepository).findById(board.getId());
         verify(boardRepository).save(any(Board.class));
     }
 
@@ -570,20 +565,19 @@ class BoardServiceTest {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
-        final var user = new User(uid, email, "displayName", Set.of());
-        final var board = buildBoard(user, EnumStateDto.CREATED);
-        final var id = 10;
+        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
         final var boardPatchDto = new BoardPatchDto(null, 1500);
 
         // when
         when(boardRepository.save(any(Board.class))).thenReturn(board);
-        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         // then
-        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, email);
+        final var boardDtoResult = boardService.patchBoard(board.getId(), boardPatchDto, email);
 
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
-        verify(boardRepository).findById(id);
+        verify(boardRepository).findById(board.getId());
         verify(boardRepository).save(any(Board.class));
     }
 
@@ -609,7 +603,7 @@ class BoardServiceTest {
         final int boardId = 1;
         final List<String> usersEmails = List.of();
         final String email = "testemail@example.com";
-        final User user = new User("123", email, "test name", Set.of());
+        final User user = new User("123", email, "test name", Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -626,12 +620,13 @@ class BoardServiceTest {
         final int boardId = 1;
         final List<String> usersEmails = List.of();
         final String email = "testemail@example.com";
-        final User user = new User("123", email, "test name", Set.of());
-        final User boardOwner = new User("1234", "testemail1@example.com", "test name", Set.of());
+        final User user = new User("123", email, "test name", Set.of(), Set.of());
+        final User boardOwner = new User("1234", "testemail1@example.com", "test name", Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
-        when(boardRepository.findById(boardId)).thenReturn(Optional.of(buildBoard(boardOwner, EnumStateDto.CREATED)));
+        when(boardRepository.findById(boardId))
+                .thenReturn(Optional.of(buildBoard(boardOwner, EnumStateDto.CREATED, 10, Set.of())));
 
         //then
         assertThrows(BadRequestException.class, () -> boardService.assignUsersToBoard(boardId, usersEmails, email));
@@ -645,9 +640,9 @@ class BoardServiceTest {
         final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com");
         final String ownerEmail = "owner@example.com";
         final String displayName = "testDisplayName";
-        final User owner = new User("123", ownerEmail, displayName, Set.of());
-        final User user = new User("1234", usersEmails.get(0), displayName, new HashSet<>());
-        final Board board = buildBoard(owner, EnumStateDto.CREATED);
+        final User owner = new User("123", ownerEmail, displayName, Set.of(),Set.of());
+        final User user = new User("1234", usersEmails.get(0), displayName, new HashSet<>(),Set.of());
+        final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, Set.of());
 
         //when
         when(userRepository.findUserByEmail(ownerEmail)).thenReturn(Optional.of(owner));
@@ -666,16 +661,15 @@ class BoardServiceTest {
         // given
         final var uid = "1234";
         final var email = "John@test.pl";
-        final var user = new User(uid, email, "john14", Set.of());
-        final var board = buildBoard(user, EnumStateDto.VOTING);
-        final var id = 10;
+        final var user = new User(uid, email, "john14", Set.of(), Set.of());
+        final var board = buildBoard(user, EnumStateDto.VOTING, 10, Set.of());
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
-        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         // when & then
         assertThrows(BadRequestException.class,
-                () -> boardService.patchBoard(id, boardPatchDto, email));
+                () -> boardService.patchBoard(board.getId(), boardPatchDto, email));
     }
 
     @Test
@@ -683,28 +677,49 @@ class BoardServiceTest {
         // given
         final var uid = "1234";
         final var email = "John@test.pl";
-        final var user = new User(uid, email, "john14", Set.of());
-        final var board = buildBoard(user, EnumStateDto.CREATED);
-        final var id = 10;
+        final var user = new User(uid, email, "john14", Set.of(), Set.of());
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
-        when(boardRepository.findById(id)).thenReturn(Optional.of(board));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         // when & then
-        final var boardDtoResult = boardService.patchBoard(id, boardPatchDto, email);
+        final var boardDtoResult = boardService.patchBoard(board.getId(), boardPatchDto, email);
 
         assertEquals(BoardDto.fromModel(board), boardDtoResult);
-        verify(boardRepository).findById(id);
+        verify(boardRepository).findById(board.getId());
         verify(boardRepository).save(any(Board.class));
     }
 
-    private Board buildBoard(final User user, final EnumStateDto state) {
+    @Test
+    void getUserBoardsShouldReturnTwoBoardsIfUserCreatedOneAndIsAssignedToTheOtherOne() {
+        // given
+        final var uid1 = "uid101";
+        final var email1 = "username@test.pl";
+        final var uid2 = "uid102";
+        final var email2 = "username2@test.pl";
+        final var user1 = new User(uid1, email1, "displayName1", Set.of(), Set.of());
+        final var user2 = new User(uid2, email2, "displayName2", Set.of(), Set.of());
+        final var boardCreated = buildBoard(user1, EnumStateDto.CREATED, 10, Set.of());
+        final var boardAssigned = buildBoard(user2, EnumStateDto.CREATED, 11, Collections.singleton(user1));
+        when(userRepository.findUserByEmail(email1)).thenReturn(Optional.of(user1));
+        user1.setUserBoards(Collections.singleton(boardAssigned));
+        user1.setCreatedBoards(Collections.singleton(boardCreated));
+
+        //when
+        final List<BoardDto> boards = boardService.getUserBoards(email1);
+
+        //then
+        assertThat(boards, hasSize(2));
+    }
+
+    private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
         return Board.builder()
-                .id(10)
+                .id(id)
                 .name("My first board.")
                 .state(state)
                 .creator(user)
-                .users(Set.of())
+                .users(users)
                 .build();
     }
 
