@@ -715,24 +715,14 @@ class BoardServiceTest {
         assertThat(boards, hasSize(2));
     }
 
-    private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
-        return Board.builder()
-                .id(id)
-                .name("My first board.")
-                .state(state)
-                .creator(user)
-                .users(users)
-                .build();
-    }
-
     @Test
     @DisplayName("removeAssignedUserShouldThrowNotFoundWhenUserOrBoardAreNotExist should throw Not Found")
     void removeAssignedUserShouldThrowNotFoundWhenUserOrBoardAreNotExist(){
         //given
-        final User user = new User("123", "test@test.com", "userTest", Set.of());
-        final User user_ = new User("456", "test@test.com", "userTest", Set.of());
+        final User user = new User("123", "test@test.com", "userTest", Set.of(), Set.of());
+        final User user_ = new User("456", "test@test.com", "userTest", Set.of(), Set.of());
 
-        final Board board = buildBoard(user, EnumStateDto.CREATED);
+        final Board board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
 
         //when
         when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
@@ -746,8 +736,8 @@ class BoardServiceTest {
     @DisplayName("removeAssignedUserShouldThrowBadRequestWhenUserIsBoardOwner should throw Bad Request")
     void removeAssignedUserShouldThrowBadRequestWhenUserIsBoardOwner(){
         //given
-        final User user = new User("123", "test@test.com", "userTest", Set.of());
-        final Board board = buildBoard(user, EnumStateDto.CREATED);
+        final User user = new User("123", "test@test.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
 
         //when
         when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
@@ -761,10 +751,10 @@ class BoardServiceTest {
     @DisplayName("removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndItTriesToDeleteOtherUser should throw Bad Request")
     void removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndItTriesToDeleteOtherUser(){
         //given
-        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of());
-        final User userCurrentlyLogged  = new User("456", "test2@test2.com", "userTest", Set.of());
-        final User user = new User("789", "test3@test3.com", "userTest", Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED);
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
+        final User userCurrentlyLogged  = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
+        final User user = new User("789", "test3@test3.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED,10, Set.of());
 
         //when
         when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
@@ -778,8 +768,8 @@ class BoardServiceTest {
     @DisplayName("removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete should throw Bad Request")
     void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete(){
         //given
-        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED);
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED,10, Set.of());
 
         //when
         when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
@@ -793,9 +783,9 @@ class BoardServiceTest {
     @DisplayName("removeAssignedUserShouldReturnOkWhenBoardOwnerTriesToDeleteOtherUser should throw Bad Request")
     void removeAssignedUserShouldReturnOkWhenBoardOwnerTriesToDeleteOtherUser(){
         //given
-        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of());
-        final User user = new User("456", "test2@test2.com", "userTest", Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED);
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
+        final User user = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
 
         //when
         when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
@@ -804,4 +794,15 @@ class BoardServiceTest {
         //then
         assertFalse(board.getUsers().contains(user));
     }
+
+    private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
+        return Board.builder()
+                .id(id)
+                .name("My first board.")
+                .state(state)
+                .creator(user)
+                .users(users)
+                .build();
+    }
+
 }
