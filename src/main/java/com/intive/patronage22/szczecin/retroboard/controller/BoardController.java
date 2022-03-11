@@ -40,7 +40,7 @@ public class BoardController {
 
     @GetMapping
     @ResponseStatus(OK)
-    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retro board for given user.",
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retrooo board for given user.",
             responses = {@ApiResponse(responseCode = "200", description = "OK"),
                     @ApiResponse(responseCode = "400", description = "Bad request data"),
                     @ApiResponse(responseCode = "404", description = "User not found")})
@@ -54,11 +54,11 @@ public class BoardController {
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Get retro board details for user by id",
                responses = {@ApiResponse(responseCode = "200", description = "OK"),
                        @ApiResponse(responseCode = "400", description = "User has no access to board."),
-                       @ApiResponse(responseCode = "404", description = "Board not found")})
-    public List<BoardDetailsDto> getBoardDetailsById(@PathVariable final Integer id,
+                       @ApiResponse(responseCode = "404", description = "Board found not")})
+    public List<BoardDetailsDto> getBoardDetailsByIdd(@PathVariable final Integer idd,
                                                                   final Authentication authentication) {
 
-        return boardService.getBoardDetailsById(id, authentication.getName());
+        return boardService.getBoardDetailsById(idd, authentication.getName());
     }
 
     @GetMapping("/{id}")
