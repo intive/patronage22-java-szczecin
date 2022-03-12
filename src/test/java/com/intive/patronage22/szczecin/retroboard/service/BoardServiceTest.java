@@ -716,8 +716,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("removeAssignedUserShouldThrowNotFoundWhenUserNotExists should throw Not Found")
-    void removeAssignedUserShouldThrowNotFoundWhenUserNotExists(){
+    @DisplayName("Remove assigned user should throw NotFound when user not exists")
+    void removeAssignedUserShouldThrowNotFoundWhenUserNotExists() {
         //given
         final User user = new User("123", "test@test.com", "userTest", Set.of(), Set.of());
         final Board board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
@@ -730,8 +730,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndItTriesToDeleteOtherUser should throw Bad Request")
-    void removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndItTriesToDeleteOtherUser(){
+    @DisplayName("Remove assigned user should throw BadRequest when currently logged user is not board owner and it tries to delete other user")
+    void removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndItTriesToDeleteOtherUser() {
         //given
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
         final User userCurrentlyLogged  = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
@@ -747,8 +747,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete should throw Bad Request")
-    void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete(){
+    @DisplayName("Remove assigned user should throw BadRequest when board owner tries to self delete")
+    void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete() {
         //given
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
         final Board board = buildBoard(userOwner, EnumStateDto.CREATED,10, Set.of());
@@ -762,8 +762,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("removeAssignedUserShouldReturnOkWhenBoardOwnerTriesToDeleteOtherUser should throw Bad Request")
-    void removeAssignedUserShouldReturnOkWhenBoardOwnerTriesToDeleteOtherUser(){
+    @DisplayName("Remove assigned user should return Ok when board owner tries to delete other user")
+    void removeAssignedUserShouldReturnOkWhenBoardOwnerTriesToDeleteOtherUser() {
         //given
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
         final User user = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
@@ -780,8 +780,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("removeAssignedUserShouldReturnOkWhenCurrentlyLoggedUserIsNotBoardOwnerAndTriesToSelfDelete should throw Bad Request")
-    void removeAssignedUserShouldReturnOkWhenCurrentlyLoggedUserIsNotBoardOwnerAndTriesToSelfDelete(){
+    @DisplayName("Remove assigned user should return Ok when currently logged user is not board owner and tries to self delete")
+    void removeAssignedUserShouldReturnOkWhenCurrentlyLoggedUserIsNotBoardOwnerAndTriesToSelfDelete() {
         //given
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
         final User userCurrentlyLogged  = new User("789", "test3@test3.com", "userTest", Set.of(), Set.of());

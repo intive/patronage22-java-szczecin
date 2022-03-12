@@ -186,7 +186,7 @@ public class BoardService {
     }
 
     @Transactional
-    public void removeUserAssignedToTheBoard(final String uid, final Integer boardId, final String email){
+    public void removeUserAssignedToTheBoard(final String uid, final Integer boardId, final String email) {
 
         final User user = userRepository.findById(uid)
                 .orElseThrow(() -> new NotFoundException("User is not found"));
@@ -196,9 +196,9 @@ public class BoardService {
         if (board.getCreator().equals(user)) {
             throw new BadRequestException("User is the board owner.");
         }
-        if(email.equals(user.getEmail()) || email.equals(board.getCreator().getEmail())){
+        if (email.equals(user.getEmail()) || email.equals(board.getCreator().getEmail())) {
             board.getUsers().remove(user);
-        }else {
+        } else {
             throw new BadRequestException
                     ("Currently logged user is not board owner or user tries to delete other user");
         }
