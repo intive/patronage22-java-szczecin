@@ -21,12 +21,18 @@ import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -639,21 +645,36 @@ class BoardServiceTest {
     void assignUsersToBoardShouldReturnFailedEmails() throws JSONException {
         //given
         final int boardId = 1;
-        final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com");
+        final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com", "test@123.pl");
         final String ownerEmail = "owner@example.com";
         final String displayName = "testDisplayName";
-        final User owner = new User("123", ownerEmail, displayName, Set.of(),Set.of());
-        final User user = new User("1234", usersEmails.get(0), displayName, new HashSet<>(),Set.of());
-        final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, Set.of());
+        final User owner = new User("123", ownerEmail, displayName, Set.of(), Set.of());
+        final User userToAssign = new User("126", usersEmails.get(0), displayName, new HashSet<>(), Set.of());
+        final User existingUser = new User("1234", "test@123.pl", displayName, new HashSet<>(), Set.of());
+        final Set<User> boardUsers = new HashSet<>(List.of(existingUser));
+
+        final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, boardUsers);
 
         //when
         when(userRepository.findUserByEmail(ownerEmail)).thenReturn(Optional.of(owner));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
-        when(userRepository.findUserByEmail(usersEmails.get(0))).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmail(usersEmails.get(0))).thenReturn(Optional.of(userToAssign));
         when(userRepository.findUserByEmail(usersEmails.get(1))).thenReturn(Optional.empty());
+        when(userRepository.findUserByEmail(usersEmails.get(2))).thenReturn(Optional.of(existingUser));
         final JSONArray failedEmails = new JSONArray(boardService.assignUsersToBoard(boardId, usersEmails, ownerEmail));
 
         //then
+        final ArgumentCaptor<Board> usersCaptor = ArgumentCaptor.forClass(Board.class);
+        Mockito.verify(boardRepository).save(usersCaptor.capture());
+
+        final Board savedBoard = usersCaptor.getValue();
+        final Set<User> allBoardUsers = savedBoard.getUsers();
+
+        final int i = 0;
+        assertEquals(allBoardUsers.size(), 2);
+        assertTrue(allBoardUsers.contains(existingUser));
+        assertTrue(allBoardUsers.contains(userToAssign));
+
         verify(boardRepository).save(any(Board.class));
         assertEquals(failedEmails.get(0), usersEmails.get(1));
     }
