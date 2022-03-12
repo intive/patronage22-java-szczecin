@@ -648,12 +648,12 @@ class BoardServiceTest {
     void assignUsersToBoardShouldReturnFailedEmails() throws JSONException {
         //given
         final int boardId = 1;
-        final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com");
+        final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com", "test@123.pl");
         final String ownerEmail = "owner@example.com";
         final String displayName = "testDisplayName";
         final User owner = new User("123", ownerEmail, displayName, Set.of(), Set.of());
-        final User userToAssign = new User("1234", usersEmails.get(0), displayName, new HashSet<>(), Set.of());
-        final User existingUser = new User("1234", "test@123.pl", "test", new HashSet<>(), Set.of());
+        final User userToAssign = new User("126", usersEmails.get(0), displayName, new HashSet<>(), Set.of());
+        final User existingUser = new User("1234", "test@123.pl", displayName, new HashSet<>(), Set.of());
         final Set<User> boardUsers = new HashSet<>(List.of(existingUser));
 
         final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, boardUsers);
@@ -663,6 +663,7 @@ class BoardServiceTest {
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
         when(userRepository.findUserByEmail(usersEmails.get(0))).thenReturn(Optional.of(userToAssign));
         when(userRepository.findUserByEmail(usersEmails.get(1))).thenReturn(Optional.empty());
+        when(userRepository.findUserByEmail(usersEmails.get(2))).thenReturn(Optional.of(existingUser));
         final JSONArray failedEmails = new JSONArray(boardService.assignUsersToBoard(boardId, usersEmails, ownerEmail));
 
         //then
@@ -672,6 +673,7 @@ class BoardServiceTest {
         final Board savedBoard = usersCaptor.getValue();
         final Set<User> allBoardUsers = savedBoard.getUsers();
 
+        final int i = 0;
         assertEquals(allBoardUsers.size(), 2);
         assertTrue(allBoardUsers.contains(existingUser));
         assertTrue(allBoardUsers.contains(userToAssign));
