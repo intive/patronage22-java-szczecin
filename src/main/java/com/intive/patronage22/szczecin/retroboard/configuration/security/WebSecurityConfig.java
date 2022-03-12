@@ -1,6 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.configuration.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intive.patronage22.szczecin.retroboard.dto.ErrorResponse;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthenticationFilter;
 import com.intive.patronage22.szczecin.retroboard.filter.CustomAuthorizationFilter;
 import com.intive.patronage22.szczecin.retroboard.provider.FirebaseAuthenticationProvider;
@@ -17,7 +18,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -61,13 +61,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
     private void handleUnauthenticatedAccess(final HttpServletResponse response) throws IOException {
-        final Map<String, String> tokens = Map.of("error_message", "Access Denied");
+        final var errorResponse = new ErrorResponse("Access Denied");
         SecurityContextHolder.clearContext();
 
         response.setContentType(APPLICATION_JSON_VALUE);
         response.setStatus(FORBIDDEN.value());
 
-        objectMapper.writeValue(response.getOutputStream(), tokens);
+        objectMapper.writeValue(response.getOutputStream(), errorResponse);
 
         log.error("error while logging in. Error code: " + response.getStatus());
     }

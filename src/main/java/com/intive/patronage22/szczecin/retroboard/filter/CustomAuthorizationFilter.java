@@ -3,6 +3,7 @@ package com.intive.patronage22.szczecin.retroboard.filter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
+import com.intive.patronage22.szczecin.retroboard.dto.ErrorResponse;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +59,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
                     if(optionalUser.isEmpty()){
                         final User user = new User(firebaseToken.getUid(),
-                                firebaseToken.getEmail(), firebaseToken.getName(), Set.of());
+                                firebaseToken.getEmail(), firebaseToken.getName(), Set.of(), Set.of());
                         userRepository.save(user);
                         log.info("{} added to database",firebaseToken.getEmail());
                     }
@@ -73,9 +74,9 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                     response.setStatus(FORBIDDEN.value());
                     response.setContentType(APPLICATION_JSON_VALUE);
 
-                    final Map<String, String> error = new HashMap<>();
-                    error.put("error_message", exception.getMessage());
-                    objectMapper.writeValue(response.getOutputStream(), error);
+                    final var exceptionResponse = new ErrorResponse(exception.getMessage());
+
+                    objectMapper.writeValue(response.getOutputStream(), exceptionResponse);
                 }
             } else {
                 filterChain.doFilter(request, response);
