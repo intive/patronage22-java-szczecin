@@ -14,13 +14,13 @@ public class ErrorResponse {
     @JsonProperty(value = "error_message")
     String message;
 
-    public static ErrorResponse buildErrorResponse(Exception exception) {
+    public static ErrorResponse buildErrorResponse(final Exception exception) {
         return ErrorResponse.builder()
                 .message(exception.getMessage())
                 .build();
     }
 
-    public static ErrorResponse buildErrorResponse(FieldError fieldError) {
+    public static ErrorResponse buildErrorResponse(final FieldError fieldError) {
         return ErrorResponse.builder()
                 .message(fieldError.getDefaultMessage())
                 .build();
