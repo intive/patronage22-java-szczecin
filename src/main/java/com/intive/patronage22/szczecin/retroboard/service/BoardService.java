@@ -199,7 +199,7 @@ public class BoardService {
 
         final User user = userRepository.findById(uid)
                 .orElseThrow(() -> new NotFoundException("User is not found"));
-        
+
         final Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Board is not found"));
 
