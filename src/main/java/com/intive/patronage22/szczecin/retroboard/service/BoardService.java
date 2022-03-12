@@ -199,7 +199,8 @@ public class BoardService {
         if(email.equals(user.getEmail()) || email.equals(board.getCreator().getEmail())){
             board.getUsers().remove(user);
         }else {
-            throw new BadRequestException("User can't delete board");
+            throw new BadRequestException
+                    ("Currently logged user is not board owner or user tries to delete other user");
         }
     }
 }

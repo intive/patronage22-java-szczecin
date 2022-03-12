@@ -716,35 +716,17 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("removeAssignedUserShouldThrowNotFoundWhenUserOrBoardAreNotExist should throw Not Found")
-    void removeAssignedUserShouldThrowNotFoundWhenUserOrBoardAreNotExist(){
-        //given
-        final User user = new User("123", "test@test.com", "userTest", Set.of(), Set.of());
-        final User user_ = new User("456", "test@test.com", "userTest", Set.of(), Set.of());
-
-        final Board board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
-
-        //when
-        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
-        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
-
-        //then
-        assertThrows(NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(user_.getUid(), board.getId(), user_.getEmail()));
-    }
-
-    @Test
-    @DisplayName("removeAssignedUserShouldThrowBadRequestWhenUserIsBoardOwner should throw Bad Request")
-    void removeAssignedUserShouldThrowBadRequestWhenUserIsBoardOwner(){
+    @DisplayName("removeAssignedUserShouldThrowNotFoundWhenUserNotExists should throw Not Found")
+    void removeAssignedUserShouldThrowNotFoundWhenUserNotExists(){
         //given
         final User user = new User("123", "test@test.com", "userTest", Set.of(), Set.of());
         final Board board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
 
         //when
-        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
-        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.empty());
 
         //then
-        assertThrows(BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(user.getUid(), board.getId(), user.getEmail()));
+        assertThrows(NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(user.getUid(), board.getId(), user.getEmail()));
     }
 
     @Test
@@ -786,13 +768,33 @@ class BoardServiceTest {
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
         final User user = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
         final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
+        board.setUsers(Set.of(user));
 
         //when
-        when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         //then
-        assertFalse(board.getUsers().contains(user));
+        assertEquals(userOwner, board.getCreator());
+        assertTrue(board.getUsers().contains(user));
+    }
+
+    @Test
+    @DisplayName("removeAssignedUserShouldReturnOkWhenCurrentlyLoggedUserIsNotBoardOwnerAndTriesToSelfDelete should throw Bad Request")
+    void removeAssignedUserShouldReturnOkWhenCurrentlyLoggedUserIsNotBoardOwnerAndTriesToSelfDelete(){
+        //given
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
+        final User userCurrentlyLogged  = new User("789", "test3@test3.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
+        board.setUsers(Set.of(userCurrentlyLogged));
+
+        //when
+        when(userRepository.findById(userCurrentlyLogged.getUid())).thenReturn(Optional.of(userCurrentlyLogged));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertNotEquals(userCurrentlyLogged, board.getCreator());
+        assertTrue(board.getUsers().contains(userCurrentlyLogged));
     }
 
     private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
@@ -804,5 +806,4 @@ class BoardServiceTest {
                 .users(users)
                 .build();
     }
-
 }
