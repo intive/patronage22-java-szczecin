@@ -26,7 +26,7 @@ public enum BoardCardsColumn {
             case 2:
                 return BoardCardsColumn.KUDOS;
             default:
-                throw new BadRequestException("orderNumber can only have values between 1 and 2");
+                throw new BadRequestException("orderNumber can only have values between 0 and 2");
         }
     }
 }
