@@ -7,6 +7,12 @@ import lombok.Builder;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,10 +23,22 @@ public class BoardCardDto {
 
     @Schema(description = "Board card id")
     Integer id;
+
+    @NotEmpty
+    @NotBlank
+    @Size(min = 5, max = 128)
     @Schema(description = "Board card text")
     String cardText;
+
+    @NotNull
+    @Min(0)
+    @Max(2)
+    @Schema(description = "Board card order number")
+    Integer orderNumber;
+
     @Schema(description = "Board card creator")
     String boardCardCreator;
+
     @Schema(description = "Board card action text")
     List<String> actionTexts;
 
@@ -28,6 +46,7 @@ public class BoardCardDto {
         return BoardCardDto.builder()
                 .id(boardCard.getId())
                 .cardText(boardCard.getText())
+                .orderNumber(boardCard.getColumn().getOrderNumber())
                 .boardCardCreator(boardCard.getCreator().getEmail())
                 .actionTexts(
                         boardCard.getBoardCardActions().stream().map(BoardCardAction::getText)

@@ -670,7 +670,6 @@ class BoardServiceTest {
         final Board savedBoard = usersCaptor.getValue();
         final Set<User> allBoardUsers = savedBoard.getUsers();
 
-        final int i = 0;
         assertEquals(allBoardUsers.size(), 2);
         assertTrue(allBoardUsers.contains(existingUser));
         assertTrue(allBoardUsers.contains(userToAssign));
