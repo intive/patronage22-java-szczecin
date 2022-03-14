@@ -21,19 +21,22 @@ import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -642,21 +645,36 @@ class BoardServiceTest {
     void assignUsersToBoardShouldReturnFailedEmails() throws JSONException {
         //given
         final int boardId = 1;
-        final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com");
+        final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com", "test@123.pl");
         final String ownerEmail = "owner@example.com";
         final String displayName = "testDisplayName";
-        final User owner = new User("123", ownerEmail, displayName, Set.of(),Set.of());
-        final User user = new User("1234", usersEmails.get(0), displayName, new HashSet<>(),Set.of());
-        final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, Set.of());
+        final User owner = new User("123", ownerEmail, displayName, Set.of(), Set.of());
+        final User userToAssign = new User("126", usersEmails.get(0), displayName, new HashSet<>(), Set.of());
+        final User existingUser = new User("1234", "test@123.pl", displayName, new HashSet<>(), Set.of());
+        final Set<User> boardUsers = new HashSet<>(List.of(existingUser));
+
+        final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, boardUsers);
 
         //when
         when(userRepository.findUserByEmail(ownerEmail)).thenReturn(Optional.of(owner));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
-        when(userRepository.findUserByEmail(usersEmails.get(0))).thenReturn(Optional.of(user));
+        when(userRepository.findUserByEmail(usersEmails.get(0))).thenReturn(Optional.of(userToAssign));
         when(userRepository.findUserByEmail(usersEmails.get(1))).thenReturn(Optional.empty());
+        when(userRepository.findUserByEmail(usersEmails.get(2))).thenReturn(Optional.of(existingUser));
         final JSONArray failedEmails = new JSONArray(boardService.assignUsersToBoard(boardId, usersEmails, ownerEmail));
 
         //then
+        final ArgumentCaptor<Board> usersCaptor = ArgumentCaptor.forClass(Board.class);
+        Mockito.verify(boardRepository).save(usersCaptor.capture());
+
+        final Board savedBoard = usersCaptor.getValue();
+        final Set<User> allBoardUsers = savedBoard.getUsers();
+
+        final int i = 0;
+        assertEquals(allBoardUsers.size(), 2);
+        assertTrue(allBoardUsers.contains(existingUser));
+        assertTrue(allBoardUsers.contains(userToAssign));
+
         verify(boardRepository).save(any(Board.class));
         assertEquals(failedEmails.get(0), usersEmails.get(1));
     }
@@ -716,6 +734,88 @@ class BoardServiceTest {
 
         //then
         assertThat(boards, hasSize(2));
+    }
+
+    @Test
+    @DisplayName("Remove assigned user should throw NotFound when user not exists")
+    void removeAssignedUserShouldThrowNotFoundWhenUserNotExists() {
+        //given
+        final User user = new User("123", "test@test.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
+
+        //when
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(user.getUid(), board.getId(), user.getEmail()));
+    }
+
+    @Test
+    @DisplayName("Remove assigned user should throw BadRequest when currently logged user is not board owner and it tries to delete other user")
+    void removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndItTriesToDeleteOtherUser() {
+        //given
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
+        final User userCurrentlyLogged  = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
+        final User user = new User("789", "test3@test3.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED,10, Set.of());
+
+        //when
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(user.getUid(), board.getId(), userCurrentlyLogged.getEmail()));
+    }
+
+    @Test
+    @DisplayName("Remove assigned user should throw BadRequest when board owner tries to self delete")
+    void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete() {
+        //given
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED,10, Set.of());
+
+        //when
+        when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(userOwner.getUid(), board.getId(), userOwner.getEmail()));
+    }
+
+    @Test
+    @DisplayName("Remove assigned user should return Ok when board owner tries to delete other user")
+    void removeAssignedUserShouldReturnOkWhenBoardOwnerTriesToDeleteOtherUser() {
+        //given
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
+        final User user = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
+        board.setUsers(Set.of(user));
+
+        //when
+        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertEquals(userOwner, board.getCreator());
+        assertTrue(board.getUsers().contains(user));
+    }
+
+    @Test
+    @DisplayName("Remove assigned user should return Ok when currently logged user is not board owner and tries to self delete")
+    void removeAssignedUserShouldReturnOkWhenCurrentlyLoggedUserIsNotBoardOwnerAndTriesToSelfDelete() {
+        //given
+        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
+        final User userCurrentlyLogged  = new User("789", "test3@test3.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
+        board.setUsers(Set.of(userCurrentlyLogged));
+
+        //when
+        when(userRepository.findById(userCurrentlyLogged.getUid())).thenReturn(Optional.of(userCurrentlyLogged));
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+
+        //then
+        assertNotEquals(userCurrentlyLogged, board.getCreator());
+        assertTrue(board.getUsers().contains(userCurrentlyLogged));
     }
 
     private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
