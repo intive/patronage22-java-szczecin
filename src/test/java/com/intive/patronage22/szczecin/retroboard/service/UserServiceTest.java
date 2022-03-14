@@ -3,7 +3,10 @@ package com.intive.patronage22.szczecin.retroboard.service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
+import com.intive.patronage22.szczecin.retroboard.dto.SearchEmailResponseDto;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
+import com.intive.patronage22.szczecin.retroboard.model.User;
+import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +16,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
+import java.util.Set;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,6 +36,9 @@ class UserServiceTest {
 
     @MockBean
     private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @MockBean
     private FirebaseAuth firebaseAuth;
@@ -70,5 +80,36 @@ class UserServiceTest {
 
         // then
         assertThrows(UserAlreadyExistException.class, () -> userService.register(email, password, displayName));
+    }
+
+    @Test
+    void searchShouldReturnListWithEmailsWhenEmailIsLongerThat3() {
+        // given
+        final String providedEmail = "test";
+        final List<User> users = List.of(
+                new User("dsadasdasdas", "test12@plo.com", "yytS", Set.of(), Set.of()),
+                new User("dsada212ddas", "sodttest2@tyk.pl", "dscS", Set.of(), Set.of()),
+                new User("dsDeXVBasdas", "sodniktest@sok.com", "y32S", Set.of(), Set.of())
+        );
+
+        // when
+        when(userRepository.findAllByEmailContaining(providedEmail)).thenReturn(users);
+        final SearchEmailResponseDto search = userService.search(providedEmail);
+
+        // then
+        assertEquals(3, users.size());
+        assertEquals(List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com"), search.getEmail());
+    }
+
+    @Test
+    void searchShouldReturnEmptyListWhenEmailIsShorterThat3() {
+        // given
+        final String providedEmail = "te";
+
+        // when
+        final SearchEmailResponseDto search = userService.search(providedEmail);
+
+        // then
+        assertTrue(search.getEmail().isEmpty());
     }
 }

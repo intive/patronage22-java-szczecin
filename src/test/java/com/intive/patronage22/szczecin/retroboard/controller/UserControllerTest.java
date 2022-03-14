@@ -2,6 +2,7 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
+import com.intive.patronage22.szczecin.retroboard.dto.SearchEmailResponseDto;
 import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
@@ -34,8 +35,7 @@ import javax.annotation.PostConstruct;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 import javax.validation.Path;
-import java.util.Optional;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.URL_LOGIN;
@@ -47,6 +47,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withBadRequest;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -360,5 +361,38 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error_message").value("Missing password."));
+    }
+
+    @Test
+    void searchShouldReturnOkWhenEmailsIsShorterThat64() throws Exception {
+         // given
+        final String url = "/api/v1/users/search";
+        final String providedEmail = "test";
+        final List<String> emails = List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com");
+        final SearchEmailResponseDto response = SearchEmailResponseDto.builder()
+                .email(emails).build();
+
+        // when
+        when(userService.search(providedEmail)).thenReturn(response);
+
+        // then
+        mockMvc
+                .perform(get(url)
+                        .param("email", providedEmail))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void searchShouldReturnBadRequestWhenEmailIsNotValid() throws Exception {
+        // given
+        final String url = "/api/v1/users/search";
+        final String providedEmail = "testd3123cczadas4131hbdjkasnduhascnklnasdnaklsndjkcbjans" +
+                                     "cssijxcva723nc312ddasnvcxmwrw@test.com";
+
+        // then
+        mockMvc
+                .perform(get(url)
+                        .param("email", providedEmail))
+                .andExpect(status().isBadRequest());
     }
 }
