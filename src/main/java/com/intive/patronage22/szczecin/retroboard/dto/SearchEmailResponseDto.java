@@ -19,14 +19,12 @@ public class SearchEmailResponseDto {
          return SearchEmailResponseDto.builder()
                  .email(returnListWithEmails(users))
                  .build();
-
     }
 
     public static SearchEmailResponseDto createFrom() {
         return SearchEmailResponseDto.builder()
                 .email(List.of())
                 .build();
-
     }
 
     private static List<String> returnListWithEmails(final List<User> users) {
