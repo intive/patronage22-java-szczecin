@@ -9,16 +9,16 @@ public enum BoardCardsColumn {
     FAILURES(1, "#D2222D"),
     KUDOS(2, "#283C77");
 
-    private final int orderNumber;
+    private final int columnId;
     private final String colour;
 
-    BoardCardsColumn(final int orderNumber, final String colour) {
-        this.orderNumber = orderNumber;
+    BoardCardsColumn(final int columnId, final String colour) {
+        this.columnId = columnId;
         this.colour = colour;
     }
 
-    public static BoardCardsColumn orderNumberToBoardCardsColumn(final Integer orderNumber) {
-        switch (orderNumber) {
+    public static BoardCardsColumn columnIdToBoardCardsColumn(final Integer columnId) {
+        switch (columnId) {
             case 0:
                 return BoardCardsColumn.SUCCESS;
             case 1:
@@ -26,7 +26,7 @@ public enum BoardCardsColumn {
             case 2:
                 return BoardCardsColumn.KUDOS;
             default:
-                throw new BadRequestException("orderNumber can only have values between 0 and 2");
+                throw new BadRequestException("columnId can only have values between 0 and 2");
         }
     }
 }

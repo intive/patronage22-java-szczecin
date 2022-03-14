@@ -56,7 +56,7 @@ class BoardCardControllerTest {
     private static final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
             ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ." +
             "vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
-    private static final String url = "/api/v1/cards/boards";
+    private static final String url = "/api/v1/cards";
 
     @Test
     void addCardToTheBoardShouldReturnCreated() throws Exception {
@@ -64,13 +64,13 @@ class BoardCardControllerTest {
         final Integer boardId = 1;
         final BoardCardDto requestDto = BoardCardDto.builder()
                 .cardText("Some valid cardText test")
-                .orderNumber(0)
+                .columnId(0)
                 .build();
 
         final BoardCardDto responseDto = BoardCardDto.builder()
                 .id(10)
                 .cardText("Some valid cardText test")
-                .orderNumber(0)
+                .columnId(0)
                 .boardCardCreator(email)
                 .actionTexts(List.of())
                 .build();
@@ -83,11 +83,11 @@ class BoardCardControllerTest {
         when(boardCardService.createBoardCard(requestDto, boardId, email)).thenReturn(responseDto);
 
         //then
-        mockMvc.perform(post(url + "/" + boardId)
+        mockMvc.perform(post(url + "/boards/" + boardId)
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"cardText\":\"" + requestDto.getCardText() + "\"," +
-                                "\"orderNumber\":\"" + requestDto.getOrderNumber() + "\"}")
+                                "\"columnId\":\"" + requestDto.getColumnId() + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -97,7 +97,7 @@ class BoardCardControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(responseDto.getCardText())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(responseDto.getOrderNumber().toString())))
+                        .contains(responseDto.getColumnId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(responseDto.getBoardCardCreator())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains("[]")));
@@ -110,15 +110,15 @@ class BoardCardControllerTest {
                 Arguments.of("1234", "1", "boardCardDto.cardText"),
                 Arguments.of("01234567890123456789012345678901234567890123456789012345678901234567890123456789" +
                         "0123456789012345678901234567890123456789123456789", "1", "boardCardDto.cardText"),
-                Arguments.of("Some valid cardText test", "3", "boardCardDto.orderNumber"),
-                Arguments.of("Some valid cardText test", "-1", "boardCardDto.orderNumber")
+                Arguments.of("Some valid cardText test", "3", "boardCardDto.columnId"),
+                Arguments.of("Some valid cardText test", "-1", "boardCardDto.columnId")
         );
     }
 
     @ParameterizedTest
     @MethodSource("provideInputsForPostedObjectValidation")
     void addCardToTheBoardShouldThrowBadRequestWhenPostedObjectIsNotValid(final String boardCardText,
-                                                                          final String orderNumber,
+                                                                          final String columnId,
                                                                           final String expectedIssue) throws Exception {
         //given
         final Integer boardId = 1;
@@ -130,11 +130,11 @@ class BoardCardControllerTest {
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
 
         //then
-        final MvcResult result = mockMvc.perform(post(url + "/" + boardId)
+        final MvcResult result = mockMvc.perform(post(url + "/boards/" + boardId)
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"cardText\":\"" + boardCardText + "\"," +
-                                "\"orderNumber\":\"" + Integer.valueOf(orderNumber) + "\"}")
+                                "\"columnId\":\"" + Integer.valueOf(columnId) + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest()).andReturn();
 
@@ -148,7 +148,7 @@ class BoardCardControllerTest {
         final Integer boardId = 1;
         final String boardCardText = null;
         final String expectedExceptionMessage = "rejected value [null]";
-        final Integer orderNumber = 1;
+        final Integer columnId = 1;
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
@@ -157,11 +157,11 @@ class BoardCardControllerTest {
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
 
         //then
-        final MvcResult result = mockMvc.perform(post(url + "/" + boardId)
+        final MvcResult result = mockMvc.perform(post(url + "/boards/" + boardId)
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"cardText\":\"" + boardCardText + "\"," +
-                                "\"orderNumber\":\"" + orderNumber + "\"}")
+                                "\"columnId\":\"" + columnId + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest()).andReturn();
 
@@ -170,12 +170,12 @@ class BoardCardControllerTest {
     }
 
     @Test
-    void addCardToTheBoardShouldThrowBadRequestWhenOrderNumberIsNull() throws Exception {
+    void addCardToTheBoardShouldThrowBadRequestWhenColumnIdIsNull() throws Exception {
         //given
         final Integer boardId = 1;
         final String boardCardText = "Some valid cardText test";
         final String expectedExceptionMessage = "rejected value [null]";
-        final Integer orderNumber = null;
+        final Integer columnId = null;
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
@@ -184,11 +184,11 @@ class BoardCardControllerTest {
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
 
         //then
-        final MvcResult result = mockMvc.perform(post(url + "/" + boardId)
+        final MvcResult result = mockMvc.perform(post(url + "/boards/" + boardId)
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"cardText\":\"" + boardCardText + "\"," +
-                                "\"orderNumber\":\"" + orderNumber + "\"}")
+                                "\"columnId\":\"" + columnId + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest()).andReturn();
 
@@ -206,7 +206,7 @@ class BoardCardControllerTest {
         final Integer boardId = 1;
         final BoardCardDto requestDto = BoardCardDto.builder()
                 .cardText("Some valid cardText test")
-                .orderNumber(0)
+                .columnId(0)
                 .build();
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
@@ -218,11 +218,11 @@ class BoardCardControllerTest {
                 .thenThrow(new BadRequestException(expectedExceptionMessage));
 
         //then
-        mockMvc.perform(post(url + "/" + boardId)
+        mockMvc.perform(post(url + "/boards/" + boardId)
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"cardText\":\"" + requestDto.getCardText() + "\"," +
-                                "\"orderNumber\":\"" + requestDto.getOrderNumber() + "\"}")
+                                "\"columnId\":\"" + requestDto.getColumnId() + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(result ->
@@ -235,7 +235,7 @@ class BoardCardControllerTest {
         final Integer boardId = 1;
         final BoardCardDto requestDto = BoardCardDto.builder()
                 .cardText("Some valid cardText test")
-                .orderNumber(0)
+                .columnId(0)
                 .build();
         final String expectedExceptionMessage = "Board not found";
 
@@ -248,11 +248,11 @@ class BoardCardControllerTest {
                 .thenThrow(new NotFoundException(expectedExceptionMessage));
 
         //then
-        mockMvc.perform(post(url + "/" + boardId)
+        mockMvc.perform(post(url + "/boards/" + boardId)
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"cardText\":\"" + requestDto.getCardText() + "\"," +
-                                "\"orderNumber\":\"" + requestDto.getOrderNumber() + "\"}")
+                                "\"columnId\":\"" + requestDto.getColumnId() + "\"}")
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(result ->

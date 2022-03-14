@@ -44,7 +44,7 @@ public class BoardCardService {
 
         final BoardCard boardCard = BoardCard.builder()
                 .board(board)
-                .column(BoardCardsColumn.orderNumberToBoardCardsColumn(boardCardDto.getOrderNumber()))
+                .column(BoardCardsColumn.columnIdToBoardCardsColumn(boardCardDto.getColumnId()))
                 .text(boardCardDto.getCardText())
                 .creator(user)
                 .boardCardActions(List.of())

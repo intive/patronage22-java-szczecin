@@ -62,7 +62,7 @@ class BoardCardServiceTest {
         final Integer boardId = 1;
         final BoardCardDto requestDto = BoardCardDto.builder()
                 .cardText("Some valid cardText test")
-                .orderNumber(Integer.valueOf(orderNumber))
+                .columnId(Integer.valueOf(orderNumber))
                 .build();
         final String email = "test22@test.com";
         final String uid = "1234";
@@ -92,8 +92,8 @@ class BoardCardServiceTest {
 
         assertEquals(responseDto.getCardText(), savedBoardCard.getText());
         assertEquals(responseDto.getCardText(), requestDto.getCardText());
-        assertEquals(responseDto.getOrderNumber(), savedBoardCard.getColumn().getOrderNumber());
-        assertEquals(responseDto.getOrderNumber(), requestDto.getOrderNumber());
+        assertEquals(responseDto.getColumnId(), savedBoardCard.getColumn().getColumnId());
+        assertEquals(responseDto.getColumnId(), requestDto.getColumnId());
         assertEquals(boardCardsColumn, savedBoardCard.getColumn());
         assertEquals(responseDto.getBoardCardCreator(), savedBoardCard.getCreator().getEmail());
         assertEquals(responseDto.getBoardCardCreator(), email);
@@ -105,7 +105,7 @@ class BoardCardServiceTest {
         final Integer boardId = 1;
         final BoardCardDto requestDto = BoardCardDto.builder()
                 .cardText("Some valid cardText test")
-                .orderNumber(0)
+                .columnId(0)
                 .build();
         final String email = "test22@test.com";
         final Integer orderNumber = 0;
@@ -124,7 +124,7 @@ class BoardCardServiceTest {
         final Integer boardId = 1;
         final BoardCardDto requestDto = BoardCardDto.builder()
                 .cardText("Some valid cardText test")
-                .orderNumber(0)
+                .columnId(0)
                 .build();
         final String email = "test22@test.com";
         final String uid = "1234";
@@ -145,7 +145,7 @@ class BoardCardServiceTest {
         final Integer boardId = 1;
         final BoardCardDto requestDto = BoardCardDto.builder()
                 .cardText("Some valid cardText test")
-                .orderNumber(0)
+                .columnId(0)
                 .build();
         final String email = "test22@test.com";
         final String uid = "1234";
@@ -176,7 +176,7 @@ class BoardCardServiceTest {
         final Integer boardId = 1;
         final BoardCardDto requestDto = BoardCardDto.builder()
                 .cardText("Some valid cardText test")
-                .orderNumber(0)
+                .columnId(0)
                 .build();
         final String email = "test22@test.com";
         final String uid = "1234";

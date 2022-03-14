@@ -22,8 +22,8 @@ public class BoardCardsColumnDto {
     public static BoardCardsColumnDto createFrom(final BoardCardsColumn boardCardsColumn) {
         return BoardCardsColumnDto.builder()
                 .name(boardCardsColumn.name())
-                .id(boardCardsColumn.getOrderNumber())
-                .position(boardCardsColumn.getOrderNumber())
+                .id(boardCardsColumn.getColumnId())
+                .position(boardCardsColumn.getColumnId())
                 .colour(boardCardsColumn.getColour())
                 .build();
     }

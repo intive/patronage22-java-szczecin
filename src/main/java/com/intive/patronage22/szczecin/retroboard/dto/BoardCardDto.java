@@ -33,8 +33,8 @@ public class BoardCardDto {
     @NotNull
     @Min(0)
     @Max(2)
-    @Schema(description = "Board card order number")
-    Integer orderNumber;
+    @Schema(description = "Board card column id")
+    Integer columnId;
 
     @Schema(description = "Board card creator")
     String boardCardCreator;
@@ -46,7 +46,7 @@ public class BoardCardDto {
         return BoardCardDto.builder()
                 .id(boardCard.getId())
                 .cardText(boardCard.getText())
-                .orderNumber(boardCard.getColumn().getOrderNumber())
+                .columnId(boardCard.getColumn().getColumnId())
                 .boardCardCreator(boardCard.getCreator().getEmail())
                 .actionTexts(
                         boardCard.getBoardCardActions().stream().map(BoardCardAction::getText)

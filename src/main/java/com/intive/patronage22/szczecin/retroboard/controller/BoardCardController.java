@@ -23,12 +23,12 @@ import static org.springframework.http.HttpStatus.CREATED;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping(value = "/api/v1/cards/boards", produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "/api/v1/cards", produces = MediaType.APPLICATION_JSON_VALUE)
 public class BoardCardController {
 
     private final BoardCardService boardCardService;
 
-    @PostMapping("/{id}")
+    @PostMapping("/boards/{id}")
     @ResponseStatus(CREATED)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Add card to the board.",
             responses = {@ApiResponse(responseCode = "201", description = "Board card created for given board"),

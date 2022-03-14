@@ -264,9 +264,9 @@ class BoardControllerTest {
         final List<BoardCardDto> failuresBoardCardsDtos = List.of(new BoardCardDto(2, "failure", 1, creatorEmail, List.of("test failure")));
         final List<BoardCardDto> kudosBoardCardsDtos = List.of(new BoardCardDto(3, "kudos", 2, creatorEmail, List.of("test kudos")));
         final List<BoardDetailsDto> boardDetailsDtos =
-                List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getOrderNumber(), successBoardCardsDtos),
-                        BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getOrderNumber(), failuresBoardCardsDtos),
-                        BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.getOrderNumber(), kudosBoardCardsDtos));
+                List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getColumnId(), successBoardCardsDtos),
+                        BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getColumnId(), failuresBoardCardsDtos),
+                        BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.getColumnId(), kudosBoardCardsDtos));
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
