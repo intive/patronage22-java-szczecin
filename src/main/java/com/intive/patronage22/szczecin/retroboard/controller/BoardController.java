@@ -127,7 +127,8 @@ public class BoardController {
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Remove user from board.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "OK"),
-            @ApiResponse(responseCode = "400", description = "User wants to remove another user or creator wants to remove himself from the board"),
+            @ApiResponse(responseCode = "400", description =
+                    "User wants to remove another user or creator wants to remove himself from the board"),
             @ApiResponse(responseCode = "404", description = "Board not exist or user not  assigned to the board.")
     })
     public void deleteAssignedUser(@PathVariable("uid") final String uid,
