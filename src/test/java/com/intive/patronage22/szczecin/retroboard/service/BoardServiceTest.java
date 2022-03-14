@@ -656,15 +656,14 @@ class BoardServiceTest {
         final User userToAssign = new User("126", usersEmails.get(0), displayName, new HashSet<>(), Set.of());
         final User existingUser = new User("1234", "test@123.pl", displayName, new HashSet<>(), Set.of());
         final Set<User> boardUsers = new HashSet<>(List.of(existingUser));
+        final List<User> existingUsers = List.of(userToAssign, existingUser);
 
         final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, boardUsers);
 
         //when
         when(userRepository.findUserByEmail(ownerEmail)).thenReturn(Optional.of(owner));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
-        when(userRepository.findUserByEmail(usersEmails.get(0))).thenReturn(Optional.of(userToAssign));
-        when(userRepository.findUserByEmail(usersEmails.get(1))).thenReturn(Optional.empty());
-        when(userRepository.findUserByEmail(usersEmails.get(2))).thenReturn(Optional.of(existingUser));
+        when(userRepository.findAllByEmailIn(usersEmails)).thenReturn(existingUsers);
         final JSONArray failedEmails = new JSONArray(boardService.assignUsersToBoard(boardId, usersEmails, ownerEmail));
 
         //then
