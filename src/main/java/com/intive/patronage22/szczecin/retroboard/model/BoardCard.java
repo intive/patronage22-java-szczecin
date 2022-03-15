@@ -1,17 +1,34 @@
 package com.intive.patronage22.szczecin.retroboard.model;
 
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.List;
 
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Entity
 @Table(schema = "retro", name = "board_card")
-@Data
 public class BoardCard implements Serializable {
 
     @Id
@@ -26,7 +43,7 @@ public class BoardCard implements Serializable {
     private String text;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "column", length = 16, nullable = false)
+    @Column(name = "board_column", length = 16, nullable = false)
     private BoardCardsColumn column;
 
     @ManyToOne

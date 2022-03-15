@@ -36,11 +36,16 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -255,13 +260,13 @@ class BoardControllerTest {
         //given
         final int boardId = 1;
         final String creatorEmail = "test@example.com";
-        final List<BoardCardDto> successBoardCardsDtos = List.of(new BoardCardDto(1, "success", creatorEmail, List.of("test success")));
-        final List<BoardCardDto> failuresBoardCardsDtos = List.of(new BoardCardDto(2, "failure", creatorEmail, List.of("test failure")));
-        final List<BoardCardDto> kudosBoardCardsDtos = List.of(new BoardCardDto(3, "kudos", creatorEmail, List.of("test kudos")));
+        final List<BoardCardDto> successBoardCardsDtos = List.of(new BoardCardDto(1, "success", 0, creatorEmail, List.of("test success")));
+        final List<BoardCardDto> failuresBoardCardsDtos = List.of(new BoardCardDto(2, "failure", 1, creatorEmail, List.of("test failure")));
+        final List<BoardCardDto> kudosBoardCardsDtos = List.of(new BoardCardDto(3, "kudos", 2, creatorEmail, List.of("test kudos")));
         final List<BoardDetailsDto> boardDetailsDtos =
-                List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getOrderNumber(), successBoardCardsDtos),
-                        BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getOrderNumber(), failuresBoardCardsDtos),
-                        BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.getOrderNumber(), kudosBoardCardsDtos));
+                List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getColumnId(), successBoardCardsDtos),
+                        BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getColumnId(), failuresBoardCardsDtos),
+                        BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.getColumnId(), kudosBoardCardsDtos));
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 

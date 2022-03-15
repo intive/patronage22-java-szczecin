@@ -36,7 +36,11 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -257,8 +261,8 @@ class BoardServiceTest {
         assertEquals(boardDataDto.getBoard().getName(), board.getName());
         assertEquals(boardDataDto.getBoard().getNumberOfVotes(), board.getMaximumNumberOfVotes());
         assertEquals(boardDataDto.getColumns().get(0).getName(), BoardCardsColumn.SUCCESS.name());
-        assertEquals(boardDataDto.getColumns().get(0).getId(), BoardCardsColumn.SUCCESS.getOrderNumber());
-        assertEquals(boardDataDto.getColumns().get(0).getPosition(), BoardCardsColumn.SUCCESS.getOrderNumber());
+        assertEquals(boardDataDto.getColumns().get(0).getId(), BoardCardsColumn.SUCCESS.getColumnId());
+        assertEquals(boardDataDto.getColumns().get(0).getPosition(), BoardCardsColumn.SUCCESS.getColumnId());
         assertEquals(boardDataDto.getColumns().get(0).getColour(), BoardCardsColumn.SUCCESS.getColour());
         assertTrue(boardDataDto.getUsers().toString().contains(user.getEmail()));
         assertTrue(boardDataDto.getUsers().toString().contains(user.getUid()));
@@ -364,7 +368,7 @@ class BoardServiceTest {
         final List<BoardDetailsDto> boardDetailsDto = boardService.getBoardDetailsById(boardId, userEmail);
 
         //then
-        assertEquals(boardDetailsDto.get(0).getId(), BoardCardsColumn.SUCCESS.getOrderNumber());
+        assertEquals(boardDetailsDto.get(0).getId(), BoardCardsColumn.SUCCESS.getColumnId());
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getId(), successBoardCard.getId());
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getCardText(), successBoardCard.getText());
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getBoardCardCreator(),
@@ -372,7 +376,7 @@ class BoardServiceTest {
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getActionTexts().get(0),
                 successBoardCard.getBoardCardActions().get(0).getText());
 
-        assertEquals(boardDetailsDto.get(1).getId(), BoardCardsColumn.FAILURES.getOrderNumber());
+        assertEquals(boardDetailsDto.get(1).getId(), BoardCardsColumn.FAILURES.getColumnId());
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getId(), failureBoardCard.getId());
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getCardText(), failureBoardCard.getText());
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getBoardCardCreator(),
@@ -380,7 +384,7 @@ class BoardServiceTest {
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getActionTexts().get(0),
                 failureBoardCard.getBoardCardActions().get(0).getText());
 
-        assertEquals(boardDetailsDto.get(2).getId(), BoardCardsColumn.KUDOS.getOrderNumber());
+        assertEquals(boardDetailsDto.get(2).getId(), BoardCardsColumn.KUDOS.getColumnId());
         assertEquals(boardDetailsDto.get(2).getBoardCards().get(0).getId(), kudosBoardCard.getId());
         assertEquals(boardDetailsDto.get(2).getBoardCards().get(0).getCardText(), kudosBoardCard.getText());
         assertEquals(boardDetailsDto.get(2).getBoardCards().get(0).getBoardCardCreator(),
@@ -432,7 +436,7 @@ class BoardServiceTest {
         final List<BoardDetailsDto> boardDetailsDto = boardService.getBoardDetailsById(boardId, userEmail);
 
         //then
-        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.SUCCESS.getOrderNumber())));
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.SUCCESS.getColumnId())));
         assertTrue(boardDetailsDto.toString().contains(successBoardCard.getId().toString()));
         assertTrue(boardDetailsDto.toString().contains(successBoardCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(successBoardCard.getCreator().getEmail()));
@@ -442,13 +446,13 @@ class BoardServiceTest {
         assertTrue(boardDetailsDto.toString().contains(assignedUserCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(assignedUserCard.getCreator().getEmail()));
 
-        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.FAILURES.getOrderNumber())));
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.FAILURES.getColumnId())));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getId().toString()));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getCreator().getEmail()));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getBoardCardActions().get(0).getText()));
 
-        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.KUDOS.getOrderNumber())));
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.KUDOS.getColumnId())));
         assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getId().toString()));
         assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getCreator().getEmail()));
@@ -670,7 +674,6 @@ class BoardServiceTest {
         final Board savedBoard = usersCaptor.getValue();
         final Set<User> allBoardUsers = savedBoard.getUsers();
 
-        final int i = 0;
         assertEquals(allBoardUsers.size(), 2);
         assertTrue(allBoardUsers.contains(existingUser));
         assertTrue(allBoardUsers.contains(userToAssign));
