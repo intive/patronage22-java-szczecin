@@ -1,8 +1,8 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
-import com.intive.patronage22.szczecin.retroboard.dto.SearchEmailResponseDto;
 import com.intive.patronage22.szczecin.retroboard.exception.MissingFieldException;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
@@ -42,6 +42,7 @@ import static com.intive.patronage22.szczecin.retroboard.configuration.security.
 import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.URL_REGISTER;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -77,6 +78,10 @@ class UserControllerTest {
     private RestTemplate restTemplate;
 
     private MockRestServiceServer firebaseRestServiceServer;
+
+    private static final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzb21ldXNlciIsIn" +
+                                                      "JvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwO" +
+                                                      "DAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
 
     @PostConstruct
     public void postContruct() {
@@ -364,34 +369,61 @@ class UserControllerTest {
     }
 
     @Test
-    void searchShouldReturnOkWhenEmailsIsShorterThat64() throws Exception {
+    void searchShouldReturnOkWhenEmailsIsShorterThan64Characters() throws Exception {
          // given
         final String url = "/api/v1/users/search";
         final String providedEmail = "test";
         final List<String> emails = List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com");
-        final SearchEmailResponseDto response = SearchEmailResponseDto.builder()
-                .email(emails).build();
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
         // when
-        when(userService.search(providedEmail)).thenReturn(response);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(userService.search(providedEmail)).thenReturn(emails);
 
         // then
         mockMvc
                 .perform(get(url)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .param("email", providedEmail))
                 .andExpect(status().isOk());
     }
 
     @Test
-    void searchShouldReturnBadRequestWhenEmailIsNotValid() throws Exception {
+    void searchShouldReturnBadRequestWhenEmailIsMoreThan64Characters() throws Exception {
         // given
         final String url = "/api/v1/users/search";
         final String providedEmail = "testd3123cczadas4131hbdjkasnduhascnklnasdnaklsndjkcbjans" +
                                      "cssijxcva723nc312ddasnvcxmwrw@test.com";
 
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
         // then
         mockMvc
                 .perform(get(url)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .param("email", providedEmail))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void searchShouldReturnBadRequestWhenEmailIsShorterThan3Characters() throws Exception {
+        // given
+        final String url = "/api/v1/users/search";
+        final String providedEmail = "pl";
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        // then
+        mockMvc
+                .perform(get(url)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .param("email", providedEmail))
                 .andExpect(status().isBadRequest());
     }

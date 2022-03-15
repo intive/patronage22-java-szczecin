@@ -3,7 +3,6 @@ package com.intive.patronage22.szczecin.retroboard.service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
-import com.intive.patronage22.szczecin.retroboard.dto.SearchEmailResponseDto;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +12,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -24,14 +26,10 @@ public class UserService {
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
-    public SearchEmailResponseDto search(final String email) {
-        if (email.length() < 3) {
-            return SearchEmailResponseDto.createFrom();
-        }
-
-        return SearchEmailResponseDto.createFrom(
-                userRepository.findAllByEmailContaining(email)
-        );
+    public List<String> search(final String email) {
+        return userRepository.findAllByEmailContaining(email).stream()
+                .map(x -> x.getEmail())
+                .collect(Collectors.toList());
     }
 
     public UserDetails register(final String email, final String password, final String displayName)

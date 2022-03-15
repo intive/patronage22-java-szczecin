@@ -3,7 +3,6 @@ package com.intive.patronage22.szczecin.retroboard.service;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
-import com.intive.patronage22.szczecin.retroboard.dto.SearchEmailResponseDto;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
@@ -22,7 +21,6 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -83,7 +81,7 @@ class UserServiceTest {
     }
 
     @Test
-    void searchShouldReturnListWithEmailsWhenEmailIsLongerThat3() {
+    void searchShouldReturnListWithEmailsWhenEmailIsOk() {
         // given
         final String providedEmail = "test";
         final List<User> users = List.of(
@@ -94,22 +92,10 @@ class UserServiceTest {
 
         // when
         when(userRepository.findAllByEmailContaining(providedEmail)).thenReturn(users);
-        final SearchEmailResponseDto search = userService.search(providedEmail);
+        final List<String> search = userService.search(providedEmail);
 
         // then
         assertEquals(3, users.size());
-        assertEquals(List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com"), search.getEmail());
-    }
-
-    @Test
-    void searchShouldReturnEmptyListWhenEmailIsShorterThat3() {
-        // given
-        final String providedEmail = "te";
-
-        // when
-        final SearchEmailResponseDto search = userService.search(providedEmail);
-
-        // then
-        assertTrue(search.getEmail().isEmpty());
+        assertEquals(List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com"), search);
     }
 }

@@ -1,10 +1,10 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
 import com.google.firebase.auth.FirebaseAuthException;
-import com.intive.patronage22.szczecin.retroboard.dto.SearchEmailResponseDto;
 import com.intive.patronage22.szczecin.retroboard.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -21,6 +21,8 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
+
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -62,9 +64,10 @@ public class UserController {
 
     @GetMapping(value = "/users/search")
     @ResponseStatus(OK)
-    @Operation(summary = "Search for a user by email",
-               responses = {@ApiResponse(responseCode = "200", description = "Get an emails for the given string")})
-    public SearchEmailResponseDto search(@RequestParam @Size(max = 64) final String email) {
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary= "Search for a user by email",
+               responses = {@ApiResponse(responseCode = "200", description = "Get an emails for the given string"),
+                       @ApiResponse(responseCode = "400", description = "Email length is wrong")})
+    public List<String> search(@RequestParam @Size(min = 3, max = 64) final String email) {
         return userService.search(email);
     }
 }
