@@ -28,7 +28,7 @@ public class UserService {
     @Transactional(readOnly = true)
     public List<String> search(final String email) {
         return userRepository.findAllByEmailContaining(email).stream()
-                .map(x -> x.getEmail())
+                .map(user -> user.getEmail())
                 .collect(Collectors.toList());
     }
 

@@ -62,7 +62,7 @@ public class UserController {
                         "https://github.com/springdoc/springdoc-openapi/issues/827 ");
     }
 
-    @GetMapping(value = "/users/search")
+    @GetMapping(value = "/users")
     @ResponseStatus(OK)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary= "Search for a user by email",
                responses = {@ApiResponse(responseCode = "200", description = "Get an emails for the given string"),

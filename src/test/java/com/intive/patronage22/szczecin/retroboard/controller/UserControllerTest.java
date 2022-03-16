@@ -371,7 +371,7 @@ class UserControllerTest {
     @Test
     void searchShouldReturnOkWhenEmailsIsShorterThan64Characters() throws Exception {
          // given
-        final String url = "/api/v1/users/search";
+        final String url = "/api/v1/users";
         final String providedEmail = "test";
         final List<String> emails = List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com");
 
@@ -392,7 +392,7 @@ class UserControllerTest {
     @Test
     void searchShouldReturnBadRequestWhenEmailIsMoreThan64Characters() throws Exception {
         // given
-        final String url = "/api/v1/users/search";
+        final String url = "/api/v1/users";
         final String providedEmail = "testd3123cczadas4131hbdjkasnduhascnklnasdnaklsndjkcbjans" +
                                      "cssijxcva723nc312ddasnvcxmwrw@test.com";
 
@@ -412,7 +412,7 @@ class UserControllerTest {
     @Test
     void searchShouldReturnBadRequestWhenEmailIsShorterThan3Characters() throws Exception {
         // given
-        final String url = "/api/v1/users/search";
+        final String url = "/api/v1/users";
         final String providedEmail = "pl";
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
