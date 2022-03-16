@@ -23,12 +23,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringRunner.class)
@@ -198,5 +200,153 @@ class BoardCardServiceTest {
         //then
         assertThrows(BadRequestException.class, () -> boardCardService
                 .createBoardCard(requestDto, boardId, email));
+    }
+
+    @Test
+    void removeBoardCardShouldPassWhenUserOwnsBoardCard() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test22@test.com";
+        final User user = new User("1234", email, "john14", Set.of(), Set.of());
+        final User boardOwner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
+        final Board board = Board.builder()
+                .id(1)
+                .name("board name")
+                .state(EnumStateDto.CREATED)
+                .creator(boardOwner)
+                .users(Set.of())
+                .boardCards(Set.of())
+                .build();
+        final BoardCard boardCard = BoardCard.builder()
+                .id(cardId)
+                .board(board)
+                .text("some text")
+                .column(BoardCardsColumn.SUCCESS)
+                .creator(user)
+                .boardCardActions(List.of())
+                .build();
+
+        // when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(boardCard));
+
+        //then
+        boardCardService.removeCardFromTheBoard(cardId, email);
+
+        verify(boardCardsRepository).deleteById(cardId);
+    }
+
+    @Test
+    void removeBoardCardShouldPassWhenUserOwnsBoard() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test22@test.com";
+        final User boardOwner = new User("1234", email, "john14", Set.of(), Set.of());
+        final User user = new User("12345", "some@test.com", "test", Set.of(), Set.of());
+        final Board board = Board.builder()
+                .id(1)
+                .name("board name")
+                .state(EnumStateDto.CREATED)
+                .creator(boardOwner)
+                .users(Set.of())
+                .boardCards(Set.of())
+                .build();
+        final BoardCard boardCard = BoardCard.builder()
+                .id(cardId)
+                .board(board)
+                .text("some text")
+                .column(BoardCardsColumn.SUCCESS)
+                .creator(user)
+                .boardCardActions(List.of())
+                .build();
+
+        // when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(boardOwner));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(boardCard));
+
+        //then
+        boardCardService.removeCardFromTheBoard(cardId, email);
+
+        verify(boardCardsRepository).deleteById(cardId);
+    }
+
+    @Test
+    void removeBoardCardShouldThrowBadRequestWhenBoardStateIsNotCreated() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test22@test.com";
+        final User user = new User("1234", email, "john14", Set.of(), Set.of());
+        final User boardOwner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
+        final Board board = Board.builder()
+                .id(1)
+                .name("board name")
+                .state(EnumStateDto.VOTING)
+                .creator(boardOwner)
+                .users(Set.of())
+                .boardCards(Set.of())
+                .build();
+        final BoardCard boardCard = BoardCard.builder()
+                .id(cardId)
+                .board(board)
+                .text("some text")
+                .column(BoardCardsColumn.SUCCESS)
+                .creator(user)
+                .boardCardActions(List.of())
+                .build();
+
+        // when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(boardCard));
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardCardService.removeCardFromTheBoard(cardId, email));
+    }
+
+    @Test
+    void removeBoardCardShouldThrowBadRequestWhenUserIsNotOwner() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test22@test.com";
+        final User user = new User("1234", email, "john14", Set.of(), Set.of());
+        final User owner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
+        final Board board = Board.builder()
+                .id(1)
+                .name("board name")
+                .state(EnumStateDto.CREATED)
+                .creator(owner)
+                .users(Set.of())
+                .boardCards(Set.of())
+                .build();
+        final BoardCard boardCard = BoardCard.builder()
+                .id(cardId)
+                .board(board)
+                .text("some text")
+                .column(BoardCardsColumn.SUCCESS)
+                .creator(owner)
+                .boardCardActions(List.of())
+                .build();
+
+        // when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(boardCard));
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardCardService.removeCardFromTheBoard(cardId, email));
+    }
+    
+    @Test
+    void removeBoardCardShouldThrowNotFoundExceptionWhenBoardCardIsNotFound() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test22@test.com";
+        final String uid = "1234";
+        final User user = new User(uid, email, "john14", Set.of(), Set.of());
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenThrow(NotFoundException.class);
+
+        //then
+        assertThrows(NotFoundException.class, () -> boardCardService.removeCardFromTheBoard(cardId, email));
     }
 }
