@@ -202,6 +202,10 @@ public class BoardService {
         final Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Board is not found"));
 
+        if (!board.getUsers().contains(user)) {
+            throw new BadRequestException("User is not assigned to the Board.");
+        }
+
         if (board.getCreator().equals(user)) {
             throw new BadRequestException("User is the board owner.");
         }
