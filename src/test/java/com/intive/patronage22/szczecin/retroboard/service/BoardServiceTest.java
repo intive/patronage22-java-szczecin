@@ -745,8 +745,8 @@ class BoardServiceTest {
         final String email = "boardOwner@test.pl";
         final Integer boardId = 10;
 
-        final User notAssignedUser = new User("12345", "test@test.com", "some_user", Set.of(), Set.of());
-        final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
+        final User notAssignedUser = new User(uid, "test@test.com", "some_user", Set.of(), Set.of());
+        final User boardOwner = new User("123", email, "board_owner", Set.of(), Set.of());
         final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 10, Set.of());
 
         // when
@@ -767,7 +767,7 @@ class BoardServiceTest {
         final String email = "someUser@test.pl";
         final Integer boardId = 10;
 
-        final User notAssignedUser = new User("12345", "someUser@test.pl", "some_user", Set.of(), Set.of());
+        final User notAssignedUser = new User(uid, email, "some_user", Set.of(), Set.of());
         final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
         final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 10, Set.of());
 
@@ -809,7 +809,7 @@ class BoardServiceTest {
         final Integer boardId = 10;
 
         final User boardOwner = new User("123", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
-        final User userToRemove = new User("12345", "test3@test3.com", "userTest", Set.of(), Set.of());
+        final User userToRemove = new User(uid, "test3@test3.com", "userTest", Set.of(), Set.of());
         final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 10, Set.of(userToRemove));
 
         //when
@@ -832,7 +832,7 @@ class BoardServiceTest {
         final String email = "boardOwner@test1.com";
         final Integer boardId = 10;
 
-        final User boardOwner = new User("12345", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
+        final User boardOwner = new User(uid, email, "board_owner", Set.of(), Set.of());
         final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 10, Set.of());
 
         //when
@@ -854,8 +854,8 @@ class BoardServiceTest {
         final String email = "boardOwner@test1.com";
         final Integer boardId = 10;
 
-        final User boardOwner = new User("12345", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
-        final User userToRemove = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
+        final User boardOwner = new User("12345", email, "board_owner", Set.of(), Set.of());
+        final User userToRemove = new User(uid, "test2@test2.com", "userTest", Set.of(), Set.of());
         final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 10, new HashSet<>());
         board.getUsers().add(userToRemove);
 
@@ -880,7 +880,7 @@ class BoardServiceTest {
         final Integer boardId = 10;
 
         final User boardOwner = new User("12345", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
-        final User currentlyLogged = new User("789", "currentlyLogged@test.pl", "currently_logged", Set.of(), Set.of());
+        final User currentlyLogged = new User(uid, email, "currently_logged", Set.of(), Set.of());
         final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 10, new HashSet<>());
         board.getUsers().add(currentlyLogged);
 
