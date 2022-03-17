@@ -219,7 +219,6 @@ class BoardCardServiceTest {
 
         //then
         boardCardService.removeCard(cardId, email);
-
         verify(boardCardsRepository).deleteById(cardId);
     }
 
@@ -239,7 +238,6 @@ class BoardCardServiceTest {
 
         //then
         boardCardService.removeCard(cardId, email);
-
         verify(boardCardsRepository).deleteById(cardId);
     }
 
