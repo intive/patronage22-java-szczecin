@@ -66,6 +66,7 @@ To be able to run Firebase everyone needs to set variables in .env file.
 To add values:
 - Open private key json downloaded in previous step
 - Change values to yours in .env file
+-
 
 Following values need to be set:
 - FIREBASE_CLIENT_ID=**your_client_id**
