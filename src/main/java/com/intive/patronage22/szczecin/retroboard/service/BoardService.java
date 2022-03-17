@@ -199,16 +199,18 @@ public class BoardService {
 
         final User user = userRepository.findById(uid)
                 .orElseThrow(() -> new NotFoundException("User is not found"));
+        
         final Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Board is not found"));
+
+        if (board.getCreator().equals(user)) {
+            throw new BadRequestException("User is the board owner.");
+        }
 
         if (!board.getUsers().contains(user)) {
             throw new BadRequestException("User is not assigned to the Board.");
         }
 
-        if (board.getCreator().equals(user)) {
-            throw new BadRequestException("User is the board owner.");
-        }
         if (email.equals(user.getEmail()) || email.equals(board.getCreator().getEmail())) {
             board.getUsers().remove(user);
         } else {
