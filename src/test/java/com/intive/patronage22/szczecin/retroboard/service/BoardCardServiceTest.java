@@ -13,13 +13,13 @@ import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepositor
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -75,14 +75,7 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final String uid = "1234";
         final User user = new User(uid, email, "john14", Set.of(), Set.of());
-        final Board board = Board.builder()
-                .id(boardId)
-                .name("board name")
-                .state(EnumStateDto.CREATED)
-                .creator(user)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
+        final Board board = buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -116,7 +109,6 @@ class BoardCardServiceTest {
                 .columnId(0)
                 .build();
         final String email = "test22@test.com";
-        final Integer orderNumber = 0;
 
         //when
         when(userRepository.findUserByEmail(email)).thenThrow(BadRequestException.class);
@@ -158,15 +150,6 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final String uid = "1234";
         final User user = new User(uid, email, "john14", Set.of(), Set.of());
-        final User boardOwner = new User("12456", "boardowner@email.com", "owner", Set.of(), Set.of());
-        final Board board = Board.builder()
-                .id(boardId)
-                .name("board name")
-                .state(EnumStateDto.CREATED)
-                .creator(boardOwner)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -189,14 +172,7 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final String uid = "1234";
         final User user = new User(uid, email, "john14", Set.of(), Set.of());
-        final Board board = Board.builder()
-                .id(boardId)
-                .name("board name")
-                .state(EnumStateDto.VOTING)
-                .creator(user)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
+        final Board board = buildBoard(boardId, EnumStateDto.VOTING, user, Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -204,8 +180,7 @@ class BoardCardServiceTest {
         when(boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)).thenReturn(Optional.of(board));
 
         //then
-        assertThrows(BadRequestException.class, () -> boardCardService
-                .createBoardCard(requestDto, boardId, email));
+        assertThrows(BadRequestException.class, () -> boardCardService.createBoardCard(requestDto, boardId, email));
     }
 
     @Test
@@ -215,7 +190,7 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final User user = new User("1234", email, "john14", Set.of(), Set.of());
         final User boardOwner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+        final Board board = buildBoard(1, EnumStateDto.CREATED, boardOwner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
         // when
@@ -234,7 +209,7 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final User boardOwner = new User("1234", email, "john14", Set.of(), Set.of());
         final User user = new User("12345", "some@test.com", "test", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+        final Board board = buildBoard(1, EnumStateDto.CREATED, boardOwner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
         // when
@@ -253,7 +228,7 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final User user = new User("1234", email, "john14", Set.of(), Set.of());
         final User boardOwner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.VOTING, 1, Set.of());
+        final Board board = buildBoard(1, EnumStateDto.CREATED, boardOwner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
         // when
@@ -271,7 +246,7 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final User user = new User("1234", email, "john14", Set.of(), Set.of());
         final User owner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
-        final Board board = buildBoard(owner, EnumStateDto.CREATED, 1, Set.of());
+        final Board board = buildBoard(1, EnumStateDto.CREATED, owner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, owner, List.of());
 
         // when
@@ -298,25 +273,76 @@ class BoardCardServiceTest {
         assertThrows(NotFoundException.class, () -> boardCardService.removeCard(cardId, email));
     }
 
-    private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
+    @Test
+    @DisplayName("Vote should throw Bad Request when user not exists")
+    void voteShouldThrowBadRequestWhenUserIsNotFound() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test22@test.com";
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+    }
+
+    @Test
+    @DisplayName("Vote should throw NotFound when board card not exists")
+    void voteShouldThrowNotFoundWhenBoardCardIsNotFound() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test@example.com";
+        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(NotFoundException.class, () -> boardCardService.vote(cardId, email));
+    }
+
+    @Test
+    @DisplayName("Vote should throw BadRequest when board not exists")
+    void voteShouldThrowBadRequestWhenBoardNotExist() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test@example.com";
+        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final Board board = buildBoard(2, EnumStateDto.CREATED, user, Set.of(), Set.of());
+        final BoardCard card = buildBoardCard(cardId, board , BoardCardsColumn.SUCCESS, user, List.of());
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(boardRepository.findById(card.getBoard().getId())).thenReturn(Optional.empty());
+
+        //then
+        assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+    }
+
+    private Board buildBoard(final int id, final EnumStateDto state, final User user, final Set<User> users,
+                             final Set<BoardCard> cards) {
         return Board.builder()
                 .id(id)
-                .name("My first board.")
+                .name("board name")
                 .state(state)
                 .creator(user)
                 .users(users)
+                .boardCards(cards)
                 .build();
     }
 
-    private BoardCard buildBoardCard(final int id, final Board board, final BoardCardsColumn column,
-                                     final User creator, final List<BoardCardAction> boardCardActions) {
+    private BoardCard buildBoardCard(final int id, final Board board, final BoardCardsColumn column, final User user,
+                                     List<BoardCardAction> actions) {
         return BoardCard.builder()
                 .id(id)
                 .board(board)
-                .text("some text")
+                .text("card text")
                 .column(column)
-                .creator(creator)
-                .boardCardActions(boardCardActions)
+                .creator(user)
+                .boardCardActions(actions)
                 .build();
     }
 }
