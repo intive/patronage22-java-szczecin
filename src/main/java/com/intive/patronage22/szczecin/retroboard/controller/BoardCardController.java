@@ -63,7 +63,8 @@ public class BoardCardController {
                responses = {@ApiResponse(responseCode = "201", description = "Voted"),
                        @ApiResponse(responseCode = "400",
                                     description = "No more votes. Board state is not in state VOTING. User is not " +
-                                                  "found. Board is not found. User is not assigned to board nor owner."),
+                                                  "found. Board is not found. " +
+                                                  "User is not assigned to board nor owner."),
                        @ApiResponse(responseCode = "404", description = "Card not found")})
     public Map<String, Integer> vote(@PathVariable(name = "id") final Integer cardId,
                                      final Authentication authentication) {
