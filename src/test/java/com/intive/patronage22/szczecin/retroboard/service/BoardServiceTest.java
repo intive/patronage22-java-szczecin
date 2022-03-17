@@ -850,24 +850,24 @@ class BoardServiceTest {
     @DisplayName("Remove assigned user should remove assigned user when board owner tries to delete other user")
     void removeAssignedUserShouldRemoveWhenBoardOwnerTriesToDeleteOtherUser() {
         //given
-        final String uid = "12345";
+        final String uid = "456";
         final String email = "boardOwner@test1.com";
         final Integer boardId = 10;
 
         final User boardOwner = new User("12345", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
-        final User assignedUser = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
+        final User userToRemove = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
         final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 10, new HashSet<>());
-        board.getUsers().add(assignedUser);
+        board.getUsers().add(userToRemove);
 
         //when
-        when(userRepository.findById(uid)).thenReturn(Optional.of(assignedUser));
+        when(userRepository.findById(uid)).thenReturn(Optional.of(userToRemove));
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         //then
         boardService.removeUserAssignedToTheBoard(uid, boardId, email);
 
         assertEquals(boardOwner, board.getCreator());
-        assertFalse(board.getUsers().contains(assignedUser));
+        assertFalse(board.getUsers().contains(userToRemove));
         assertTrue(board.getUsers().isEmpty());
     }
 
@@ -875,7 +875,7 @@ class BoardServiceTest {
     @DisplayName("Remove assigned user should remove assigned user when currently logged user is not board owner and tries to self delete")
     void removeAssignedUserShouldRemoveWhenCurrentlyLoggedUserIsNotBoardOwnerAndTriesToSelfDelete() {
         //given
-        final String uid = "12345";
+        final String uid = "789";
         final String email = "currentlyLogged@test.pl";
         final Integer boardId = 10;
 
