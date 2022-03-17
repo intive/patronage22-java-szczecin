@@ -48,8 +48,7 @@ public class BoardCardController {
     @ResponseStatus(OK)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Remove card from the board.",
                responses = {@ApiResponse(responseCode = "200", description = "Card successfully removed"),
-                    @ApiResponse(responseCode = "400", description = "Not board's owner or not card's owner "
-                            + "or board's state is not \"CREATED\""),
+                    @ApiResponse(responseCode = "400", description = "User is not allowed to delete card"),
                     @ApiResponse(responseCode = "404", description = "Card not found")})
     public void removeCardFromTheBoard(@PathVariable(name = "id") final Integer cardId,
                                        final Authentication authentication) {
