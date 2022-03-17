@@ -53,6 +53,6 @@ public class BoardCardController {
     public void removeCardFromTheBoard(@PathVariable(name = "id") final Integer cardId,
                                        final Authentication authentication) {
 
-        boardCardService.removeCardFromTheBoard(cardId, authentication.getName());
+        boardCardService.removeCard(cardId, authentication.getName());
     }
 }

@@ -218,7 +218,7 @@ class BoardCardServiceTest {
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(boardCard));
 
         //then
-        boardCardService.removeCardFromTheBoard(cardId, email);
+        boardCardService.removeCard(cardId, email);
 
         verify(boardCardsRepository).deleteById(cardId);
     }
@@ -238,7 +238,7 @@ class BoardCardServiceTest {
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(boardCard));
 
         //then
-        boardCardService.removeCardFromTheBoard(cardId, email);
+        boardCardService.removeCard(cardId, email);
 
         verify(boardCardsRepository).deleteById(cardId);
     }
@@ -258,7 +258,7 @@ class BoardCardServiceTest {
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(boardCard));
 
         //then
-        assertThrows(BadRequestException.class, () -> boardCardService.removeCardFromTheBoard(cardId, email));
+        assertThrows(BadRequestException.class, () -> boardCardService.removeCard(cardId, email));
     }
 
     @Test
@@ -276,7 +276,7 @@ class BoardCardServiceTest {
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(boardCard));
 
         //then
-        assertThrows(BadRequestException.class, () -> boardCardService.removeCardFromTheBoard(cardId, email));
+        assertThrows(BadRequestException.class, () -> boardCardService.removeCard(cardId, email));
     }
     
     @Test
@@ -292,7 +292,7 @@ class BoardCardServiceTest {
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(NotFoundException.class, () -> boardCardService.removeCardFromTheBoard(cardId, email));
+        assertThrows(NotFoundException.class, () -> boardCardService.removeCard(cardId, email));
     }
 
     private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
