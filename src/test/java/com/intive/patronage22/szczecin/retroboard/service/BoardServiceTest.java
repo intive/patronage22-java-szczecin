@@ -739,7 +739,7 @@ class BoardServiceTest {
     }
 
     @Test
-    void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToRemoveUserNotAssignedToTheBoard() {
+    void removeAssignedUserShouldThrowNotFoundWhenBoardOwnerTriesToRemoveUserNotAssignedToTheBoard() {
         // given
         final String uid = "12345";
         final String email = "boardOwner@test.pl";
@@ -754,14 +754,14 @@ class BoardServiceTest {
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
 
         // then
-        final BadRequestException exception = assertThrows(
-                BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
 
         assertEquals("User is not assigned to the Board.", exception.getMessage());
     }
 
     @Test
-    void removeAssignedUserShouldThrowBadRequestWhenUserTriesToRemoveHimselfAndHeIsNotAssignedToTheBoard() {
+    void removeAssignedUserShouldThrowNotFoundWhenUserTriesToRemoveHimselfAndHeIsNotAssignedToTheBoard() {
         // given
         final String uid = "12345";
         final String email = "someUser@test.pl";
@@ -776,8 +776,8 @@ class BoardServiceTest {
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
 
         // then
-        final BadRequestException exception = assertThrows(
-                BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
 
         assertEquals("User is not assigned to the Board.", exception.getMessage());
     }
@@ -803,7 +803,7 @@ class BoardServiceTest {
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
         final User userCurrentlyLogged  = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
         final User user = new User("789", "test3@test3.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED,10, Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of(user));
 
         //when
         when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));

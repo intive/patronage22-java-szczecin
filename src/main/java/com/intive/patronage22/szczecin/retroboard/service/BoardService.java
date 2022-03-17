@@ -208,7 +208,7 @@ public class BoardService {
         }
 
         if (!board.getUsers().contains(user)) {
-            throw new BadRequestException("User is not assigned to the Board.");
+            throw new NotFoundException("User is not assigned to the Board.");
         }
 
         if (email.equals(user.getEmail()) || email.equals(board.getCreator().getEmail())) {
