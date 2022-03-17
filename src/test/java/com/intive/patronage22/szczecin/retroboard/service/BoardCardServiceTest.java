@@ -285,13 +285,16 @@ class BoardCardServiceTest {
     void voteShouldThrowBadRequestWhenUserIsNotFound() {
         // given
         final Integer cardId = 1;
-        final String email = "test22@test.com";
+        final String email = "test@example.com";
+        final String expectedExceptionMessage = "User not found";
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        final BadRequestException exception =
+                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
@@ -301,13 +304,16 @@ class BoardCardServiceTest {
         final Integer cardId = 1;
         final String email = "test@example.com";
         final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final String expectedExceptionMessage = "Card not found";
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(NotFoundException.class, () -> boardCardService.vote(cardId, email));
+        final NotFoundException exception =
+                assertThrows(NotFoundException.class, () -> boardCardService.vote(cardId, email));
+        assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
@@ -319,6 +325,7 @@ class BoardCardServiceTest {
         final User user = new User("1234", email, "somename", Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.CREATED, 5, user, Set.of(), Set.of());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
+        final String expectedExceptionMessage = "Board not exist";
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -326,7 +333,9 @@ class BoardCardServiceTest {
         when(boardRepository.findById(card.getBoard().getId())).thenReturn(Optional.empty());
 
         //then
-        assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        final BadRequestException exception =
+                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
@@ -339,6 +348,7 @@ class BoardCardServiceTest {
         final User user = new User("1234", email, "somename", Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.CREATED, 5, creator, Set.of(), Set.of());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, creator, List.of());
+        final String expectedExceptionMessage = "User not assigned to board";
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -346,7 +356,9 @@ class BoardCardServiceTest {
         when(boardRepository.findById(card.getBoard().getId())).thenReturn(Optional.of(board));
 
         //then
-        assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        final BadRequestException exception =
+                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
@@ -359,6 +371,7 @@ class BoardCardServiceTest {
         final Board board = buildBoard(2, EnumStateDto.CREATED, 5, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
         board.setBoardCards(Set.of(card));
+        final String expectedExceptionMessage = "Wrong state of board";
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -366,7 +379,9 @@ class BoardCardServiceTest {
         when(boardRepository.findById(card.getBoard().getId())).thenReturn(Optional.of(board));
 
         //then
-        assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        final BadRequestException exception =
+                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
@@ -381,6 +396,7 @@ class BoardCardServiceTest {
         board.setBoardCards(Set.of(card));
         final BoardCardVotesKey key = new BoardCardVotesKey(cardId, user.getUid());
         final BoardCardVotes boardCardVotes = new BoardCardVotes(key, card, user, 5);
+        final String expectedExceptionMessage = "No more votes";
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -390,7 +406,9 @@ class BoardCardServiceTest {
                 List.of(boardCardVotes.getVotes()));
 
         //then
-        assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        final BadRequestException exception =
+                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+        assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
