@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -27,9 +26,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public List<String> search(final String email) {
-        return userRepository.findAllByEmailContaining(email).stream()
-                .map(user -> user.getEmail())
-                .collect(Collectors.toList());
+        return userRepository.searchByEmailLike(email);
     }
 
     public UserDetails register(final String email, final String password, final String displayName)

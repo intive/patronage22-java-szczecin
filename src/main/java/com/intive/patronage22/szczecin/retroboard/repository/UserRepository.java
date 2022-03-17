@@ -1,6 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.repository;
 
 import com.intive.patronage22.szczecin.retroboard.model.User;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,5 +15,6 @@ public interface UserRepository extends CrudRepository<User, String> {
 
     List<User> findAllByEmailIn(List<String> emails);
 
-    List<User> findAllByEmailContaining(final String email);
+    @Query("SELECT u.email FROM User u WHERE u.email LIKE %:email%")
+    List<String> searchByEmailLike(final String email);
 }

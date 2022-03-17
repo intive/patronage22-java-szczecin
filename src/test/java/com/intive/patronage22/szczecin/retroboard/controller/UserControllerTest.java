@@ -427,4 +427,23 @@ class UserControllerTest {
                         .param("email", providedEmail))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void searchShouldReturnBadRequestWhenEmailIsBlank() throws Exception {
+        // given
+        final String url = "/api/v1/users";
+        final String providedEmail = "         ";
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        // when
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+
+        // then
+        mockMvc
+                .perform(get(url)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .param("email", providedEmail))
+                .andExpect(status().isBadRequest());
+    }
 }

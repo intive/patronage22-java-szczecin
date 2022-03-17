@@ -84,18 +84,14 @@ class UserServiceTest {
     void searchShouldReturnListWithEmailsWhenEmailIsOk() {
         // given
         final String providedEmail = "test";
-        final List<User> users = List.of(
-                new User("dsadasdasdas", "test12@plo.com", "yytS", Set.of(), Set.of()),
-                new User("dsada212ddas", "sodttest2@tyk.pl", "dscS", Set.of(), Set.of()),
-                new User("dsDeXVBasdas", "sodniktest@sok.com", "y32S", Set.of(), Set.of())
-        );
+        final List<String> emails = List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com");
 
         // when
-        when(userRepository.findAllByEmailContaining(providedEmail)).thenReturn(users);
+        when(userRepository.searchByEmailLike(providedEmail)).thenReturn(emails);
         final List<String> search = userService.search(providedEmail);
 
         // then
-        assertEquals(3, users.size());
+        assertEquals(3, emails.size());
         assertEquals(List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com"), search);
     }
 }

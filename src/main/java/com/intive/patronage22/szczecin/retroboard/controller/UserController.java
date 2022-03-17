@@ -67,7 +67,7 @@ public class UserController {
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary= "Search for a user by email",
                responses = {@ApiResponse(responseCode = "200", description = "Get an emails for the given string"),
                        @ApiResponse(responseCode = "400", description = "Incorrect email's length")})
-    public List<String> search(@RequestParam @Size(min = 3, max = 64) final String email) {
+    public List<String> search(@RequestParam @NotBlank @Size(min = 3, max = 64) final String email) {
         return userService.search(email);
     }
 }
