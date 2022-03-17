@@ -49,8 +49,12 @@ public class BoardCardService {
         }
 
         final BoardCard boardCard = BoardCard.builder()
-                .board(board).column(BoardCardsColumn.columnIdToBoardCardsColumn(boardCardDto.getColumnId()))
-                .text(boardCardDto.getCardText()).creator(user).boardCardActions(List.of()).build();
+                .board(board)
+                .column(BoardCardsColumn.columnIdToBoardCardsColumn(boardCardDto.getColumnId()))
+                .text(boardCardDto.getCardText())
+                .creator(user)
+                .boardCardActions(List.of())
+                .build();
 
         boardCardsRepository.save(boardCard);
 
