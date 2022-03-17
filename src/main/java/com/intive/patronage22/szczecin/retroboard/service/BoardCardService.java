@@ -66,10 +66,10 @@ public class BoardCardService {
 
         if (!boardCard.getCreator().getEmail().equals(email)
                 && !boardCard.getBoard().getCreator().getEmail().equals(email))
-            throw new BadRequestException("Not board's owner or card's owner");
+            throw new BadRequestException("User is not allowed to delete card");
 
         if (boardCard.getBoard().getState().compareTo(EnumStateDto.CREATED) != 0)
-            throw new BadRequestException("State of the board is not \"CREATED\"");
+            throw new BadRequestException("User is not allowed to delete card");
 
         boardCardsRepository.deleteById(cardId);
     }
