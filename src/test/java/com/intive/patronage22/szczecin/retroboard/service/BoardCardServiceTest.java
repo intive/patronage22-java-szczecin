@@ -7,6 +7,7 @@ import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
+import com.intive.patronage22.szczecin.retroboard.model.BoardCardAction;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
@@ -209,22 +210,8 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final User user = new User("1234", email, "john14", Set.of(), Set.of());
         final User boardOwner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
-        final Board board = Board.builder()
-                .id(1)
-                .name("board name")
-                .state(EnumStateDto.CREATED)
-                .creator(boardOwner)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
-        final BoardCard boardCard = BoardCard.builder()
-                .id(cardId)
-                .board(board)
-                .text("some text")
-                .column(BoardCardsColumn.SUCCESS)
-                .creator(user)
-                .boardCardActions(List.of())
-                .build();
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+        final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
         // when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -243,22 +230,8 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final User boardOwner = new User("1234", email, "john14", Set.of(), Set.of());
         final User user = new User("12345", "some@test.com", "test", Set.of(), Set.of());
-        final Board board = Board.builder()
-                .id(1)
-                .name("board name")
-                .state(EnumStateDto.CREATED)
-                .creator(boardOwner)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
-        final BoardCard boardCard = BoardCard.builder()
-                .id(cardId)
-                .board(board)
-                .text("some text")
-                .column(BoardCardsColumn.SUCCESS)
-                .creator(user)
-                .boardCardActions(List.of())
-                .build();
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+        final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
         // when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(boardOwner));
@@ -277,22 +250,8 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final User user = new User("1234", email, "john14", Set.of(), Set.of());
         final User boardOwner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
-        final Board board = Board.builder()
-                .id(1)
-                .name("board name")
-                .state(EnumStateDto.VOTING)
-                .creator(boardOwner)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
-        final BoardCard boardCard = BoardCard.builder()
-                .id(cardId)
-                .board(board)
-                .text("some text")
-                .column(BoardCardsColumn.SUCCESS)
-                .creator(user)
-                .boardCardActions(List.of())
-                .build();
+        final Board board = buildBoard(boardOwner, EnumStateDto.VOTING, 1, Set.of());
+        final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
         // when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -309,22 +268,8 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final User user = new User("1234", email, "john14", Set.of(), Set.of());
         final User owner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
-        final Board board = Board.builder()
-                .id(1)
-                .name("board name")
-                .state(EnumStateDto.CREATED)
-                .creator(owner)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
-        final BoardCard boardCard = BoardCard.builder()
-                .id(cardId)
-                .board(board)
-                .text("some text")
-                .column(BoardCardsColumn.SUCCESS)
-                .creator(owner)
-                .boardCardActions(List.of())
-                .build();
+        final Board board = buildBoard(owner, EnumStateDto.CREATED, 1, Set.of());
+        final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, owner, List.of());
 
         // when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -344,9 +289,31 @@ class BoardCardServiceTest {
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
-        when(boardCardsRepository.findById(cardId)).thenThrow(NotFoundException.class);
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.empty());
 
         //then
         assertThrows(NotFoundException.class, () -> boardCardService.removeCardFromTheBoard(cardId, email));
+    }
+
+    private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
+        return Board.builder()
+                .id(id)
+                .name("My first board.")
+                .state(state)
+                .creator(user)
+                .users(users)
+                .build();
+    }
+
+    private BoardCard buildBoardCard(final int id, final Board board, final BoardCardsColumn column,
+                                     final User creator, final List<BoardCardAction> boardCardActions) {
+        return BoardCard.builder()
+                .id(id)
+                .board(board)
+                .text("some text")
+                .column(column)
+                .creator(creator)
+                .boardCardActions(boardCardActions)
+                .build();
     }
 }
