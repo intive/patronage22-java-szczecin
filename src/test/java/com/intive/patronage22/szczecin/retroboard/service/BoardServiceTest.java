@@ -36,7 +36,11 @@ import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -257,8 +261,8 @@ class BoardServiceTest {
         assertEquals(boardDataDto.getBoard().getName(), board.getName());
         assertEquals(boardDataDto.getBoard().getNumberOfVotes(), board.getMaximumNumberOfVotes());
         assertEquals(boardDataDto.getColumns().get(0).getName(), BoardCardsColumn.SUCCESS.name());
-        assertEquals(boardDataDto.getColumns().get(0).getId(), BoardCardsColumn.SUCCESS.getOrderNumber());
-        assertEquals(boardDataDto.getColumns().get(0).getPosition(), BoardCardsColumn.SUCCESS.getOrderNumber());
+        assertEquals(boardDataDto.getColumns().get(0).getId(), BoardCardsColumn.SUCCESS.getColumnId());
+        assertEquals(boardDataDto.getColumns().get(0).getPosition(), BoardCardsColumn.SUCCESS.getColumnId());
         assertEquals(boardDataDto.getColumns().get(0).getColour(), BoardCardsColumn.SUCCESS.getColour());
         assertTrue(boardDataDto.getUsers().toString().contains(user.getEmail()));
         assertTrue(boardDataDto.getUsers().toString().contains(user.getUid()));
@@ -364,7 +368,7 @@ class BoardServiceTest {
         final List<BoardDetailsDto> boardDetailsDto = boardService.getBoardDetailsById(boardId, userEmail);
 
         //then
-        assertEquals(boardDetailsDto.get(0).getId(), BoardCardsColumn.SUCCESS.getOrderNumber());
+        assertEquals(boardDetailsDto.get(0).getId(), BoardCardsColumn.SUCCESS.getColumnId());
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getId(), successBoardCard.getId());
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getCardText(), successBoardCard.getText());
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getBoardCardCreator(),
@@ -372,7 +376,7 @@ class BoardServiceTest {
         assertEquals(boardDetailsDto.get(0).getBoardCards().get(0).getActionTexts().get(0),
                 successBoardCard.getBoardCardActions().get(0).getText());
 
-        assertEquals(boardDetailsDto.get(1).getId(), BoardCardsColumn.FAILURES.getOrderNumber());
+        assertEquals(boardDetailsDto.get(1).getId(), BoardCardsColumn.FAILURES.getColumnId());
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getId(), failureBoardCard.getId());
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getCardText(), failureBoardCard.getText());
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getBoardCardCreator(),
@@ -380,7 +384,7 @@ class BoardServiceTest {
         assertEquals(boardDetailsDto.get(1).getBoardCards().get(0).getActionTexts().get(0),
                 failureBoardCard.getBoardCardActions().get(0).getText());
 
-        assertEquals(boardDetailsDto.get(2).getId(), BoardCardsColumn.KUDOS.getOrderNumber());
+        assertEquals(boardDetailsDto.get(2).getId(), BoardCardsColumn.KUDOS.getColumnId());
         assertEquals(boardDetailsDto.get(2).getBoardCards().get(0).getId(), kudosBoardCard.getId());
         assertEquals(boardDetailsDto.get(2).getBoardCards().get(0).getCardText(), kudosBoardCard.getText());
         assertEquals(boardDetailsDto.get(2).getBoardCards().get(0).getBoardCardCreator(),
@@ -432,7 +436,7 @@ class BoardServiceTest {
         final List<BoardDetailsDto> boardDetailsDto = boardService.getBoardDetailsById(boardId, userEmail);
 
         //then
-        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.SUCCESS.getOrderNumber())));
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.SUCCESS.getColumnId())));
         assertTrue(boardDetailsDto.toString().contains(successBoardCard.getId().toString()));
         assertTrue(boardDetailsDto.toString().contains(successBoardCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(successBoardCard.getCreator().getEmail()));
@@ -442,13 +446,13 @@ class BoardServiceTest {
         assertTrue(boardDetailsDto.toString().contains(assignedUserCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(assignedUserCard.getCreator().getEmail()));
 
-        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.FAILURES.getOrderNumber())));
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.FAILURES.getColumnId())));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getId().toString()));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getCreator().getEmail()));
         assertTrue(boardDetailsDto.toString().contains(failureBoardCard.getBoardCardActions().get(0).getText()));
 
-        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.KUDOS.getOrderNumber())));
+        assertTrue(boardDetailsDto.toString().contains(String.valueOf(BoardCardsColumn.KUDOS.getColumnId())));
         assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getId().toString()));
         assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getText()));
         assertTrue(boardDetailsDto.toString().contains(kudosBoardCard.getCreator().getEmail()));
@@ -652,15 +656,14 @@ class BoardServiceTest {
         final User userToAssign = new User("126", usersEmails.get(0), displayName, new HashSet<>(), Set.of());
         final User existingUser = new User("1234", "test@123.pl", displayName, new HashSet<>(), Set.of());
         final Set<User> boardUsers = new HashSet<>(List.of(existingUser));
+        final List<User> existingUsers = List.of(userToAssign, existingUser);
 
         final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, boardUsers);
 
         //when
         when(userRepository.findUserByEmail(ownerEmail)).thenReturn(Optional.of(owner));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
-        when(userRepository.findUserByEmail(usersEmails.get(0))).thenReturn(Optional.of(userToAssign));
-        when(userRepository.findUserByEmail(usersEmails.get(1))).thenReturn(Optional.empty());
-        when(userRepository.findUserByEmail(usersEmails.get(2))).thenReturn(Optional.of(existingUser));
+        when(userRepository.findAllByEmailIn(usersEmails)).thenReturn(existingUsers);
         final JSONArray failedEmails = new JSONArray(boardService.assignUsersToBoard(boardId, usersEmails, ownerEmail));
 
         //then
@@ -670,7 +673,6 @@ class BoardServiceTest {
         final Board savedBoard = usersCaptor.getValue();
         final Set<User> allBoardUsers = savedBoard.getUsers();
 
-        final int i = 0;
         assertEquals(allBoardUsers.size(), 2);
         assertTrue(allBoardUsers.contains(existingUser));
         assertTrue(allBoardUsers.contains(userToAssign));
@@ -737,6 +739,50 @@ class BoardServiceTest {
     }
 
     @Test
+    void removeAssignedUserShouldThrowNotFoundWhenBoardOwnerTriesToRemoveUserNotAssignedToTheBoard() {
+        // given
+        final String uid = "12345";
+        final String email = "boardOwner@test.pl";
+        final Integer boardId = 1;
+
+        final User notAssignedUser = new User("12345", "test@test.com", "some_user", Set.of(), Set.of());
+        final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+
+        // when
+        when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
+
+        // then
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
+
+        assertEquals("User is not assigned to the Board.", exception.getMessage());
+    }
+
+    @Test
+    void removeAssignedUserShouldThrowNotFoundWhenUserTriesToRemoveHimselfAndHeIsNotAssignedToTheBoard() {
+        // given
+        final String uid = "12345";
+        final String email = "someUser@test.pl";
+        final Integer boardId = 1;
+
+        final User notAssignedUser = new User("12345", "someUser@test.pl", "some_user", Set.of(), Set.of());
+        final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+
+        // when
+        when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
+
+        // then
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
+
+        assertEquals("User is not assigned to the Board.", exception.getMessage());
+    }
+
+    @Test
     @DisplayName("Remove assigned user should throw NotFound when user not exists")
     void removeAssignedUserShouldThrowNotFoundWhenUserNotExists() {
         //given
@@ -757,7 +803,7 @@ class BoardServiceTest {
         final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
         final User userCurrentlyLogged  = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
         final User user = new User("789", "test3@test3.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED,10, Set.of());
+        final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of(user));
 
         //when
         when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));

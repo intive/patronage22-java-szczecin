@@ -23,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -91,9 +90,9 @@ public class BoardService {
             }
         });
 
-        return List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getOrderNumber(), successBoardCardsDtos),
-                BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getOrderNumber(), failuresBoardCardsDtos),
-                BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.getOrderNumber(), kudosBoardCardsDtos));
+        return List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getColumnId(), successBoardCardsDtos),
+                BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getColumnId(), failuresBoardCardsDtos),
+                BoardDetailsDto.createFrom(BoardCardsColumn.KUDOS.getColumnId(), kudosBoardCardsDtos));
     }
 
     @Transactional
@@ -168,26 +167,31 @@ public class BoardService {
     }
 
     @Transactional
-    public List<String> assignUsersToBoard(final Integer boardId, final List<String> usersEmails, final String email) {
+    public List<String> assignUsersToBoard(final Integer boardId, final List<String> emailsToAssign,
+                                           final String email) {
+
         final User boardOwner =
                 userRepository.findUserByEmail(email).orElseThrow(() -> new NotFoundException("User is not found"));
+
         final Board board =
                 boardRepository.findById(boardId).orElseThrow(() -> new NotFoundException("Board is not found."));
+
         if (!board.getCreator().equals(boardOwner)) {
             throw new BadRequestException("User is not the board owner.");
         }
-        final Set<User> usersToAssign = new HashSet<>();
-        final List<String> failedEmails = new ArrayList<>();
 
-        for (final String userEmail : usersEmails) {
-            userRepository.findUserByEmail(userEmail)
-                    .ifPresentOrElse(usersToAssign::add, () -> failedEmails.add(userEmail));
-        }
+        final List<User> users = userRepository.findAllByEmailIn(emailsToAssign);
 
-        board.getUsers().addAll(usersToAssign);
+        board.getUsers().addAll(users);
         boardRepository.save(board);
 
-        return failedEmails;
+        final List<String> existingEmails = users.stream()
+                .map(User::getEmail)
+                .collect(Collectors.toList());
+
+        return emailsToAssign.stream()
+                .filter(e -> !existingEmails.contains(e))
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -195,12 +199,18 @@ public class BoardService {
 
         final User user = userRepository.findById(uid)
                 .orElseThrow(() -> new NotFoundException("User is not found"));
+        
         final Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Board is not found"));
 
         if (board.getCreator().equals(user)) {
             throw new BadRequestException("User is the board owner.");
         }
+
+        if (!board.getUsers().contains(user)) {
+            throw new NotFoundException("User is not assigned to the Board.");
+        }
+
         if (email.equals(user.getEmail()) || email.equals(board.getCreator().getEmail())) {
             board.getUsers().remove(user);
         } else {
