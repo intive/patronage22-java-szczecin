@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-
 import java.util.Map;
 
 import static org.springframework.http.HttpStatus.CREATED;
@@ -49,8 +48,9 @@ public class BoardCardController {
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Add card to the board.",
                responses = {@ApiResponse(responseCode = "201", description = "Voted"),
                        @ApiResponse(responseCode = "400",
-                                    description = "No more votes. Board state is not in state VOTING"),
-                       @ApiResponse(responseCode = "404", description = "Board/Card not found")})
+                                    description = "No more votes. Board state is not in state VOTING. User is not " +
+                                                  "found. Board is not found. User is not assigned to board nor owner."),
+                       @ApiResponse(responseCode = "404", description = "Card not found")})
     public Map<String, Integer> vote(@PathVariable(name = "id") final Integer cardId,
                                      final Authentication authentication) {
 
