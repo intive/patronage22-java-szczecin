@@ -316,4 +316,26 @@ class BoardCardServiceTest {
                 .boardCardActions(boardCardActions)
                 .build();
     }
+
+    private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
+        return Board.builder()
+                .id(id)
+                .name("My first board.")
+                .state(state)
+                .creator(user)
+                .users(users)
+                .build();
+    }
+
+    private BoardCard buildBoardCard(final int id, final Board board, final BoardCardsColumn column,
+                                     final User creator, final List<BoardCardAction> boardCardActions) {
+        return BoardCard.builder()
+                .id(id)
+                .board(board)
+                .text("some text")
+                .column(column)
+                .creator(creator)
+                .boardCardActions(boardCardActions)
+                .build();
+    }
 }
