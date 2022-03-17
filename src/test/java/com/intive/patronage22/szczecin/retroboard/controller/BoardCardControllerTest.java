@@ -334,4 +334,3 @@ class BoardCardControllerTest {
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
     }
 }
-
