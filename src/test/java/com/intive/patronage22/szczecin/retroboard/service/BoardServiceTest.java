@@ -739,6 +739,50 @@ class BoardServiceTest {
     }
 
     @Test
+    void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToRemoveUserNotAssignedToTheBoard() {
+        // given
+        final String uid = "12345";
+        final String email = "boardOwner@test.pl";
+        final Integer boardId = 1;
+
+        final User notAssignedUser = new User("12345", "test@test.com", "some_user", Set.of(), Set.of());
+        final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+
+        // when
+        when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
+
+        // then
+        final BadRequestException exception = assertThrows(
+                BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
+
+        assertEquals("User is not assigned to the Board.", exception.getMessage());
+    }
+
+    @Test
+    void removeAssignedUserShouldThrowBadRequestWhenUserTriesToRemoveHimselfAndHeIsNotAssignedToTheBoard() {
+        // given
+        final String uid = "12345";
+        final String email = "someUser@test.pl";
+        final Integer boardId = 1;
+
+        final User notAssignedUser = new User("12345", "someUser@test.pl", "some_user", Set.of(), Set.of());
+        final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+
+        // when
+        when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
+
+        // then
+        final BadRequestException exception = assertThrows(
+                BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
+
+        assertEquals("User is not assigned to the Board.", exception.getMessage());
+    }
+
+    @Test
     @DisplayName("Remove assigned user should throw NotFound when user not exists")
     void removeAssignedUserShouldThrowNotFoundWhenUserNotExists() {
         //given
