@@ -9,6 +9,7 @@ import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
+import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,6 +48,9 @@ class BoardCardServiceTest {
 
     @MockBean
     private UserRepository userRepository;
+
+    @MockBean
+    private BoardCardsVotesRepository boardCardsVotesRepository;
 
     private static Stream<Arguments> provideInputsForBoardCardsColumnValidation() {
         return Stream.of(
