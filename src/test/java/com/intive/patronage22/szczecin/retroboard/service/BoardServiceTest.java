@@ -743,11 +743,11 @@ class BoardServiceTest {
         // given
         final String uid = "12345";
         final String email = "boardOwner@test.pl";
-        final Integer boardId = 1;
+        final Integer boardId = 10;
 
-        final User notAssignedUser = new User("12345", "test@test.com", "some_user", Set.of(), Set.of());
-        final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+        final User notAssignedUser = new User(uid, "test@test.com", "some_user", Set.of(), Set.of());
+        final User boardOwner = new User("123", email, "board_owner", Set.of(), Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of());
 
         // when
         when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
@@ -765,11 +765,11 @@ class BoardServiceTest {
         // given
         final String uid = "12345";
         final String email = "someUser@test.pl";
-        final Integer boardId = 1;
+        final Integer boardId = 10;
 
-        final User notAssignedUser = new User("12345", "someUser@test.pl", "some_user", Set.of(), Set.of());
+        final User notAssignedUser = new User(uid, email, "some_user", Set.of(), Set.of());
         final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, 1, Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of());
 
         // when
         when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
@@ -786,82 +786,114 @@ class BoardServiceTest {
     @DisplayName("Remove assigned user should throw NotFound when user not exists")
     void removeAssignedUserShouldThrowNotFoundWhenUserNotExists() {
         //given
-        final User user = new User("123", "test@test.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
+        final String uid = "12345";
+        final String email = "someUser@test.pl";
+        final Integer boardId = 10;
 
         //when
-        when(userRepository.findById(user.getUid())).thenReturn(Optional.empty());
+        when(userRepository.findById(uid)).thenReturn(Optional.empty());
 
         //then
-        assertThrows(NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(user.getUid(), board.getId(), user.getEmail()));
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
+
+        assertEquals("User is not found", exception.getMessage());
     }
 
     @Test
-    @DisplayName("Remove assigned user should throw BadRequest when currently logged user is not board owner and it tries to delete other user")
-    void removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndItTriesToDeleteOtherUser() {
+    @DisplayName("Remove assigned user should throw BadRequest when currently logged user is not board owner and he tries to delete other user")
+    void removeAssignedUserShouldThrowBadRequestWhenCurrentlyLoggedUserIsNotBoardOwnerAndHeTriesToDeleteOtherUser() {
         //given
-        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
-        final User userCurrentlyLogged  = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
-        final User user = new User("789", "test3@test3.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of(user));
+        final String uid = "12345";
+        final String email = "currentlyLogged@test.pl";
+        final Integer boardId = 10;
+
+        final User boardOwner = new User("123", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
+        final User userToRemove = new User(uid, "test3@test3.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of(userToRemove));
 
         //when
-        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
-        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+        when(userRepository.findById(uid)).thenReturn(Optional.of(userToRemove));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
 
         //then
-        assertThrows(BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(user.getUid(), board.getId(), userCurrentlyLogged.getEmail()));
+        final BadRequestException exception = assertThrows(
+                BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
+
+        assertEquals("Currently logged user is not board owner or user tries to delete other user",
+                exception.getMessage());
     }
 
     @Test
     @DisplayName("Remove assigned user should throw BadRequest when board owner tries to self delete")
     void removeAssignedUserShouldThrowBadRequestWhenBoardOwnerTriesToSelfDelete() {
         //given
-        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED,10, Set.of());
+        final String uid = "12345";
+        final String email = "boardOwner@test1.com";
+        final Integer boardId = 10;
+
+        final User boardOwner = new User(uid, email, "board_owner", Set.of(), Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of());
 
         //when
-        when(userRepository.findById(userOwner.getUid())).thenReturn(Optional.of(userOwner));
-        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+        when(userRepository.findById(uid)).thenReturn(Optional.of(boardOwner));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
 
         //then
-        assertThrows(BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(userOwner.getUid(), board.getId(), userOwner.getEmail()));
+        final BadRequestException exception = assertThrows(
+                BadRequestException.class, () -> boardService.removeUserAssignedToTheBoard(uid, boardId, email));
+
+        assertEquals("User is the board owner.", exception.getMessage());
     }
 
     @Test
-    @DisplayName("Remove assigned user should return Ok when board owner tries to delete other user")
-    void removeAssignedUserShouldReturnOkWhenBoardOwnerTriesToDeleteOtherUser() {
+    @DisplayName("Remove assigned user should remove assigned user when board owner tries to delete other user")
+    void removeAssignedUserShouldRemoveWhenBoardOwnerTriesToDeleteOtherUser() {
         //given
-        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
-        final User user = new User("456", "test2@test2.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
-        board.setUsers(Set.of(user));
+        final String uid = "456";
+        final String email = "boardOwner@test1.com";
+        final Integer boardId = 10;
+
+        final User boardOwner = new User("12345", email, "board_owner", Set.of(), Set.of());
+        final User userToRemove = new User(uid, "test2@test2.com", "userTest", Set.of(), Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, new HashSet<>());
+        board.getUsers().add(userToRemove);
 
         //when
-        when(userRepository.findById(user.getUid())).thenReturn(Optional.of(user));
+        when(userRepository.findById(uid)).thenReturn(Optional.of(userToRemove));
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
 
         //then
-        assertEquals(userOwner, board.getCreator());
-        assertTrue(board.getUsers().contains(user));
+        boardService.removeUserAssignedToTheBoard(uid, boardId, email);
+
+        assertEquals(boardOwner, board.getCreator());
+        assertFalse(board.getUsers().contains(userToRemove));
+        assertTrue(board.getUsers().isEmpty());
     }
 
     @Test
-    @DisplayName("Remove assigned user should return Ok when currently logged user is not board owner and tries to self delete")
-    void removeAssignedUserShouldReturnOkWhenCurrentlyLoggedUserIsNotBoardOwnerAndTriesToSelfDelete() {
+    @DisplayName("Remove assigned user should remove assigned user when currently logged user is not board owner and tries to self delete")
+    void removeAssignedUserShouldRemoveWhenCurrentlyLoggedUserIsNotBoardOwnerAndTriesToSelfDelete() {
         //given
-        final User userOwner = new User("123", "test1@test1.com", "userTest", Set.of(), Set.of());
-        final User userCurrentlyLogged  = new User("789", "test3@test3.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
-        board.setUsers(Set.of(userCurrentlyLogged));
+        final String uid = "789";
+        final String email = "currentlyLogged@test.pl";
+        final Integer boardId = 10;
+
+        final User boardOwner = new User("12345", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
+        final User currentlyLogged = new User(uid, email, "currently_logged", Set.of(), Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, new HashSet<>());
+        board.getUsers().add(currentlyLogged);
 
         //when
-        when(userRepository.findById(userCurrentlyLogged.getUid())).thenReturn(Optional.of(userCurrentlyLogged));
-        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+        when(userRepository.findById(uid)).thenReturn(Optional.of(currentlyLogged));
+        when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
 
         //then
-        assertNotEquals(userCurrentlyLogged, board.getCreator());
-        assertTrue(board.getUsers().contains(userCurrentlyLogged));
+        boardService.removeUserAssignedToTheBoard(uid, boardId, email);
+
+        assertNotEquals(currentlyLogged, board.getCreator());
+        assertFalse(board.getUsers().contains(currentlyLogged));
+        assertTrue(board.getUsers().isEmpty());
     }
 
     private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
