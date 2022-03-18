@@ -190,8 +190,8 @@ class BoardCardServiceTest {
     }
 
     @Test
-    @DisplayName("Vote should throw Bad Request when user not exists")
-    void voteShouldThrowBadRequestWhenUserIsNotFound() {
+    @DisplayName("addVote should throw Bad Request when user not exists")
+    void addVoteShouldThrowBadRequestWhenUserIsNotFound() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
@@ -202,13 +202,13 @@ class BoardCardServiceTest {
 
         //then
         final BadRequestException exception =
-                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+                assertThrows(BadRequestException.class, () -> boardCardService.addVote(cardId, email));
         assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
-    @DisplayName("Vote should throw NotFound when board card not exists")
-    void voteShouldThrowNotFoundWhenBoardCardIsNotFound() {
+    @DisplayName("addVote should throw NotFound when board card not exists")
+    void addVoteShouldThrowNotFoundWhenBoardCardIsNotFound() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
@@ -221,13 +221,13 @@ class BoardCardServiceTest {
 
         //then
         final NotFoundException exception =
-                assertThrows(NotFoundException.class, () -> boardCardService.vote(cardId, email));
+                assertThrows(NotFoundException.class, () -> boardCardService.addVote(cardId, email));
         assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
-    @DisplayName("Vote should throw BadRequest when board not exists")
-    void voteShouldThrowBadRequestWhenBoardNotExist() {
+    @DisplayName("addVote should throw BadRequest when board not exists")
+    void addVoteShouldThrowBadRequestWhenBoardNotExist() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
@@ -243,13 +243,13 @@ class BoardCardServiceTest {
 
         //then
         final BadRequestException exception =
-                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+                assertThrows(BadRequestException.class, () -> boardCardService.addVote(cardId, email));
         assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
-    @DisplayName("Vote should throw BadRequest when user is not assigned to board")
-    void voteShouldThrowBadRequestWhenUserIsNotAssignedToBoard() {
+    @DisplayName("addVote should throw BadRequest when user is not assigned to board")
+    void addVoteShouldThrowBadRequestWhenUserIsNotAssignedToBoard() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
@@ -266,13 +266,13 @@ class BoardCardServiceTest {
 
         //then
         final BadRequestException exception =
-                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+                assertThrows(BadRequestException.class, () -> boardCardService.addVote(cardId, email));
         assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
-    @DisplayName("Vote should throw BadRequest when board is in different state than voting")
-    void voteShouldThrowBadRequestWhenBoardIsNotInStateVoting() {
+    @DisplayName("addVote should throw BadRequest when board is in different state than voting")
+    void addVoteShouldThrowBadRequestWhenBoardIsNotInStateVoting() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
@@ -289,13 +289,13 @@ class BoardCardServiceTest {
 
         //then
         final BadRequestException exception =
-                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+                assertThrows(BadRequestException.class, () -> boardCardService.addVote(cardId, email));
         assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
-    @DisplayName("Vote should throw BadRequest when remaining votes are less than 0")
-    void voteShouldThrowBadRequestWhenUsersRemainingVotesAreLessThan0() {
+    @DisplayName("addVote should throw BadRequest when remaining votes are less than 0")
+    void addVoteShouldThrowBadRequestWhenUsersRemainingVotesAreLessThan0() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
@@ -311,18 +311,18 @@ class BoardCardServiceTest {
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(boardRepository.findById(card.getBoard().getId())).thenReturn(Optional.of(board));
-        when(boardCardsVotesRepository.getCountsByBoardAndUser(board, user)).thenReturn(
+        when(boardCardsVotesRepository.getVotesByBoardAndUser(board, user)).thenReturn(
                 List.of(boardCardVotes.getVotes()));
 
         //then
         final BadRequestException exception =
-                assertThrows(BadRequestException.class, () -> boardCardService.vote(cardId, email));
+                assertThrows(BadRequestException.class, () -> boardCardService.addVote(cardId, email));
         assertEquals(expectedExceptionMessage, exception.getMessage());
     }
 
     @Test
-    @DisplayName("Vote should update value of votes when BoardCardVotes already exists")
-    void voteShouldUpdateVotesNumberWhenBoardCardVoteExists() {
+    @DisplayName("addVote should update value of votes when BoardCardVotes already exists")
+    void addVoteShouldUpdateVotesNumberWhenBoardCardVoteExists() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
@@ -338,10 +338,10 @@ class BoardCardServiceTest {
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(boardRepository.findById(card.getBoard().getId())).thenReturn(Optional.of(board));
-        when(boardCardsVotesRepository.getCountsByBoardAndUser(board, user)).thenReturn(
+        when(boardCardsVotesRepository.getVotesByBoardAndUser(board, user)).thenReturn(
                 List.of(boardCardVotes.getVotes()));
         when(boardCardsVotesRepository.findByCardAndVoter(card, user)).thenReturn(Optional.of(boardCardVotes));
-        boardCardService.vote(cardId, email);
+        boardCardService.addVote(cardId, email);
 
         //then
         verify(boardCardsVotesRepository).save(any(BoardCardVotes.class));
@@ -349,8 +349,8 @@ class BoardCardServiceTest {
     }
 
     @Test
-    @DisplayName("Vote should return number of remaining votes")
-    void voteShouldReturnNumberOfRemainingVotes() {
+    @DisplayName("addVote should return number of remaining votes")
+    void addVoteShouldReturnNumberOfRemainingVotes() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
@@ -366,10 +366,10 @@ class BoardCardServiceTest {
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
         when(boardRepository.findById(card.getBoard().getId())).thenReturn(Optional.of(board));
-        when(boardCardsVotesRepository.getCountsByBoardAndUser(board, user)).thenReturn(
+        when(boardCardsVotesRepository.getVotesByBoardAndUser(board, user)).thenReturn(
                 List.of(boardCardVotes.getVotes()));
         when(boardCardsVotesRepository.findByCardAndVoter(card, user)).thenReturn(Optional.empty());
-        final Map<String, Integer> remainingVotesMap = boardCardService.vote(cardId, email);
+        final Map<String, Integer> remainingVotesMap = boardCardService.addVote(cardId, email);
 
         //then
         verify(boardCardsVotesRepository).save(any(BoardCardVotes.class));

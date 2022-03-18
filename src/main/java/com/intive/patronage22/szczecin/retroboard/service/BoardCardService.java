@@ -61,7 +61,7 @@ public class BoardCardService {
     }
 
     @Transactional
-    public Map<String, Integer> vote(final Integer cardId, final String email) {
+    public Map<String, Integer> addVote(final Integer cardId, final String email) {
         final User user =
                 userRepository.findUserByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
 
@@ -75,12 +75,12 @@ public class BoardCardService {
             throw new BadRequestException("User not assigned to board");
         }
 
-        if (!board.getState().equals(EnumStateDto.VOTING)) {
+        if (!EnumStateDto.VOTING.equals(board.getState())) {
             throw new BadRequestException("Wrong state of board");
         }
 
         final int addedUserVotes =
-                boardCardsVotesRepository.getCountsByBoardAndUser(board, user)
+                boardCardsVotesRepository.getVotesByBoardAndUser(board, user)
                         .stream()
                         .reduce(0, Integer::sum);
 
