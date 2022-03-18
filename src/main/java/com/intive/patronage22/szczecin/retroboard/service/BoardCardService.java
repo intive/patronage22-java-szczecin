@@ -64,8 +64,8 @@ public class BoardCardService {
         final User user = userRepository
                 .findUserByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
 
-        if (!email.equals(boardCard.getCreator().getEmail())
-                && !email.equals(boardCard.getBoard().getCreator().getEmail()))
+        if (!user.equals(boardCard.getCreator())
+                && !user.equals(boardCard.getBoard().getCreator()))
             throw new BadRequestException("User is not allowed to delete card");
 
         if (!EnumStateDto.CREATED.equals(boardCard.getBoard().getState()))
