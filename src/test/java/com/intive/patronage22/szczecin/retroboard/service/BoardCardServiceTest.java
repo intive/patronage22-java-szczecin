@@ -235,7 +235,7 @@ class BoardCardServiceTest {
         final String email = "test22@test.com";
         final User user = new User("1234", email, "john14", Set.of(), Set.of());
         final User boardOwner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
-        final Board board = buildBoard(1, EnumStateDto.CREATED, 5, boardOwner, Set.of(), Set.of());
+        final Board board = buildBoard(1, EnumStateDto.VOTING, 5, boardOwner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
         // when
