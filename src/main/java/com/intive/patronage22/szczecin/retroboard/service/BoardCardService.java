@@ -54,4 +54,23 @@ public class BoardCardService {
 
         return BoardCardDto.createFrom(boardCard);
     }
+
+    @Transactional
+    public void removeCard(final Integer cardId, final String email) {
+
+        final BoardCard boardCard = boardCardsRepository.findById(cardId)
+                .orElseThrow(() -> new NotFoundException("Card not found"));
+
+        final User user = userRepository
+                .findUserByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
+
+        if (!user.equals(boardCard.getCreator())
+                && !user.equals(boardCard.getBoard().getCreator()))
+            throw new BadRequestException("User is not allowed to delete card");
+
+        if (!EnumStateDto.CREATED.equals(boardCard.getBoard().getState()))
+            throw new BadRequestException("User is not allowed to delete card");
+
+        boardCardsRepository.deleteById(cardId);
+    }
 }
