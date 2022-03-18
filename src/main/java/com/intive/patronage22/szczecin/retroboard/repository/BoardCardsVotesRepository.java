@@ -20,6 +20,6 @@ public interface BoardCardsVotesRepository extends CrudRepository<BoardCardVotes
 
     @Query(value = "SELECT bcv.votes FROM BoardCardVotes bcv JOIN BoardCard bc ON bcv.card.id = bc.id WHERE bc.board " +
                    "= :board AND bcv.voter=:user")
-    List<Integer> getCountsByBoardAndUser(@Param("board") final Board board, @Param("user") final User user);
+    List<Integer> getVotesByBoardAndUser(@Param("board") final Board board, @Param("user") final User user);
 
 }

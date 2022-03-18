@@ -260,7 +260,7 @@ class BoardCardControllerTest {
     }
 
     @Test
-    void voteShouldReturnCreated() throws Exception {
+    void addVoteShouldReturnCreated() throws Exception {
         //given
         final int cardId = 1;
         final String voteUrl = url + "/" + cardId + "/votes";
@@ -274,7 +274,7 @@ class BoardCardControllerTest {
         when(firebaseToken.getEmail()).thenReturn(email);
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
 
-        when(boardCardService.vote(cardId, email)).thenReturn(response);
+        when(boardCardService.addVote(cardId, email)).thenReturn(response);
 
         //then
         mockMvc.perform(post(voteUrl).header(AUTHORIZATION, "Bearer " + providedAccessToken))
@@ -291,9 +291,9 @@ class BoardCardControllerTest {
     @ValueSource(strings = {"No more votes", "Wrong state of board", "User not found", "Board not exist",
             "User not assigned to board"})
     @DisplayName(
-            "vote should throw Bad Request when there's no more votes left, board state is not VOTING, user/board is " +
+            "addVote should throw Bad Request when there's no more votes left, board state is not VOTING, user/board is " +
             "not found or user is not assigned to board nor the owner.")
-    void voteShouldThrowBadRequest(final String exceptionMessage) throws Exception {
+    void addVoteShouldThrowBadRequest(final String exceptionMessage) throws Exception {
         //given
         final int cardId = 1;
         final String voteUrl = url + "/" + cardId + "/votes";
@@ -304,7 +304,7 @@ class BoardCardControllerTest {
         when(firebaseToken.getEmail()).thenReturn(email);
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
 
-        when(boardCardService.vote(cardId, email)).thenThrow(new BadRequestException(exceptionMessage));
+        when(boardCardService.addVote(cardId, email)).thenThrow(new BadRequestException(exceptionMessage));
 
         //then
         mockMvc.perform(
@@ -314,7 +314,7 @@ class BoardCardControllerTest {
     }
 
     @Test
-    void voteShouldThrowNotFoundWhenBoardCardDoesNotExist() throws Exception {
+    void addVoteShouldThrowNotFoundWhenBoardCardDoesNotExist() throws Exception {
         //given
         final int cardId = 1;
         final String voteUrl = url + "/" + cardId + "/votes";
@@ -325,7 +325,7 @@ class BoardCardControllerTest {
         when(firebaseToken.getEmail()).thenReturn(email);
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
 
-        when(boardCardService.vote(cardId, email)).thenThrow(new NotFoundException(exceptionMessage));
+        when(boardCardService.addVote(cardId, email)).thenThrow(new NotFoundException(exceptionMessage));
 
         //then
         mockMvc.perform(

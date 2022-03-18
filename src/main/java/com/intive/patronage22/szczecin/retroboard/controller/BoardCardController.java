@@ -66,9 +66,9 @@ public class BoardCardController {
                                                   "found. Board is not found. " +
                                                   "User is not assigned to board nor owner."),
                        @ApiResponse(responseCode = "404", description = "Card not found")})
-    public Map<String, Integer> vote(@PathVariable(name = "id") final Integer cardId,
-                                     final Authentication authentication) {
+    public Map<String, Integer> addVote(@PathVariable(name = "id") final Integer cardId,
+                                        final Authentication authentication) {
 
-        return boardCardService.vote(cardId, authentication.getName());
+        return boardCardService.addVote(cardId, authentication.getName());
     }
 }
