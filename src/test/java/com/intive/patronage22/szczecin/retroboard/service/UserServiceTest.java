@@ -4,6 +4,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.UserRecord;
 import com.intive.patronage22.szczecin.retroboard.exception.UserAlreadyExistException;
+import com.intive.patronage22.szczecin.retroboard.model.User;
+import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -29,6 +34,9 @@ class UserServiceTest {
 
     @MockBean
     private PasswordEncoder passwordEncoder;
+
+    @MockBean
+    private UserRepository userRepository;
 
     @MockBean
     private FirebaseAuth firebaseAuth;
@@ -70,5 +78,20 @@ class UserServiceTest {
 
         // then
         assertThrows(UserAlreadyExistException.class, () -> userService.register(email, password, displayName));
+    }
+
+    @Test
+    void searchShouldReturnListWithEmailsWhenEmailIsOk() {
+        // given
+        final String providedEmail = "test";
+        final List<String> emails = List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com");
+
+        // when
+        when(userRepository.searchByEmailLike(providedEmail)).thenReturn(emails);
+        final List<String> search = userService.search(providedEmail);
+
+        // then
+        assertEquals(3, emails.size());
+        assertEquals(List.of("test12@plo.com", "sodttest2@tyk.pl", "sodniktest@sok.com"), search);
     }
 }
