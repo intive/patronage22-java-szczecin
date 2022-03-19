@@ -71,4 +71,16 @@ public class BoardCardController {
 
         return boardCardService.addVote(cardId, authentication.getName());
     }
+
+    @DeleteMapping("/{id}/votes/delete")
+    @ResponseStatus(OK)
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Remove vote",
+            responses = {@ApiResponse(responseCode = "200", description = "Vote removed"),
+                    @ApiResponse(responseCode = "404",
+                            description = "Board not exist or card not exist /User wouldn't vote for that card")})
+    public Map<String, Integer> removeVote(@PathVariable(name = "id") final Integer cardId,
+                                        final Authentication authentication) {
+
+        return boardCardService.removeVote(cardId, authentication.getName());
+    }
 }
