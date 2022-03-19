@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Map;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -43,7 +44,7 @@ public class BoardCardController {
 
         return boardCardService.createBoardCard(boardCardDto, boardId, authentication.getName());
     }
-    
+
     @DeleteMapping("/{id}")
     @ResponseStatus(OK)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Remove card from the board.",
@@ -54,5 +55,20 @@ public class BoardCardController {
                                        final Authentication authentication) {
 
         boardCardService.removeCard(cardId, authentication.getName());
+    }
+
+    @PostMapping("/{id}/votes")
+    @ResponseStatus(CREATED)
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Add card to the board.",
+               responses = {@ApiResponse(responseCode = "201", description = "Voted"),
+                       @ApiResponse(responseCode = "400",
+                                    description = "No more votes. Board state is not in state VOTING. User is not " +
+                                                  "found. Board is not found. " +
+                                                  "User is not assigned to board nor owner."),
+                       @ApiResponse(responseCode = "404", description = "Card not found")})
+    public Map<String, Integer> addVote(@PathVariable(name = "id") final Integer cardId,
+                                        final Authentication authentication) {
+
+        return boardCardService.addVote(cardId, authentication.getName());
     }
 }
