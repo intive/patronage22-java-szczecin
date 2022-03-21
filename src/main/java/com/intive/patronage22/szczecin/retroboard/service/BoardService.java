@@ -10,6 +10,7 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.dto.UserDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
+import com.intive.patronage22.szczecin.retroboard.exception.NotAcceptableException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
@@ -217,5 +218,41 @@ public class BoardService {
             throw new BadRequestException
                     ("Currently logged user is not board owner or user tries to delete other user");
         }
+    }
+
+    @Transactional
+    public BoardDataDto nextState (final Integer boardId, final String email) {
+
+        final User user =
+                userRepository.findUserByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
+
+        final Board board =
+                boardRepository.findById(boardId).orElseThrow(() -> new NotFoundException("Board not found"));
+
+        if (!board.getCreator().equals(user)) {
+            throw new NotFoundException("User is not the board owner.");
+        }
+
+        if (board.getMaximumNumberOfVotes() == 0){
+            throw new BadRequestException("Number of votes not set!");
+        }
+
+        if (board.getState() == EnumStateDto.DONE) {
+            throw new NotAcceptableException("Already in last state");
+        }else {
+            board.setState(board.getState().next());
+            BoardDto.fromModel(boardRepository.save(board));
+        }
+
+        final List<BoardCardsColumnDto> boardCardsColumnDtos =
+                List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),
+                        BoardCardsColumnDto.createFrom(BoardCardsColumn.FAILURES),
+                        BoardCardsColumnDto.createFrom(BoardCardsColumn.KUDOS));
+
+        final List<UserDto> assignedUsersDtoList = new ArrayList<>();
+        board.getUsers().forEach(user1 -> assignedUsersDtoList.add(UserDto.createFrom(user1)));
+        assignedUsersDtoList.add(UserDto.createFrom(user));
+
+        return BoardDataDto.createFrom(BoardDto.fromModel(board), boardCardsColumnDtos, assignedUsersDtoList);
     }
 }

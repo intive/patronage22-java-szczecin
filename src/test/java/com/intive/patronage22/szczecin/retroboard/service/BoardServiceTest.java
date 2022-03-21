@@ -7,6 +7,7 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
 import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
+import com.intive.patronage22.szczecin.retroboard.exception.NotAcceptableException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
@@ -16,6 +17,7 @@ import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepositor
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.validation.BoardValidator;
+import org.hibernate.annotations.NotFound;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
@@ -896,6 +898,114 @@ class BoardServiceTest {
         assertTrue(board.getUsers().isEmpty());
     }
 
+    @Test
+    @DisplayName("When nextState is used - it will change state from Created to next state which is Voting and saves board details.")
+    void nextStateSavesDataAndChangesStateProperly() {
+
+        // given
+        final var uid = "uid101";
+        final var email = "username@test.pl";
+        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
+        when(boardRepository.save(any(Board.class))).thenReturn(board);
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+
+        // when
+        final var boardDtoResult = boardService.nextState(board.getId(), email);
+
+        // then
+        assertEquals(boardDtoResult.getBoard().getState(), EnumStateDto.VOTING);
+        verify(boardRepository).findById(board.getId());
+        verify(boardRepository).save(any(Board.class));
+    }
+
+    @Test
+    @DisplayName("When nextState is used on a board with EnumStateDto set to DONE - Not Acceptable Exception is thrown.")
+    void nextStateThrowsNotAcceptableIfStateIsDone() {
+
+        // given
+        final var uid = "uid101";
+        final var email = "username@test.pl";
+        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
+        final var board = buildBoard(user, EnumStateDto.DONE, 10, Set.of());
+        when(boardRepository.save(any(Board.class))).thenReturn(board);
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+
+        // when
+        final NotAcceptableException exception = assertThrows(
+                NotAcceptableException.class, () -> boardService.nextState(board.getId(),email));
+
+        // then
+        assertEquals("Already in last state", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("When nextState is used on a board which does not exist - Not Found Exception is thrown.")
+    void nextStateThrowsNotFoundIfBoardIsNotFound() {
+
+        // given
+        final var uid = "uid101";
+        final var email = "username@test.pl";
+        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+
+        // when
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardService.nextState(1,email));
+
+        // then
+        assertEquals("Board not found", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("When nextState is used on a board which the user is not a creator of - Not Found Exception is thrown.")
+    void nextStateThrowsNotFoundIfUserIsNotAnOwner() {
+
+        // given
+        final var uid1 = "uid101";
+        final var email1 = "username1@test.pl";
+        final var uid2 = "uid102";
+        final var email2 = "username2@test.pl";
+        final var user1 = new User(uid1, email1, "displayName", Set.of(), Set.of());
+        final var user2 = new User(uid2, email2, "displayName2", Set.of(), Set.of());
+        final var board = buildBoard(user1, EnumStateDto.CREATED, 10, Set.of());
+        when(boardRepository.save(any(Board.class))).thenReturn(board);
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+        when(userRepository.findUserByEmail(email1)).thenReturn(Optional.of(user1));
+        when(userRepository.findUserByEmail(email2)).thenReturn(Optional.of(user2));
+
+        // when
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardService.nextState(board.getId(),email2));
+
+        // then
+        assertEquals("User is not the board owner.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("When nextState on a board which maximumNumberOfVotes is set to 0 - Bad Request Exception is thrown.")
+    void nextStateThrowsBadRequestWhenNumberOfVotesIsNotSet() {
+
+        // given
+        final var uid = "uid101";
+        final var email = "username@test.pl";
+        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
+        board.setMaximumNumberOfVotes(0);
+        when(boardRepository.save(any(Board.class))).thenReturn(board);
+        when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+
+        // when
+        final BadRequestException exception = assertThrows(
+                BadRequestException.class, () -> boardService.nextState(board.getId(),email));
+
+        // then
+        assertEquals("Number of votes not set!", exception.getMessage());
+    }
+
     private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
         return Board.builder()
                 .id(id)
@@ -903,6 +1013,7 @@ class BoardServiceTest {
                 .state(state)
                 .creator(user)
                 .users(users)
+                .maximumNumberOfVotes(3)
                 .build();
     }
 }
