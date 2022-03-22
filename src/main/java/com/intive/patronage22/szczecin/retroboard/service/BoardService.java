@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 @Service
@@ -233,15 +234,15 @@ public class BoardService {
             throw new NotFoundException("User is not the board owner.");
         }
 
-        if (board.getMaximumNumberOfVotes() == 0){
+        if (board.getMaximumNumberOfVotes() <= 0 || isNull(board.getMaximumNumberOfVotes()) ){
             throw new BadRequestException("Number of votes not set!");
         }
 
-        if (board.getState() == EnumStateDto.DONE) {
+        if(EnumStateDto.DONE.equals(board.getState())) {
             throw new NotAcceptableException("Already in last state");
-        }else {
+        } else {
             board.setState(board.getState().next());
-            BoardDto.fromModel(boardRepository.save(board));
+            boardRepository.save(board);
         }
 
         final List<BoardCardsColumnDto> boardCardsColumnDtos =

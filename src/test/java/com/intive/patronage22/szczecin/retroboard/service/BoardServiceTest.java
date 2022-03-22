@@ -17,7 +17,6 @@ import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepositor
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.validation.BoardValidator;
-import org.hibernate.annotations.NotFound;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.jupiter.api.DisplayName;
@@ -542,7 +541,7 @@ class BoardServiceTest {
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of(),3);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
 
@@ -559,7 +558,7 @@ class BoardServiceTest {
         final var email = "username@test.pl";
         final var boardName = "My first board.";
         final var userOwner = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of());
+        final var board = buildBoard(userOwner, EnumStateDto.CREATED, 10, Set.of(),3);
         final var boardPatchDto = new BoardPatchDto(boardName, 1500);
 
         // when
@@ -580,7 +579,7 @@ class BoardServiceTest {
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of(),3);
         final var boardPatchDto = new BoardPatchDto(null, 1500);
 
         // when
@@ -640,7 +639,7 @@ class BoardServiceTest {
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(boardId))
-                .thenReturn(Optional.of(buildBoard(boardOwner, EnumStateDto.CREATED, 10, Set.of())));
+                .thenReturn(Optional.of(buildBoard(boardOwner, EnumStateDto.CREATED, 10, Set.of(),3)));
 
         //then
         assertThrows(BadRequestException.class, () -> boardService.assignUsersToBoard(boardId, usersEmails, email));
@@ -660,7 +659,7 @@ class BoardServiceTest {
         final Set<User> boardUsers = new HashSet<>(List.of(existingUser));
         final List<User> existingUsers = List.of(userToAssign, existingUser);
 
-        final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, boardUsers);
+        final Board board = buildBoard(owner, EnumStateDto.CREATED, 10, boardUsers,3);
 
         //when
         when(userRepository.findUserByEmail(ownerEmail)).thenReturn(Optional.of(owner));
@@ -689,7 +688,7 @@ class BoardServiceTest {
         final var uid = "1234";
         final var email = "John@test.pl";
         final var user = new User(uid, email, "john14", Set.of(), Set.of());
-        final var board = buildBoard(user, EnumStateDto.VOTING, 10, Set.of());
+        final var board = buildBoard(user, EnumStateDto.VOTING, 10, Set.of(),3);
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
@@ -705,7 +704,7 @@ class BoardServiceTest {
         final var uid = "1234";
         final var email = "John@test.pl";
         final var user = new User(uid, email, "john14", Set.of(), Set.of());
-        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of(),3);
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
@@ -727,8 +726,8 @@ class BoardServiceTest {
         final var email2 = "username2@test.pl";
         final var user1 = new User(uid1, email1, "displayName1", Set.of(), Set.of());
         final var user2 = new User(uid2, email2, "displayName2", Set.of(), Set.of());
-        final var boardCreated = buildBoard(user1, EnumStateDto.CREATED, 10, Set.of());
-        final var boardAssigned = buildBoard(user2, EnumStateDto.CREATED, 11, Collections.singleton(user1));
+        final var boardCreated = buildBoard(user1, EnumStateDto.CREATED, 10, Set.of(),3);
+        final var boardAssigned = buildBoard(user2, EnumStateDto.CREATED, 11, Collections.singleton(user1),3);
         when(userRepository.findUserByEmail(email1)).thenReturn(Optional.of(user1));
         user1.setUserBoards(Collections.singleton(boardAssigned));
         user1.setCreatedBoards(Collections.singleton(boardCreated));
@@ -749,7 +748,7 @@ class BoardServiceTest {
 
         final User notAssignedUser = new User(uid, "test@test.com", "some_user", Set.of(), Set.of());
         final User boardOwner = new User("123", email, "board_owner", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of(),3);
 
         // when
         when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
@@ -771,7 +770,7 @@ class BoardServiceTest {
 
         final User notAssignedUser = new User(uid, email, "some_user", Set.of(), Set.of());
         final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of(),3);
 
         // when
         when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
@@ -812,7 +811,7 @@ class BoardServiceTest {
 
         final User boardOwner = new User("123", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
         final User userToRemove = new User(uid, "test3@test3.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of(userToRemove));
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of(userToRemove),3);
 
         //when
         when(userRepository.findById(uid)).thenReturn(Optional.of(userToRemove));
@@ -835,7 +834,7 @@ class BoardServiceTest {
         final Integer boardId = 10;
 
         final User boardOwner = new User(uid, email, "board_owner", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, Set.of(),3);
 
         //when
         when(userRepository.findById(uid)).thenReturn(Optional.of(boardOwner));
@@ -858,7 +857,7 @@ class BoardServiceTest {
 
         final User boardOwner = new User("12345", email, "board_owner", Set.of(), Set.of());
         final User userToRemove = new User(uid, "test2@test2.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, new HashSet<>());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, new HashSet<>(),3);
         board.getUsers().add(userToRemove);
 
         //when
@@ -883,7 +882,7 @@ class BoardServiceTest {
 
         final User boardOwner = new User("12345", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
         final User currentlyLogged = new User(uid, email, "currently_logged", Set.of(), Set.of());
-        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, new HashSet<>());
+        final Board board = buildBoard(boardOwner, EnumStateDto.CREATED, boardId, new HashSet<>(),3);
         board.getUsers().add(currentlyLogged);
 
         //when
@@ -899,14 +898,13 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("When nextState is used - it will change state from Created to next state which is Voting and saves board details.")
-    void nextStateSavesDataAndChangesStateProperly() {
-
+    @DisplayName("When nextState is called - it will change state from CREATED to VOTING (next) and return board details.")
+    void nextStateChangeStateValueAndSaveTheData()  {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of(), 3);
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -923,12 +921,11 @@ class BoardServiceTest {
     @Test
     @DisplayName("When nextState is used on a board with EnumStateDto set to DONE - Not Acceptable Exception is thrown.")
     void nextStateThrowsNotAcceptableIfStateIsDone() {
-
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(user, EnumStateDto.DONE, 10, Set.of());
+        final var board = buildBoard(user, EnumStateDto.DONE, 10, Set.of(), 3);
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -944,7 +941,6 @@ class BoardServiceTest {
     @Test
     @DisplayName("When nextState is used on a board which does not exist - Not Found Exception is thrown.")
     void nextStateThrowsNotFoundIfBoardIsNotFound() {
-
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
@@ -962,19 +958,18 @@ class BoardServiceTest {
     @Test
     @DisplayName("When nextState is used on a board which the user is not a creator of - Not Found Exception is thrown.")
     void nextStateThrowsNotFoundIfUserIsNotAnOwner() {
-
         // given
         final var uid1 = "uid101";
         final var email1 = "username1@test.pl";
         final var uid2 = "uid102";
         final var email2 = "username2@test.pl";
-        final var user1 = new User(uid1, email1, "displayName", Set.of(), Set.of());
-        final var user2 = new User(uid2, email2, "displayName2", Set.of(), Set.of());
-        final var board = buildBoard(user1, EnumStateDto.CREATED, 10, Set.of());
+        final var owner = new User(uid1, email1, "displayName", Set.of(), Set.of());
+        final var user = new User(uid2, email2, "displayName2", Set.of(), Set.of());
+        final var board = buildBoard(owner, EnumStateDto.CREATED, 10, Set.of(), 3);
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
-        when(userRepository.findUserByEmail(email1)).thenReturn(Optional.of(user1));
-        when(userRepository.findUserByEmail(email2)).thenReturn(Optional.of(user2));
+        when(userRepository.findUserByEmail(email1)).thenReturn(Optional.of(owner));
+        when(userRepository.findUserByEmail(email2)).thenReturn(Optional.of(user));
 
         // when
         final NotFoundException exception = assertThrows(
@@ -985,15 +980,13 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("When nextState on a board which maximumNumberOfVotes is set to 0 - Bad Request Exception is thrown.")
+    @DisplayName("When nextState() is called on a board with maximumNumberOfVotes = 0 -> Bad Request Exception is thrown.")
     void nextStateThrowsBadRequestWhenNumberOfVotesIsNotSet() {
-
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of());
-        board.setMaximumNumberOfVotes(0);
+        final var board = buildBoard(user, EnumStateDto.CREATED, 10, Set.of(),0);
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -1006,14 +999,14 @@ class BoardServiceTest {
         assertEquals("Number of votes not set!", exception.getMessage());
     }
 
-    private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users) {
+    private Board buildBoard(final User user, final EnumStateDto state, final int id, final Set<User> users, final Integer maximumNumberOfVotes) {
         return Board.builder()
                 .id(id)
                 .name("My first board.")
                 .state(state)
                 .creator(user)
                 .users(users)
-                .maximumNumberOfVotes(3)
+                .maximumNumberOfVotes(maximumNumberOfVotes)
                 .build();
     }
 }
