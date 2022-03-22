@@ -571,13 +571,35 @@ class BoardCardServiceTest {
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
-        when(boardCardsVotesRepository.getVotesByBoardAndUser(board, user)).thenReturn(
-                List.of(boardCardVotes.getVotes()));
         when(boardCardsVotesRepository.findByCardAndVoter(card, user)).thenReturn(Optional.of(boardCardVotes));
         final Map<String, Integer> removeVote = boardCardService.removeVote(cardId, email);
 
         //then
         assertTrue(removeVote.containsKey("remainingVotes"));
+        assertEquals(3,boardCardVotes.getVotes());
+    }
+    @Test
+    @DisplayName("Remove vote should delete BoardCardVotes entity after removing last vote")
+    void removeVoteShouldDeleteVoteEntityWhenThereIsNoVotes() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test@example.com";
+        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final Board board = buildBoard(2, EnumStateDto.VOTING, 10, user, Set.of(user), new HashSet<>());
+        final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
+        board.setBoardCards(Set.of(card));
+        final BoardCardVotesKey key = new BoardCardVotesKey(cardId, user.getUid());
+        final BoardCardVotes boardCardVotes = new BoardCardVotes(key, card, user, 1);
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(boardCardsVotesRepository.findByCardAndVoter(card, user)).thenReturn(Optional.of(boardCardVotes));
+
+        //then
+        boardCardService.removeVote(cardId, email);
+        assertEquals(0, boardCardVotes.getVotes());
+        verify(boardCardsVotesRepository).delete(any());
     }
 
     private Board buildBoard(final int id, final EnumStateDto state, final int numberOfVotes, final User user,

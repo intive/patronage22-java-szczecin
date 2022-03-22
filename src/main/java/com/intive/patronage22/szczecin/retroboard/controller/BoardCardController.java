@@ -72,7 +72,7 @@ public class BoardCardController {
         return boardCardService.addVote(cardId, authentication.getName());
     }
 
-    @DeleteMapping("/{id}/votes/delete")
+    @DeleteMapping("/{id}/votes")
     @ResponseStatus(OK)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Remove vote",
             responses = {@ApiResponse(responseCode = "200", description = "Vote removed"),

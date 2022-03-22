@@ -141,16 +141,9 @@ public class BoardCardService {
 
         vote.setVotes(vote.getVotes() - 1);
         boardCardsVotesRepository.save(vote);
-        final int addedUserVotes =
-                boardCardsVotesRepository.getVotesByBoardAndUser(card.getBoard(), user)
-                        .stream()
-                        .reduce(0, Integer::sum);
-
-        final int remainingUserVotes = card.getBoard().getMaximumNumberOfVotes() - addedUserVotes;
-
-        if (remainingUserVotes == card.getBoard().getMaximumNumberOfVotes()) {
+        if (vote.getVotes()==0) {
             boardCardsVotesRepository.delete(vote);
         }
-        return Map.of("remainingVotes", remainingUserVotes);
+        return Map.of("remainingVotes", vote.getVotes());
     }
 }

@@ -338,7 +338,7 @@ class BoardCardControllerTest {
     void removeVoteShouldReturnOk() throws Exception {
         //given
         final int cardId = 1;
-        final String voteUrl = url + "/" + cardId + "/votes/delete";
+        final String voteUrl = url + "/" + cardId + "/votes";
         final String responseMapString = "remainingVotes";
         final Integer responseMapInteger = 0;
         final Map<String, Integer> response = Map.of(responseMapString, responseMapInteger);
@@ -359,7 +359,7 @@ class BoardCardControllerTest {
     void removeVoteShouldThrowNotFoundWhenBoardCardDoesNotExist() throws Exception {
         //given
         final int cardId = 1;
-        final String voteUrl = url + "/" + cardId + "/votes/delete";
+        final String voteUrl = url + "/" + cardId + "/votes";
         final String exceptionMessage = "Card not found";
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
@@ -381,10 +381,10 @@ class BoardCardControllerTest {
     @DisplayName(
             "removeVote should throw Bad Request when board state is not VOTING, user/board is " +
                     "not found, user is not assigned to board nor the owner or there's no more votes to remove")
-    void removeVoteShouldThrowBadRequest(final String exceptionMessage) throws Exception {
+    void removeVoteShouldThrowException(final String exceptionMessage) throws Exception {
         //given
         final int cardId = 1;
-        final String voteUrl = url + "/" + cardId + "/votes/delete";
+        final String voteUrl = url + "/" + cardId + "/votes";
 
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
