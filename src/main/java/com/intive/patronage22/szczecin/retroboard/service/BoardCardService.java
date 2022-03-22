@@ -128,33 +128,29 @@ public class BoardCardService {
         final BoardCard card = boardCardsRepository.findById(cardId)
                 .orElseThrow(() -> new NotFoundException("Card not found"));
 
-        final Board board = boardRepository.findById(card.getBoard().getId())
-                .orElseThrow(() -> new BadRequestException("Board not exist"));
-
-        if (!board.getUsers().contains(user) && !board.getCreator().equals(user)) {
+        if (!card.getBoard().getUsers().contains(user) && !card.getBoard().getCreator().equals(user)) {
             throw new BadRequestException("User not assigned to board");
         }
 
-        if (!EnumStateDto.VOTING.equals(board.getState())) {
+        if (!EnumStateDto.VOTING.equals(card.getBoard().getState())) {
             throw new BadRequestException("Wrong state of board");
         }
 
-        final BoardCardVotes vote = boardCardsVotesRepository.findByCardAndVoter(card,user)
-                .orElseThrow(() -> new BadRequestException("Card or user not assigned to the board"));
+        final BoardCardVotes vote = boardCardsVotesRepository.findByCardAndVoter(card, user)
+                .orElseThrow(() -> new BadRequestException("User has no votes to remove"));
 
         vote.setVotes(vote.getVotes() - 1);
-
+        boardCardsVotesRepository.save(vote);
         final int addedUserVotes =
-                boardCardsVotesRepository.getVotesByBoardAndUser(board, user)
+                boardCardsVotesRepository.getVotesByBoardAndUser(card.getBoard(), user)
                         .stream()
                         .reduce(0, Integer::sum);
 
-        final int remainingUserVotes = board.getMaximumNumberOfVotes() - addedUserVotes;
+        final int remainingUserVotes = card.getBoard().getMaximumNumberOfVotes() - addedUserVotes;
 
-        if(remainingUserVotes <= board.getMaximumNumberOfVotes()){
-            return Map.of("remainingVotes", remainingUserVotes);
-        } else {
-            throw new BadRequestException("No more votes to remove");
+        if (remainingUserVotes == card.getBoard().getMaximumNumberOfVotes()) {
+            boardCardsVotesRepository.delete(vote);
         }
+        return Map.of("remainingVotes", remainingUserVotes);
     }
 }
