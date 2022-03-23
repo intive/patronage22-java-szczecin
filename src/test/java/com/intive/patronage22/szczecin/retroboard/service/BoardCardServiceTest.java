@@ -470,7 +470,7 @@ class BoardCardServiceTest {
 
 
     @Test
-    @DisplayName("Remove vote should throw not found when user is not assigned to board")
+    @DisplayName("Remove vote should throw bad request when user is not assigned to board")
     void removeVoteShouldThrowBadRequestWhenUserIsNotAssignedToBoard() {
         // given
         final Integer cardId = 1;
@@ -493,8 +493,8 @@ class BoardCardServiceTest {
     }
 
     @Test
-    @DisplayName("Remove vote should throw bad request when card is not found")
-    void removeVoteShouldThrowBadRequestWhenCardIsNotFound() {
+    @DisplayName("Remove vote should throw not found when card is not found")
+    void removeVoteShouldNotFoundRequestWhenCardIsNotFound() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";

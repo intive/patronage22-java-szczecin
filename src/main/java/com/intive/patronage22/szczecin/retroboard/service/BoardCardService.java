@@ -140,7 +140,6 @@ public class BoardCardService {
                 .orElseThrow(() -> new BadRequestException("User has no votes to remove"));
 
         vote.setVotes(vote.getVotes() - 1);
-        boardCardsVotesRepository.save(vote);
         if (vote.getVotes() == 0) {
             boardCardsVotesRepository.delete(vote);
         }
