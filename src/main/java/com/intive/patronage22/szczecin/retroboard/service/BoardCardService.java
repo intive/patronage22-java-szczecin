@@ -141,7 +141,7 @@ public class BoardCardService {
 
         vote.setVotes(vote.getVotes() - 1);
         boardCardsVotesRepository.save(vote);
-        if (vote.getVotes()==0) {
+        if (vote.getVotes() == 0) {
             boardCardsVotesRepository.delete(vote);
         }
         return Map.of("remainingVotes", vote.getVotes());

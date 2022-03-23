@@ -575,9 +575,9 @@ class BoardCardServiceTest {
         final Map<String, Integer> removeVote = boardCardService.removeVote(cardId, email);
 
         //then
-        assertTrue(removeVote.containsKey("remainingVotes"));
-        assertEquals(3,boardCardVotes.getVotes());
+        assertEquals(removeVote.get("remainingVotes"),3);
     }
+
     @Test
     @DisplayName("Remove vote should delete BoardCardVotes entity after removing last vote")
     void removeVoteShouldDeleteVoteEntityWhenThereIsNoVotes() {
@@ -597,8 +597,7 @@ class BoardCardServiceTest {
         when(boardCardsVotesRepository.findByCardAndVoter(card, user)).thenReturn(Optional.of(boardCardVotes));
 
         //then
-        boardCardService.removeVote(cardId, email);
-        assertEquals(0, boardCardVotes.getVotes());
+        assertEquals(Map.of("remainingVotes", 0), boardCardService.removeVote(cardId, email));
         verify(boardCardsVotesRepository).delete(any());
     }
 
