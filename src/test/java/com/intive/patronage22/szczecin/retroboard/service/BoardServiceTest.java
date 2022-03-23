@@ -945,7 +945,9 @@ class BoardServiceTest {
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var user = new User(uid, email, "displayName", Set.of(), Set.of());
+        final var board_id = 1;
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardRepository.findById(board_id)).thenReturn(Optional.empty());
 
         // when
         final NotFoundException exception = assertThrows(
@@ -966,9 +968,7 @@ class BoardServiceTest {
         final var owner = new User(uid1, email1, "displayName", Set.of(), Set.of());
         final var user = new User(uid2, email2, "displayName2", Set.of(), Set.of());
         final var board = buildBoard(owner, EnumStateDto.CREATED, 10, Set.of(), 3);
-        when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
-        when(userRepository.findUserByEmail(email1)).thenReturn(Optional.of(owner));
         when(userRepository.findUserByEmail(email2)).thenReturn(Optional.of(user));
 
         // when

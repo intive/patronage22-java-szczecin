@@ -146,5 +146,6 @@ public class BoardController {
             @ApiResponse(responseCode = "406", description = "No more steps")
     })
     public BoardDataDto nextState(@PathVariable("id") final Integer id, final Authentication authentication) {
-        return boardService.nextState(id, authentication.getName());}
+        return boardService.nextState(id, authentication.getName());
+    }
 }
