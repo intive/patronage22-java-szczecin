@@ -494,7 +494,7 @@ class BoardCardServiceTest {
 
     @Test
     @DisplayName("Remove vote should throw not found when card is not found")
-    void removeVoteShouldNotFoundRequestWhenCardIsNotFound() {
+    void removeVoteShouldNotFoundWhenCardIsNotFound() {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
@@ -575,7 +575,7 @@ class BoardCardServiceTest {
         final Map<String, Integer> removeVote = boardCardService.removeVote(cardId, email);
 
         //then
-        assertEquals(removeVote.get("remainingVotes"),3);
+        assertEquals(removeVote.get("remainingVotes"),7);
     }
 
     @Test
@@ -585,7 +585,7 @@ class BoardCardServiceTest {
         final Integer cardId = 1;
         final String email = "test@example.com";
         final User user = new User("1234", email, "somename", Set.of(), Set.of());
-        final Board board = buildBoard(2, EnumStateDto.VOTING, 10, user, Set.of(user), new HashSet<>());
+        final Board board = buildBoard(2, EnumStateDto.VOTING, 4, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
         board.setBoardCards(Set.of(card));
         final BoardCardVotesKey key = new BoardCardVotesKey(cardId, user.getUid());
@@ -597,7 +597,7 @@ class BoardCardServiceTest {
         when(boardCardsVotesRepository.findByCardAndVoter(card, user)).thenReturn(Optional.of(boardCardVotes));
 
         //then
-        assertEquals(Map.of("remainingVotes", 0), boardCardService.removeVote(cardId, email));
+        assertEquals(Map.of("remainingVotes", 4), boardCardService.removeVote(cardId, email));
         verify(boardCardsVotesRepository).delete(any());
     }
 

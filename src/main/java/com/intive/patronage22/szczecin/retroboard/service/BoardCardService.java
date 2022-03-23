@@ -143,6 +143,6 @@ public class BoardCardService {
         if (vote.getVotes() == 0) {
             boardCardsVotesRepository.delete(vote);
         }
-        return Map.of("remainingVotes", vote.getVotes());
+        return Map.of("remainingVotes", card.getBoard().getMaximumNumberOfVotes()-vote.getVotes());
     }
 }
