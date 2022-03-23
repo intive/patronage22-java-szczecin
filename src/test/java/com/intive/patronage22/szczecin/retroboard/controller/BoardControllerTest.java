@@ -3,15 +3,7 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumnDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDetailsDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
-import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
-import com.intive.patronage22.szczecin.retroboard.dto.UserDto;
+import com.intive.patronage22.szczecin.retroboard.dto.*;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.User;
@@ -38,21 +30,11 @@ import java.util.Optional;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest({BoardController.class, SecurityConfig.class})
@@ -72,7 +54,7 @@ class BoardControllerTest {
 
     private static final String email = "test22@test.com";
     private static final String providedAccessToken = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9" +
-                                       ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
+            ".eyJzdWIiOiJzb21ldXNlciIsInJvbGVzIjpbIlJPTEVfVVNFUiJdLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODAvbG9naW4ifQ.vDeQLA7Y8zTXaJW8bF08lkWzzwGi9Ll44HeMbOc22_o";
     private static final String boardDataUrl = "/api/v1/boards";
 
     @Test
@@ -729,5 +711,32 @@ class BoardControllerTest {
                 .andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.*", hasSize(1))).andExpect(result -> assertTrue(
                         result.getResponse().getContentAsString().contains(failedEmails.get(0))));
+    }
+
+    @Test
+    @DisplayName("nextState should return 200 - OK - and should return board data")
+    void nextStateShouldReturnOkAndBoardData() throws Exception {
+        //given
+        final List<BoardCardsColumnDto> boardCardsColumnDtos =
+                List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),
+                        BoardCardsColumnDto.createFrom(BoardCardsColumn.FAILURES),
+                        BoardCardsColumnDto.createFrom(BoardCardsColumn.KUDOS));
+        final List<UserDto> userDtos =
+                List.of(new UserDto("test@example.com", "uid123"), new UserDto("test1@example.com", "uid1235"));
+        final BoardDto boardDto = new BoardDto(1, EnumStateDto.CREATED, "board name", 5);
+        final var boardDataUrl = this.boardDataUrl + "/" + boardDto.getId() + "/nextState";
+        final BoardDataDto boardDataDto = new BoardDataDto(boardDto, boardCardsColumnDtos, userDtos);
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardService.nextState(boardDto.getId(), email)).thenReturn(boardDataDto);
+
+        //then
+        mockMvc.perform(post(boardDataUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.*", hasSize(3)));
     }
 }

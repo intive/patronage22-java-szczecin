@@ -1,14 +1,6 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumnDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDetailsDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
-import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
-import com.intive.patronage22.szczecin.retroboard.dto.UserDto;
+import com.intive.patronage22.szczecin.retroboard.dto.*;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotAcceptableException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
@@ -52,16 +44,7 @@ public class BoardService {
         final Board board = boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)
                 .orElseThrow(() -> new BadRequestException("User has no access to board"));
 
-        final List<BoardCardsColumnDto> boardCardsColumnDtos =
-                List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),
-                        BoardCardsColumnDto.createFrom(BoardCardsColumn.FAILURES),
-                        BoardCardsColumnDto.createFrom(BoardCardsColumn.KUDOS));
-
-        final List<UserDto> assignedUsersDtoList = new ArrayList<>();
-        board.getUsers().forEach(user1 -> assignedUsersDtoList.add(UserDto.createFrom(user1)));
-        assignedUsersDtoList.add(UserDto.createFrom(user));
-
-        return BoardDataDto.createFrom(BoardDto.fromModel(board), boardCardsColumnDtos, assignedUsersDtoList);
+        return boardData(board, user);
     }
 
     @Transactional(readOnly = true)
@@ -238,12 +221,17 @@ public class BoardService {
             throw new BadRequestException("Number of votes not set!");
         }
 
-        if(EnumStateDto.DONE.equals(board.getState())) {
+        if (EnumStateDto.DONE.equals(board.getState())) {
             throw new NotAcceptableException("Already in last state");
         } else {
             board.setState(board.getState().next());
             boardRepository.save(board);
         }
+
+        return boardData(board, user);
+    }
+
+    private BoardDataDto boardData(final Board board, final User user) {
 
         final List<BoardCardsColumnDto> boardCardsColumnDtos =
                 List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),
