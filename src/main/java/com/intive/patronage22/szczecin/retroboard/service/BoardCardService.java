@@ -139,10 +139,10 @@ public class BoardCardService {
         final BoardCardVotes vote = boardCardsVotesRepository.findByCardAndVoter(card, user)
                 .orElseThrow(() -> new BadRequestException("User has no votes to remove"));
 
-        vote.setVotes(vote.getVotes() - 1);
-        if (vote.getVotes() == 0) {
+        if ((vote.getVotes()-1) == 0) {
             boardCardsVotesRepository.delete(vote);
         }
+        vote.setVotes(vote.getVotes() - 1);
         return Map.of("remainingVotes", card.getBoard().getMaximumNumberOfVotes()-vote.getVotes());
     }
 }
