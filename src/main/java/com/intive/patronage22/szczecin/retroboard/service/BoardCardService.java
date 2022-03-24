@@ -118,4 +118,31 @@ public class BoardCardService {
 
         return Map.of("remainingVotes", remainingUserVotes - 1);
     }
+
+    @Transactional
+    public Map<String, Integer> removeVote(final Integer cardId, final String email) {
+
+        final User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new BadRequestException("User not found"));
+
+        final BoardCard card = boardCardsRepository.findById(cardId)
+                .orElseThrow(() -> new NotFoundException("Card not found"));
+
+        if (!card.getBoard().getUsers().contains(user) && !card.getBoard().getCreator().equals(user)) {
+            throw new BadRequestException("User not assigned to board");
+        }
+
+        if (!EnumStateDto.VOTING.equals(card.getBoard().getState())) {
+            throw new BadRequestException("Wrong state of board");
+        }
+
+        final BoardCardVotes vote = boardCardsVotesRepository.findByCardAndVoter(card, user)
+                .orElseThrow(() -> new BadRequestException("User has no votes to remove"));
+
+        if ((vote.getVotes()-1) == 0) {
+            boardCardsVotesRepository.delete(vote);
+        }
+        vote.setVotes(vote.getVotes() - 1);
+        return Map.of("remainingVotes", card.getBoard().getMaximumNumberOfVotes()-vote.getVotes());
+    }
 }

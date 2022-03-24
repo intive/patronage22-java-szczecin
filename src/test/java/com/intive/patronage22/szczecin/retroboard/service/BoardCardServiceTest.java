@@ -468,6 +468,139 @@ class BoardCardServiceTest {
         assertTrue(remainingVotesMap.containsValue(remainingVotes));
     }
 
+
+    @Test
+    @DisplayName("Remove vote should throw bad request when user is not assigned to board")
+    void removeVoteShouldThrowBadRequestWhenUserIsNotAssignedToBoard() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test@example.com";
+        final String fakeEmail = "fakeTest@example.com";
+        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User fakeUser = new User("5678", fakeEmail, "somename", Set.of(), Set.of());
+        final Board board = buildBoard(2, EnumStateDto.VOTING, 10, user, Set.of(user), new HashSet<>());
+        final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
+        board.setBoardCards(Set.of(card));
+
+        //when
+        when(userRepository.findUserByEmail(fakeEmail)).thenReturn(Optional.of(fakeUser));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
+
+        //then
+        final BadRequestException exception = assertThrows(
+                BadRequestException.class, () -> boardCardService.removeVote(cardId, fakeEmail));
+        assertEquals("User not assigned to board", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Remove vote should throw not found when card is not found")
+    void removeVoteShouldNotFoundWhenCardIsNotFound() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test@example.com";
+        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final Board board = buildBoard(2, EnumStateDto.VOTING, 10, user, Set.of(user), new HashSet<>());
+        final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
+        board.setBoardCards(Set.of(card));
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.empty());
+
+        //then
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardCardService.removeVote(cardId, email));
+        assertEquals("Card not found", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Remove vote should throw bad request when board is not in state voting")
+    void removeVoteShouldThrowBadRequestWhenBoardIsNotInStateVoting() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test@example.com";
+        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final Board board = buildBoard(2, EnumStateDto.CREATED, 10, user, Set.of(user), new HashSet<>());
+        final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
+        board.setBoardCards(Set.of(card));
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
+
+        //then
+        final BadRequestException exception = assertThrows(
+                BadRequestException.class, () -> boardCardService.removeVote(cardId, email));
+        assertEquals("Wrong state of board", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Remove vote should throw bad request when user has no more votes to remove")
+    void removeVoteShouldThrowBadRequestWhenUserHasNoMoreVotesToRemove() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test@example.com";
+        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final Board board = buildBoard(2, EnumStateDto.VOTING, 2, user, Set.of(user), new HashSet<>());
+        final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
+        board.setBoardCards(Set.of(card));
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
+
+        //then
+        final BadRequestException exception = assertThrows(
+                BadRequestException.class, () -> boardCardService.removeVote(cardId, email));
+        assertEquals("User has no votes to remove", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Remove vote should return number of remaining votes")
+    void removeVoteShouldReturnNumberOfRemainingVotes() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test@example.com";
+        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final Board board = buildBoard(2, EnumStateDto.VOTING, 10, user, Set.of(user), new HashSet<>());
+        final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
+        board.setBoardCards(Set.of(card));
+        final BoardCardVotesKey key = new BoardCardVotesKey(cardId, user.getUid());
+        final BoardCardVotes boardCardVotes = new BoardCardVotes(key, card, user, 4);
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(boardCardsVotesRepository.findByCardAndVoter(card, user)).thenReturn(Optional.of(boardCardVotes));
+        final Map<String, Integer> removeVote = boardCardService.removeVote(cardId, email);
+
+        //then
+        assertEquals(removeVote.get("remainingVotes"),7);
+    }
+
+    @Test
+    @DisplayName("Remove vote should delete BoardCardVotes entity after removing last vote")
+    void removeVoteShouldDeleteVoteEntityWhenThereIsNoVotes() {
+        // given
+        final Integer cardId = 1;
+        final String email = "test@example.com";
+        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final Board board = buildBoard(2, EnumStateDto.VOTING, 4, user, Set.of(user), new HashSet<>());
+        final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
+        board.setBoardCards(Set.of(card));
+        final BoardCardVotesKey key = new BoardCardVotesKey(cardId, user.getUid());
+        final BoardCardVotes boardCardVotes = new BoardCardVotes(key, card, user, 1);
+
+        //when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(cardId)).thenReturn(Optional.of(card));
+        when(boardCardsVotesRepository.findByCardAndVoter(card, user)).thenReturn(Optional.of(boardCardVotes));
+
+        //then
+        assertEquals(Map.of("remainingVotes", 4), boardCardService.removeVote(cardId, email));
+        verify(boardCardsVotesRepository).delete(any());
+    }
+
     private Board buildBoard(final int id, final EnumStateDto state, final int numberOfVotes, final User user,
                              final Set<User> users, final Set<BoardCard> cards) {
         return Board.builder()

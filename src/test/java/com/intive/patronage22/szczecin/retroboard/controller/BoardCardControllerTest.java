@@ -23,8 +23,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.hamcrest.Matchers.hasSize;
@@ -32,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -331,6 +331,71 @@ class BoardCardControllerTest {
         mockMvc.perform(
                         post(voteUrl).header(AUTHORIZATION, "Bearer " + providedAccessToken).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
+    }
+
+    @Test
+    void removeVoteShouldReturnOk() throws Exception {
+        //given
+        final int cardId = 1;
+        final String voteUrl = url + "/" + cardId + "/votes";
+        final String responseMapString = "remainingVotes";
+        final Integer responseMapInteger = 0;
+        final Map<String, Integer> response = Map.of(responseMapString, responseMapInteger);
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardCardService.removeVote(cardId, email)).thenReturn(response);
+
+        //then
+        mockMvc.perform(delete(voteUrl).header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void removeVoteShouldThrowNotFoundWhenBoardCardDoesNotExist() throws Exception {
+        //given
+        final int cardId = 1;
+        final String voteUrl = url + "/" + cardId + "/votes";
+        final String exceptionMessage = "Card not found";
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardCardService.removeVote(cardId, email)).thenThrow(new NotFoundException(exceptionMessage));
+
+        //then
+        mockMvc.perform(delete(voteUrl).header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"Wrong state of board", "User not found", "Board not exist",
+            "User not assigned to board", "User has no votes to remove"})
+    @DisplayName(
+            "removeVote should throw Bad Request when board state is not VOTING, user/board is " +
+                    "not found, user is not assigned to board nor the owner or there's no more votes to remove")
+    void removeVoteShouldThrowException(final String exceptionMessage) throws Exception {
+        //given
+        final int cardId = 1;
+        final String voteUrl = url + "/" + cardId + "/votes";
+
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardCardService.removeVote(cardId, email)).thenThrow(new BadRequestException(exceptionMessage));
+
+        //then
+        mockMvc.perform(delete(voteUrl).header(AUTHORIZATION, "Bearer " + providedAccessToken))
+                .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
     }
 }
