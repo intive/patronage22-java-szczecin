@@ -898,8 +898,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("When nextState is called - it will change state from CREATED to VOTING (next) and return board details.")
-    void nextStateChangeStateValueAndSaveTheData()  {
+    @DisplayName("When setNextState is called - it will change state from CREATED to VOTING (next) and return board details.")
+    void setNextStateChangeStateValueAndSaveTheData()  {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
@@ -910,7 +910,7 @@ class BoardServiceTest {
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
 
         // when
-        final var boardDtoResult = boardService.nextState(board.getId(), email);
+        final var boardDtoResult = boardService.setNextState(board.getId(), email);
 
         // then
         assertEquals(boardDtoResult.getBoard().getState(), EnumStateDto.VOTING);
@@ -919,8 +919,8 @@ class BoardServiceTest {
     }
 
     @Test
-    @DisplayName("When nextState is used on a board with EnumStateDto set to DONE - Not Acceptable Exception is thrown.")
-    void nextStateThrowsNotAcceptableIfStateIsDone() {
+    @DisplayName("When setNextState is used on a board with EnumStateDto set to DONE - Not Acceptable Exception is thrown.")
+    void setNextStateThrowsNotAcceptableIfStateIsDone() {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
@@ -932,15 +932,15 @@ class BoardServiceTest {
 
         // when
         final NotAcceptableException exception = assertThrows(
-                NotAcceptableException.class, () -> boardService.nextState(board.getId(),email));
+                NotAcceptableException.class, () -> boardService.setNextState(board.getId(),email));
 
         // then
         assertEquals("Already in last state", exception.getMessage());
     }
 
     @Test
-    @DisplayName("When nextState is used on a board which does not exist - Not Found Exception is thrown.")
-    void nextStateThrowsNotFoundIfBoardIsNotFound() {
+    @DisplayName("When setNextState is used on a board which does not exist - Not Found Exception is thrown.")
+    void setNextStateThrowsNotFoundIfBoardIsNotFound() {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
@@ -951,15 +951,15 @@ class BoardServiceTest {
 
         // when
         final NotFoundException exception = assertThrows(
-                NotFoundException.class, () -> boardService.nextState(board_id,email));
+                NotFoundException.class, () -> boardService.setNextState(board_id,email));
 
         // then
         assertEquals("Board not found", exception.getMessage());
     }
 
     @Test
-    @DisplayName("When nextState is used on a board which the user is not a creator of - Not Found Exception is thrown.")
-    void nextStateThrowsNotFoundIfUserIsNotAnOwner() {
+    @DisplayName("When setNextState is used on a board which the user is not a creator of - Not Found Exception is thrown.")
+    void setNextStateThrowsNotFoundIfUserIsNotAnOwner() {
         // given
         final var uid1 = "uid101";
         final var email1 = "username1@test.pl";
@@ -973,15 +973,15 @@ class BoardServiceTest {
 
         // when
         final NotFoundException exception = assertThrows(
-                NotFoundException.class, () -> boardService.nextState(board.getId(),email2));
+                NotFoundException.class, () -> boardService.setNextState(board.getId(),email2));
 
         // then
         assertEquals("User is not the board owner.", exception.getMessage());
     }
 
     @Test
-    @DisplayName("When nextState() is called on a board with maximumNumberOfVotes = 0 -> Bad Request Exception is thrown.")
-    void nextStateThrowsBadRequestWhenNumberOfVotesIsNotSet() {
+    @DisplayName("When setNextState() is called on a board with maximumNumberOfVotes = 0 -> Bad Request Exception is thrown.")
+    void setNextStateThrowsBadRequestWhenNumberOfVotesIsNotSet() {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
@@ -993,7 +993,7 @@ class BoardServiceTest {
 
         // when
         final BadRequestException exception = assertThrows(
-                BadRequestException.class, () -> boardService.nextState(board.getId(),email));
+                BadRequestException.class, () -> boardService.setNextState(board.getId(),email));
 
         // then
         assertEquals("Number of votes not set!", exception.getMessage());

@@ -714,8 +714,8 @@ class BoardControllerTest {
     }
 
     @Test
-    @DisplayName("nextState should return 200 - OK - and should return board data")
-    void nextStateShouldReturnOkAndBoardData() throws Exception {
+    @DisplayName("setNextState should return 200 - OK - and should return board data")
+    void setNextStateShouldReturnOkAndBoardData() throws Exception {
         //given
         final List<BoardCardsColumnDto> boardCardsColumnDtos =
                 List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),
@@ -731,7 +731,7 @@ class BoardControllerTest {
         //when
         when(firebaseToken.getEmail()).thenReturn(email);
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
-        when(boardService.nextState(boardDto.getId(), email)).thenReturn(boardDataDto);
+        when(boardService.setNextState(boardDto.getId(), email)).thenReturn(boardDataDto);
 
         //then
         mockMvc.perform(post(boardDataUrl)

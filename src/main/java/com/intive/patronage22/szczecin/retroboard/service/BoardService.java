@@ -44,7 +44,7 @@ public class BoardService {
         final Board board = boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)
                 .orElseThrow(() -> new BadRequestException("User has no access to board"));
 
-        return boardData(board, user);
+        return prepareBoardData(board, user);
     }
 
     @Transactional(readOnly = true)
@@ -205,7 +205,7 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardDataDto nextState (final Integer boardId, final String email) {
+    public BoardDataDto setNextState(final Integer boardId, final String email) {
 
         final User user =
                 userRepository.findUserByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
@@ -228,10 +228,10 @@ public class BoardService {
             boardRepository.save(board);
         }
 
-        return boardData(board, user);
+        return prepareBoardData(board, user);
     }
 
-    private BoardDataDto boardData(final Board board, final User user) {
+    private BoardDataDto prepareBoardData(final Board board, final User user) {
 
         final List<BoardCardsColumnDto> boardCardsColumnDtos =
                 List.of(BoardCardsColumnDto.createFrom(BoardCardsColumn.SUCCESS),

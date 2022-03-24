@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class EnumStateDtoTest {
 
     @Test
-    void nextStateShouldReturnNotAcceptableIfEnumStateIsDone() {
+    void setNextStateShouldReturnNotAcceptableIfEnumStateIsDone() {
         // given
         final EnumStateDto enumStateDto = EnumStateDto.DONE;
 
