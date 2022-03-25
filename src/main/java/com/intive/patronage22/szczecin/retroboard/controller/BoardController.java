@@ -4,6 +4,7 @@ import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDetailsDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
+import com.intive.patronage22.szczecin.retroboard.dto.UserDto;
 import com.intive.patronage22.szczecin.retroboard.service.BoardService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,7 +26,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -45,8 +48,9 @@ public class BoardController {
                     @ApiResponse(responseCode = "400", description = "Bad request data"),
                     @ApiResponse(responseCode = "404", description = "User not found")})
     public List<BoardDto> getUserBoards(final Authentication authentication) {
-
-        return boardService.getUserBoards(authentication.getName());
+        return boardService.getUserBoards(authentication.getName()).stream()
+                .sorted(Comparator.comparingLong(BoardDto::getId).reversed())
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}/details")
