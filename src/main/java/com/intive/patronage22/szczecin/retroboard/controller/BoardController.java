@@ -25,9 +25,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
@@ -47,9 +45,7 @@ public class BoardController {
                     @ApiResponse(responseCode = "400", description = "Bad request data"),
                     @ApiResponse(responseCode = "404", description = "User not found")})
     public List<BoardDto> getUserBoards(final Authentication authentication) {
-        return boardService.getUserBoards(authentication.getName()).stream()
-                .sorted(Comparator.comparingLong(BoardDto::getId).reversed())
-                .collect(Collectors.toList());
+        return boardService.getUserBoards(authentication.getName());
     }
 
     @GetMapping("/{id}/details")
