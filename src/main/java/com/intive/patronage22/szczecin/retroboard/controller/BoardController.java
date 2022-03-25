@@ -136,4 +136,16 @@ public class BoardController {
                                    final Authentication authentication) {
         boardService.removeUserAssignedToTheBoard(uid, id, authentication.getName());
     }
+
+    @PostMapping("/{id}/nextState")
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Next state of the board.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad request data"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "406", description = "No more steps")
+    })
+    public BoardDataDto setNextState(@PathVariable("id") final Integer id, final Authentication authentication) {
+        return boardService.setNextState(id, authentication.getName());
+    }
 }
