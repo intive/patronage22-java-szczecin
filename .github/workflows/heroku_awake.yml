@@ -1,7 +1,7 @@
 name: Awake Action
 on:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "*/15 8-22 * * *"
 
 jobs:
   build:
