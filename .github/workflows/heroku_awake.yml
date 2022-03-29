@@ -1,7 +1,8 @@
 name: Awake Action
 on:
   schedule:
-    - cron: "*/15 8-22 * * *"
+    #actions GMT timezone
+    - cron: "*/15 6-20 * * *"
 
 jobs:
   build:
