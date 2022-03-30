@@ -42,7 +42,6 @@ public class BoardCardDto {
     @Schema(description = "Board card action text")
     List<String> actionTexts;
 
-
     @Schema(description = "Sum of all votes for card")
     Integer votes;
 

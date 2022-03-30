@@ -224,8 +224,8 @@ class BoardServiceTest {
         final User user = new User("123", email, displayName, Set.of(), Set.of());
         final User assignUser = new User("1234", "assignUser", "test1", Set.of(), Set.of());
         final Board board = buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(assignUser), 5);
-        final BoardCard boardCard =
-                new BoardCard(2, board, "test card name", BoardCardsColumn.SUCCESS, user, List.of());
+        final BoardCard boardCard =new BoardCard
+                (2, board, "test card name", BoardCardsColumn.SUCCESS, user, List.of());
         final BoardCardAction boardCardAction = new BoardCardAction(4, boardCard, "test action");
         board.setBoardCards(Set.of(boardCard));
         boardCard.setBoardCardActions(List.of(boardCardAction));
@@ -334,7 +334,7 @@ class BoardServiceTest {
         final BoardCardVotes successBoardCardVotes =
                 new BoardCardVotes(new BoardCardVotesKey(successBoardCard.getId(), user.getUid()), successBoardCard,
                         user, numberOfUserVotes);
-        final BoardCardVotes assignedUserSuccessCardCardVotes =
+        final BoardCardVotes assignedUserSuccessCardVotes =
                 new BoardCardVotes(new BoardCardVotesKey(successBoardCard.getId(), assignedUser.getUid()),
                         successBoardCard, assignedUser, numberOfUserVotes);
 
@@ -345,7 +345,7 @@ class BoardServiceTest {
         when(boardCardsRepository.findAllByBoardIdAndCreatorOrderByIdAsc(boardId, user)).thenReturn(
                 List.of(successBoardCard, failureBoardCard, kudosBoardCard));
         when(boardCardsVotesRepository.getVotesByBoardAndCard(board, successBoardCard)).thenReturn(
-                Optional.of(successBoardCardVotes.getVotes() + assignedUserSuccessCardCardVotes.getVotes()));
+                Optional.of(successBoardCardVotes.getVotes() + assignedUserSuccessCardVotes.getVotes()));
         when(boardCardsVotesRepository.getVotesByBoardAndCardAndUser(board, successBoardCard, user)).thenReturn(
                 Optional.of(successBoardCardVotes.getVotes()));
 
@@ -359,7 +359,7 @@ class BoardServiceTest {
                 boardDetailsDto.get(0).getBoardCards().get(0).getBoardCardCreator());
         assertEquals(successBoardCard.getBoardCardActions().get(0).getText(),
                 boardDetailsDto.get(0).getBoardCards().get(0).getActionTexts().get(0));
-        assertEquals(successBoardCardVotes.getVotes() + assignedUserSuccessCardCardVotes.getVotes(),
+        assertEquals(successBoardCardVotes.getVotes() + assignedUserSuccessCardVotes.getVotes(),
                 boardDetailsDto.get(0).getBoardCards().get(0).getVotes());
         assertEquals(successBoardCardVotes.getVotes(), boardDetailsDto.get(0).getBoardCards().get(0).getUserVotes());
 
