@@ -2,9 +2,6 @@ spring:
   main:
     allow-bean-definition-overriding: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/compose-postgres
-    username: compose-postgres
-    password: compose-postgres
     hikari:
       maximum-pool-size: 2
       connection-timeout: 20000
@@ -12,10 +9,7 @@ spring:
     baseline-on-migrate: true
     clean-disabled: true
     encoding: UTF-8
-    password: ${spring.datasource.password}
     table: schema_version
-    url: ${spring.datasource.url}
-    user: ${spring.datasource.username}
     generate-ddl: true
     generate-ddl-auto: update
   jpa:
@@ -39,3 +33,5 @@ server:
 
 firebase:
   signInWithPasswordUrl: https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=
+database:
+  urlWithCredentials: postgres://compose:compose@localhost:5432/compose

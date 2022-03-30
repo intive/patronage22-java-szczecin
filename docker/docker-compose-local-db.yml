@@ -4,7 +4,7 @@ services:
   db:
     image: 'postgres:13.1-alpine'
     environment:
-      - POSTGRES_USER=compose-postgres
-      - POSTGRES_PASSWORD=compose-postgres
+      - POSTGRES_USER=compose
+      - POSTGRES_PASSWORD=compose
     ports:
       - "5432:5432"
