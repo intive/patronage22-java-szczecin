@@ -8,6 +8,7 @@ import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
+import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.validation.BoardValidator;
@@ -33,6 +34,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final BoardCardsRepository boardCardsRepository;
+    private final BoardCardsVotesRepository boardCardsVotesRepository;
     private final BoardValidator boardValidator;
 
     @Transactional(readOnly = true)
@@ -67,12 +69,15 @@ public class BoardService {
         final List<BoardCardDto> kudosBoardCardsDtos = new ArrayList<>();
 
         boardCards.forEach(boardCard -> {
+            final int numberOfVotes = boardCardsVotesRepository.getVotesByBoardAndCard(board, boardCard).orElse(0);
+            final int numberOfUserVotes =
+                    boardCardsVotesRepository.getVotesByBoardAndCardAndUser(board, boardCard, user).orElse(0);
             if (boardCard.getColumn().equals(BoardCardsColumn.SUCCESS)) {
-                successBoardCardsDtos.add(BoardCardDto.createFrom(boardCard));
+                successBoardCardsDtos.add(BoardCardDto.createFrom(boardCard, numberOfVotes, numberOfUserVotes));
             } else if (boardCard.getColumn().equals(BoardCardsColumn.FAILURES)) {
-                failuresBoardCardsDtos.add(BoardCardDto.createFrom(boardCard));
+                failuresBoardCardsDtos.add(BoardCardDto.createFrom(boardCard, numberOfVotes, numberOfUserVotes));
             } else {
-                kudosBoardCardsDtos.add(BoardCardDto.createFrom(boardCard));
+                kudosBoardCardsDtos.add(BoardCardDto.createFrom(boardCard, numberOfVotes, numberOfUserVotes));
             }
         });
 

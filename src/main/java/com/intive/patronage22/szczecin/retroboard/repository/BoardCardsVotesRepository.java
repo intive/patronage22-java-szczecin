@@ -22,4 +22,13 @@ public interface BoardCardsVotesRepository extends CrudRepository<BoardCardVotes
                    "= :board AND bcv.voter=:user")
     List<Integer> getVotesByBoardAndUser(@Param("board") final Board board, @Param("user") final User user);
 
+    @Query(value = "SELECT bcv.votes FROM BoardCardVotes bcv JOIN BoardCard bc ON bcv.card.id = bc.id WHERE bc.board " +
+                   "= :board AND bc=:card AND bcv.voter=:user")
+    Optional<Integer> getVotesByBoardAndCardAndUser(@Param("board") final Board board,
+                                                    @Param("card") final BoardCard card,
+                                                    @Param("user") final User user);
+
+    @Query(value = "SELECT SUM(bcv.votes) FROM BoardCardVotes bcv JOIN BoardCard bc ON bcv.card.id = bc.id " +
+                   "WHERE bc.board= :board AND bc=:card")
+    Optional<Integer> getVotesByBoardAndCard(@Param("board") final Board board, @Param("card") final BoardCard card);
 }
