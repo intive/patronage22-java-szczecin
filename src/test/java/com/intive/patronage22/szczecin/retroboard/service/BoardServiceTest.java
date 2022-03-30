@@ -414,7 +414,7 @@ class BoardServiceTest {
                 new BoardCard(9, board, "success", BoardCardsColumn.SUCCESS, assignedUser, List.of());
 
         final BoardCardVotes failureBoardCardVotes =
-                new BoardCardVotes(new BoardCardVotesKey(failureBoardCard.getId(), user.getUid()), successBoardCard,
+                new BoardCardVotes(new BoardCardVotesKey(failureBoardCard.getId(), user.getUid()), failureBoardCard,
                         user, numberOfUserVotes);
 
         //when
