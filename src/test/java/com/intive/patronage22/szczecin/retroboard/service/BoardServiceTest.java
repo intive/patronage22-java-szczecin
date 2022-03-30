@@ -69,28 +69,13 @@ class BoardServiceTest {
     UserService userService;
 
     @Test
-    void getUserBoardsShouldReturnSortedListByIdWhenUserExist() {
+    void getUserBoardsShouldReturnSortedListByIdWhenUserExists() {
         //given
         final String uid = "1234";
         final String email = "John@test.pl";
         final User user = new User(uid, email, "john14", Set.of(), Set.of());
-        final Board board = Board.builder()
-                .id(2)
-                .name("board name")
-                .state(EnumStateDto.CREATED)
-                .creator(user)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
-
-        final Board board1 = Board.builder()
-                .id(5)
-                .name("board name")
-                .state(EnumStateDto.CREATED)
-                .creator(user)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
+        final var board = buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 0);
+        final var board1 = buildBoard(20, EnumStateDto.CREATED, user, Set.of(), 0);
         user.setUserBoards(Set.of(board, board1));
 
         //when
