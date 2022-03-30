@@ -1,21 +1,10 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
-import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.*;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
-import com.intive.patronage22.szczecin.retroboard.model.Board;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCardAction;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotes;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotesKey;
-import com.intive.patronage22.szczecin.retroboard.model.User;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsActionsRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
+import com.intive.patronage22.szczecin.retroboard.model.*;
+import com.intive.patronage22.szczecin.retroboard.repository.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -27,11 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -468,7 +453,6 @@ class BoardCardServiceTest {
         assertTrue(remainingVotesMap.containsValue(remainingVotes));
     }
 
-
     @Test
     @DisplayName("Remove vote should throw bad request when user is not assigned to board")
     void removeVoteShouldThrowBadRequestWhenUserIsNotAssignedToBoard() {
@@ -602,8 +586,76 @@ class BoardCardServiceTest {
     }
 
     @Test
+    @DisplayName("When addCardAction() is called and the user is not found -> User not found Exception is thrown.")
+    void addCardActionThrowsUserNotFoundIfUserIsNotProvided() {
+        //given
+        when(userRepository.findUserByEmail(any())).thenReturn(Optional.empty());
+
+        //when & then
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardCardService.addCardAction(null, null, null));
+        assertEquals("User not found", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("When addCardAction() is called and the card is not found -> Card not found Exception is thrown")
+    void addCardActionThrowsCardNotFoundIfCardDoesNotExist() {
+        //given
+        final User user = new User("1234", "test@example.com", "somename", false, Set.of(), Set.of());
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(boardCardsRepository.findById(any())).thenReturn(Optional.empty());
+
+        //when & then
+        final NotFoundException exception = assertThrows(
+                NotFoundException.class, () -> boardCardService.addCardAction(1, user.getEmail(), null));
+        assertEquals("Card not found", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("When addCardAction() is called and state of the board is actions -> board card action is created.")
+    void addCardActionCreatesCardActionWhenStateIsActions() {
+        //given
+        final User user = new User("1234", "test@example.com", "somename", false, Set.of(), Set.of());
+        final Board board = buildBoard(1, EnumStateDto.ACTIONS, 4, user, Set.of(user), new HashSet<>());
+        final BoardCard card = buildBoardCard(1, board, BoardCardsColumn.FAILURES, user, List.of());
+        final BoardCardActionDto expectedResponse = BoardCardActionDto.builder()
+                .cardId(1)
+                .text("test")
+                .build();
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(boardRepository.findById(card.getBoard().getId())).thenReturn(Optional.of(board));
+        when(boardCardsRepository.findById(card.getId())).thenReturn(Optional.of(card));
+
+        //when
+        final BoardCardActionDto responseDto = boardCardService
+                .addCardAction(1, "test@example.com", new BoardCardActionRequestDto("test"));
+
+        //then
+        verify(boardCardsActionsRepository).save(any(BoardCardAction.class));
+        assertEquals(expectedResponse, responseDto);
+    }
+
+    @Test
+    @DisplayName("When addCardAction() is called and state of the board is not actions -> Bad Request Exception is thrown.")
+    void addCardActionThrowsBadRequestExceptionWhenStateIsNotActions() {
+        //given
+        final User user = new User("1234", "test@example.com", "somename", false, Set.of(), Set.of());
+        final Board board = buildBoard(1, EnumStateDto.VOTING, 4, user, Set.of(user), new HashSet<>());
+        final BoardCard card = buildBoardCard(1, board, BoardCardsColumn.FAILURES, user, List.of());
+        when(userRepository.findUserByEmail(user.getEmail())).thenReturn(Optional.of(user));
+        when(boardRepository.findById(card.getBoard().getId())).thenReturn(Optional.of(board));
+        when(boardCardsRepository.findById(card.getId())).thenReturn(Optional.of(card));
+
+        //when & then
+        final BadRequestException exception = assertThrows(
+                BadRequestException.class, () -> boardCardService.addCardAction
+                        (1, user.getEmail(), new BoardCardActionRequestDto("test")));
+        assertEquals("State is not actions", exception.getMessage());
+    }
+
+    @Test
     @DisplayName("When Board's state is ACTIONS and owner of the board tries to remove action, " +
-                 "then it should succeed")
+            "then it should succeed")
     void removeActionShouldPassWhenOwnerTriesToRemoveExistingActionWhenBoardStateIsActions() {
         // given
         final Integer actionId = 1;
@@ -622,7 +674,7 @@ class BoardCardServiceTest {
 
         final ArgumentCaptor<Integer> actionIdCaptor = ArgumentCaptor.forClass(Integer.class);
         verify(boardCardsActionsRepository).deleteById(actionIdCaptor.capture());
-        
+
         assertEquals(actionId, actionIdCaptor.getValue());
     }
 
@@ -668,7 +720,7 @@ class BoardCardServiceTest {
                 () -> boardCardService.removeAction(actionId, email));
         assertEquals(expectedMessage, e.getMessage());
     }
-    
+
     @Test
     void removeActionShouldFailWhenActionDoesNotExist() {
         // given

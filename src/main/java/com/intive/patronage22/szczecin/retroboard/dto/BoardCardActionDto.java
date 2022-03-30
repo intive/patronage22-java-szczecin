@@ -12,10 +12,10 @@ import lombok.Value;
 public class BoardCardActionDto {
 
     @Schema(description = "Board card action id")
-    int id;
+    Integer id;
 
     @Schema(description = "Board card id")
-    int cardId;
+    Integer cardId;
 
     @Schema(description = "Board card text")
     String text;
