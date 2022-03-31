@@ -15,6 +15,11 @@ public interface UserRepository extends CrudRepository<User, String> {
 
     List<User> findAllByEmailIn(List<String> emails);
 
+    @Query("SELECT u FROM User u WHERE u.email IN :emails AND u.deleted IS NOT TRUE")
+    List<User> findAllNotDeactivatedByEmailIn(List<String> emails);
+
+    List<User> findAllByEmailNotIn(List<String> emails);
+
     @Query("SELECT u.email FROM User u WHERE u.email LIKE %:email%")
     List<String> searchByEmailLike(final String email);
 }

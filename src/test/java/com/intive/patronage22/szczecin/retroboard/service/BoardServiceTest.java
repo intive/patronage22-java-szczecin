@@ -79,9 +79,9 @@ class BoardServiceTest {
         //given
         final String uid = "1234";
         final String email = "John@test.pl";
-        final User user = new User(uid, email, "john14", Set.of(), Set.of());
-        final var board = buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 0);
-        final var board1 = buildBoard(20, EnumStateDto.CREATED, user, Set.of(), 0);
+        final User user = new User(uid, email, "john14", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 0);
+        final var board1 = TestUtils.buildBoard(20, EnumStateDto.CREATED, user, Set.of(), 0);
         user.setUserBoards(Set.of(board, board1));
 
         //when
@@ -135,9 +135,9 @@ class BoardServiceTest {
         final String email = "Josef@test.pl";
         final String boardName = "My first board.";
 
-        final User user = new User(uid, email, "josef14", Set.of(), Set.of());
+        final User user = new User(uid, email, "josef14", false, Set.of(), Set.of());
 
-        final Board board = buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 5);
+        final Board board = TestUtils.buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 5);
 
         // when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -184,7 +184,7 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "test";
-        final User user = new User("123", email, displayName, Set.of(),Set.of());
+        final User user = new User("123", email, displayName, false, Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -201,9 +201,9 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "test12";
-        final User user = new User("123", email, displayName, Set.of(), Set.of());
-        final User assignUser = new User("1234", "assignUser@test.pl", "test1", Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(assignUser), 5);
+        final User user = new User("123", email, displayName, false, Set.of(), Set.of());
+        final User assignUser = new User("1234", "assignUser@test.pl", "test1", false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(assignUser), 5);
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -221,9 +221,9 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "testDisplayName";
-        final User user = new User("123", email, displayName, Set.of(), Set.of());
-        final User assignUser = new User("1234", "assignUser", "test1", Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(assignUser), 5);
+        final User user = new User("123", email, displayName, false, Set.of(), Set.of());
+        final User assignUser = new User("1234", "assignUser", "test1", false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(assignUser), 5);
         final BoardCard boardCard =new BoardCard
                 (2, board, "test card name", BoardCardsColumn.SUCCESS, user, List.of());
         final BoardCardAction boardCardAction = new BoardCardAction(4, boardCard, "test action");
@@ -274,7 +274,7 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "test";
-        final User user = new User("123", email, displayName, Set.of(),Set.of());
+        final User user = new User("123", email, displayName, false, Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -291,9 +291,9 @@ class BoardServiceTest {
         final int boardId = 1;
         final String email = "testemail@example.com";
         final String displayName = "test12";
-        final User user = new User("123", email, displayName, Set.of(), Set.of());
-        final User assignUser = new User("1234", "assignUser@test.pl", "test1", Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(assignUser), 5);
+        final User user = new User("123", email, displayName, false, Set.of(), Set.of());
+        final User assignUser = new User("1234", "assignUser@test.pl", "test1", false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(assignUser), 5);
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -314,9 +314,9 @@ class BoardServiceTest {
         final String displayName = "testDisplayName";
         final int numberOfUserVotes = 2;
 
-        final User user = new User("123", userEmail, displayName, Set.of(), Set.of());
-        final User assignedUser = new User("1234", assignedUserEmail, displayName, Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(assignedUser), 5);
+        final User user = new User("123", userEmail, displayName, false, Set.of(), Set.of());
+        final User assignedUser = new User("1234", assignedUserEmail, displayName, false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, user, Set.of(assignedUser), 5);
 
         final BoardCardAction successAction = new BoardCardAction(6, null, "happy");
         final BoardCardAction failureAction = new BoardCardAction(7, null, "help");
@@ -397,9 +397,9 @@ class BoardServiceTest {
         final String displayName = "testDisplayName";
         final int numberOfUserVotes = 2;
 
-        final User user = new User("123", userEmail, displayName, Set.of(), Set.of());
-        final User assignedUser = new User("1234", assignedUserEmail, displayName, Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.VOTING, user, Set.of(assignedUser), 5);
+        final User user = new User("123", userEmail, displayName, false, Set.of(), Set.of());
+        final User assignedUser = new User("1234", assignedUserEmail, displayName, false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.VOTING, user, Set.of(assignedUser), 5);
 
         final BoardCardAction successAction = new BoardCardAction(6, null, "happy");
         final BoardCardAction failureAction = new BoardCardAction(7, null, "help");
@@ -495,8 +495,8 @@ class BoardServiceTest {
         final String email = "username@test.pl";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, emailOwner, "displayName", Set.of(),Set.of());
-        final User user = new User(uid, email, "displayName", Set.of(),Set.of());
+        final User userOwner = new User(uidOwner, emailOwner, "displayName", false, Set.of(), Set.of());
+        final User user = new User(uid, email, "displayName", false, Set.of(), Set.of());
         final Board board = new Board(boardId, "board", 0,
                 EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
 
@@ -518,8 +518,8 @@ class BoardServiceTest {
         final String email = "username@test.pl";
         final int boardId = 1;
         final BoardCard boardCard = new BoardCard();
-        final User userOwner = new User(uidOwner, emailOwner, "displayName", Set.of(),Set.of());
-        final User user = new User(uid, email, "displayName", Set.of(), Set.of());
+        final User userOwner = new User(uidOwner, emailOwner, "displayName", false, Set.of(), Set.of());
+        final User user = new User(uid, email, "displayName", false, Set.of(), Set.of());
         final Board board = new Board
                 (boardId, "board", 0,
                         EnumStateDto.CREATED, userOwner, Set.of(userOwner), Set.of(boardCard));
@@ -551,8 +551,8 @@ class BoardServiceTest {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
-        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(10, EnumStateDto.CREATED, user, Set.of(),3);
+        final var user = new User(uid, email, "displayName", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 3);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
 
@@ -568,8 +568,8 @@ class BoardServiceTest {
         final var uid = "uid101";
         final var email = "username@test.pl";
         final var boardName = "My first board.";
-        final var userOwner = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(10, EnumStateDto.CREATED, userOwner, Set.of(),3);
+        final var userOwner = new User(uid, email, "displayName", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.CREATED, userOwner, Set.of(), 3);
         final var boardPatchDto = new BoardPatchDto(boardName, 1500);
 
         // when
@@ -589,8 +589,8 @@ class BoardServiceTest {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
-        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(10, EnumStateDto.CREATED, user, Set.of(),3);
+        final var user = new User(uid, email, "displayName", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 3);
         final var boardPatchDto = new BoardPatchDto(null, 1500);
 
         // when
@@ -627,7 +627,7 @@ class BoardServiceTest {
         final int boardId = 1;
         final List<String> usersEmails = List.of();
         final String email = "testemail@example.com";
-        final User user = new User("123", email, "test name", Set.of(), Set.of());
+        final User user = new User("123", email, "test name", false, Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -644,13 +644,13 @@ class BoardServiceTest {
         final int boardId = 1;
         final List<String> usersEmails = List.of();
         final String email = "testemail@example.com";
-        final User user = new User("123", email, "test name", Set.of(), Set.of());
-        final User boardOwner = new User("1234", "testemail1@example.com", "test name", Set.of(), Set.of());
+        final User user = new User("123", email, "test name", false, Set.of(), Set.of());
+        final User boardOwner = new User("1234", "testemail1@example.com", "test name", false, Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(boardId))
-                .thenReturn(Optional.of(buildBoard(10, EnumStateDto.CREATED, boardOwner, Set.of(),3)));
+                .thenReturn(Optional.of(TestUtils.buildBoard(10, EnumStateDto.CREATED, boardOwner, Set.of(), 3)));
 
         //then
         assertThrows(BadRequestException.class, () -> boardService.assignUsersToBoard(boardId, usersEmails, email));
@@ -664,18 +664,18 @@ class BoardServiceTest {
         final List<String> usersEmails = List.of("testemail@example.com", "testfalseemail@example.com", "test@123.pl");
         final String ownerEmail = "owner@example.com";
         final String displayName = "testDisplayName";
-        final User owner = new User("123", ownerEmail, displayName, Set.of(), Set.of());
-        final User userToAssign = new User("126", usersEmails.get(0), displayName, new HashSet<>(), Set.of());
-        final User existingUser = new User("1234", "test@123.pl", displayName, new HashSet<>(), Set.of());
+        final User owner = new User("123", ownerEmail, displayName, false, Set.of(), Set.of());
+        final User userToAssign = new User("126", usersEmails.get(0), displayName, false, new HashSet<>(), Set.of());
+        final User existingUser = new User("1234", "test@123.pl", displayName, false, new HashSet<>(), Set.of());
         final Set<User> boardUsers = new HashSet<>(List.of(existingUser));
         final List<User> existingUsers = List.of(userToAssign, existingUser);
 
-        final Board board = buildBoard(10, EnumStateDto.CREATED, owner, boardUsers,3);
+        final Board board = TestUtils.buildBoard(10, EnumStateDto.CREATED, owner, boardUsers, 3);
 
         //when
         when(userRepository.findUserByEmail(ownerEmail)).thenReturn(Optional.of(owner));
         when(boardRepository.findById(boardId)).thenReturn(Optional.of(board));
-        when(userRepository.findAllByEmailIn(usersEmails)).thenReturn(existingUsers);
+        when(userRepository.findAllNotDeactivatedByEmailIn(usersEmails)).thenReturn(existingUsers);
         final JSONArray failedEmails = new JSONArray(boardService.assignUsersToBoard(boardId, usersEmails, ownerEmail));
 
         //then
@@ -698,8 +698,8 @@ class BoardServiceTest {
         // given
         final var uid = "1234";
         final var email = "John@test.pl";
-        final var user = new User(uid, email, "john14", Set.of(), Set.of());
-        final var board = buildBoard(10, EnumStateDto.VOTING, user, Set.of(),3);
+        final var user = new User(uid, email, "john14", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.VOTING, user, Set.of(), 3);
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
@@ -714,8 +714,8 @@ class BoardServiceTest {
         // given
         final var uid = "1234";
         final var email = "John@test.pl";
-        final var user = new User(uid, email, "john14", Set.of(), Set.of());
-        final var board = buildBoard(10, EnumStateDto.CREATED, user, Set.of(),3);
+        final var user = new User(uid, email, "john14", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 3);
         final var boardPatchDto = new BoardPatchDto("testboard", 1500);
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
@@ -735,10 +735,10 @@ class BoardServiceTest {
         final var email1 = "username@test.pl";
         final var uid2 = "uid102";
         final var email2 = "username2@test.pl";
-        final var user1 = new User(uid1, email1, "displayName1", Set.of(), Set.of());
-        final var user2 = new User(uid2, email2, "displayName2", Set.of(), Set.of());
-        final var boardCreated = buildBoard(10, EnumStateDto.CREATED, user1, Set.of(),3);
-        final var boardAssigned = buildBoard(11, EnumStateDto.CREATED, user2, Collections.singleton(user1),3);
+        final var user1 = new User(uid1, email1, "displayName1", false, Set.of(), Set.of());
+        final var user2 = new User(uid2, email2, "displayName2", false, Set.of(), Set.of());
+        final var boardCreated = TestUtils.buildBoard(10, EnumStateDto.CREATED, user1, Set.of(), 3);
+        final var boardAssigned = TestUtils.buildBoard(11, EnumStateDto.CREATED, user2, Collections.singleton(user1), 3);
         when(userRepository.findUserByEmail(email1)).thenReturn(Optional.of(user1));
         user1.setUserBoards(Collections.singleton(boardAssigned));
         user1.setCreatedBoards(Collections.singleton(boardCreated));
@@ -757,9 +757,9 @@ class BoardServiceTest {
         final String email = "boardOwner@test.pl";
         final Integer boardId = 10;
 
-        final User notAssignedUser = new User(uid, "test@test.com", "some_user", Set.of(), Set.of());
-        final User boardOwner = new User("123", email, "board_owner", Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, boardOwner, Set.of(),3);
+        final User notAssignedUser = new User(uid, "test@test.com", "some_user", false, Set.of(), Set.of());
+        final User boardOwner = new User("123", email, "board_owner", false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, boardOwner, Set.of(), 3);
 
         // when
         when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
@@ -779,9 +779,9 @@ class BoardServiceTest {
         final String email = "someUser@test.pl";
         final Integer boardId = 10;
 
-        final User notAssignedUser = new User(uid, email, "some_user", Set.of(), Set.of());
-        final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, boardOwner, Set.of(),3);
+        final User notAssignedUser = new User(uid, email, "some_user", false, Set.of(), Set.of());
+        final User boardOwner = new User("123", "boardOwner@test.pl", "board_owner", false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, boardOwner, Set.of(), 3);
 
         // when
         when(userRepository.findById(uid)).thenReturn(Optional.of(notAssignedUser));
@@ -820,9 +820,9 @@ class BoardServiceTest {
         final String email = "currentlyLogged@test.pl";
         final Integer boardId = 10;
 
-        final User boardOwner = new User("123", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
-        final User userToRemove = new User(uid, "test3@test3.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, boardOwner, Set.of(userToRemove),3);
+        final User boardOwner = new User("123", "boardOwner@test1.com", "board_owner", false, Set.of(), Set.of());
+        final User userToRemove = new User(uid, "test3@test3.com", "userTest", false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, boardOwner, Set.of(userToRemove), 3);
 
         //when
         when(userRepository.findById(uid)).thenReturn(Optional.of(userToRemove));
@@ -844,8 +844,8 @@ class BoardServiceTest {
         final String email = "boardOwner@test1.com";
         final Integer boardId = 10;
 
-        final User boardOwner = new User(uid, email, "board_owner", Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, boardOwner, Set.of(),3);
+        final User boardOwner = new User(uid, email, "board_owner", false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, boardOwner, Set.of(), 3);
 
         //when
         when(userRepository.findById(uid)).thenReturn(Optional.of(boardOwner));
@@ -866,9 +866,9 @@ class BoardServiceTest {
         final String email = "boardOwner@test1.com";
         final Integer boardId = 10;
 
-        final User boardOwner = new User("12345", email, "board_owner", Set.of(), Set.of());
-        final User userToRemove = new User(uid, "test2@test2.com", "userTest", Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, boardOwner, new HashSet<>(),3);
+        final User boardOwner = new User("12345", email, "board_owner", false, Set.of(), Set.of());
+        final User userToRemove = new User(uid, "test2@test2.com", "userTest", false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, boardOwner, new HashSet<>(), 3);
         board.getUsers().add(userToRemove);
 
         //when
@@ -891,9 +891,9 @@ class BoardServiceTest {
         final String email = "currentlyLogged@test.pl";
         final Integer boardId = 10;
 
-        final User boardOwner = new User("12345", "boardOwner@test1.com", "board_owner", Set.of(), Set.of());
-        final User currentlyLogged = new User(uid, email, "currently_logged", Set.of(), Set.of());
-        final Board board = buildBoard(boardId, EnumStateDto.CREATED, boardOwner, new HashSet<>(),3);
+        final User boardOwner = new User("12345", "boardOwner@test1.com", "board_owner", false, Set.of(), Set.of());
+        final User currentlyLogged = new User(uid, email, "currently_logged", false, Set.of(), Set.of());
+        final Board board = TestUtils.buildBoard(boardId, EnumStateDto.CREATED, boardOwner, new HashSet<>(), 3);
         board.getUsers().add(currentlyLogged);
 
         //when
@@ -910,12 +910,12 @@ class BoardServiceTest {
 
     @Test
     @DisplayName("When setNextState is called - it will change state from CREATED to VOTING (next) and return board details.")
-    void setNextStateChangeStateValueAndSaveTheData()  {
+    void setNextStateChangeStateValueAndSaveTheData() {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
-        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 3);
+        final var user = new User(uid, email, "displayName", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 3);
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -935,15 +935,15 @@ class BoardServiceTest {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
-        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(10,EnumStateDto.DONE, user, Set.of(), 3);
+        final var user = new User(uid, email, "displayName", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.DONE, user, Set.of(), 3);
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
 
         // when
         final NotAcceptableException exception = assertThrows(
-                NotAcceptableException.class, () -> boardService.setNextState(board.getId(),email));
+                NotAcceptableException.class, () -> boardService.setNextState(board.getId(), email));
 
         // then
         assertEquals("Already in last state", exception.getMessage());
@@ -955,7 +955,7 @@ class BoardServiceTest {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
-        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
+        final var user = new User(uid, email, "displayName", false, Set.of(), Set.of());
         final var board_id = 1;
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         when(boardRepository.findById(board_id)).thenReturn(Optional.empty());
@@ -976,15 +976,15 @@ class BoardServiceTest {
         final var email1 = "username1@test.pl";
         final var uid2 = "uid102";
         final var email2 = "username2@test.pl";
-        final var owner = new User(uid1, email1, "displayName", Set.of(), Set.of());
-        final var user = new User(uid2, email2, "displayName2", Set.of(), Set.of());
-        final var board = buildBoard(10, EnumStateDto.CREATED, owner, Set.of(), 3);
+        final var owner = new User(uid1, email1, "displayName", false, Set.of(), Set.of());
+        final var user = new User(uid2, email2, "displayName2", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.CREATED, owner, Set.of(), 3);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         when(userRepository.findUserByEmail(email2)).thenReturn(Optional.of(user));
 
         // when
         final NotFoundException exception = assertThrows(
-                NotFoundException.class, () -> boardService.setNextState(board.getId(),email2));
+                NotFoundException.class, () -> boardService.setNextState(board.getId(), email2));
 
         // then
         assertEquals("User is not the board owner.", exception.getMessage());
@@ -996,28 +996,17 @@ class BoardServiceTest {
         // given
         final var uid = "uid101";
         final var email = "username@test.pl";
-        final var user = new User(uid, email, "displayName", Set.of(), Set.of());
-        final var board = buildBoard(10,EnumStateDto.CREATED, user, Set.of(),0);
+        final var user = new User(uid, email, "displayName", false, Set.of(), Set.of());
+        final var board = TestUtils.buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 0);
         when(boardRepository.save(any(Board.class))).thenReturn(board);
         when(boardRepository.findById(board.getId())).thenReturn(Optional.of(board));
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
 
         // when
         final BadRequestException exception = assertThrows(
-                BadRequestException.class, () -> boardService.setNextState(board.getId(),email));
+                BadRequestException.class, () -> boardService.setNextState(board.getId(), email));
 
         // then
         assertEquals("Number of votes not set!", exception.getMessage());
-    }
-
-    private Board buildBoard(final int id, final EnumStateDto state, final User user, final Set<User> users, final Integer maximumNumberOfVotes) {
-        return Board.builder()
-                .id(id)
-                .name("My first board.")
-                .state(state)
-                .creator(user)
-                .users(users)
-                .maximumNumberOfVotes(maximumNumberOfVotes)
-                .build();
     }
 }

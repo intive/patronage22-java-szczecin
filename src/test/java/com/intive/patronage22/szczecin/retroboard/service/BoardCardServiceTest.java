@@ -37,7 +37,6 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -81,7 +80,7 @@ class BoardCardServiceTest {
                 .build();
         final String email = "test22@test.com";
         final String uid = "1234";
-        final User user = new User(uid, email, "john14", Set.of(), Set.of());
+        final User user = new User(uid, email, "john14", false, Set.of(), Set.of());
         final Board board = buildBoard(boardId, EnumStateDto.CREATED, 5, user, Set.of(), Set.of());
 
         //when
@@ -135,7 +134,7 @@ class BoardCardServiceTest {
                 .build();
         final String email = "test22@test.com";
         final String uid = "1234";
-        final User user = new User(uid, email, "john14", Set.of(), Set.of());
+        final User user = new User(uid, email, "john14", false, Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -156,7 +155,7 @@ class BoardCardServiceTest {
                 .build();
         final String email = "test22@test.com";
         final String uid = "1234";
-        final User user = new User(uid, email, "john14", Set.of(), Set.of());
+        final User user = new User(uid, email, "john14", false, Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -178,7 +177,7 @@ class BoardCardServiceTest {
                 .build();
         final String email = "test22@test.com";
         final String uid = "1234";
-        final User user = new User(uid, email, "john14", Set.of(), Set.of());
+        final User user = new User(uid, email, "john14", false, Set.of(), Set.of());
         final Board board = buildBoard(boardId, EnumStateDto.VOTING, 5, user, Set.of(), Set.of());
 
         //when
@@ -195,8 +194,8 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test22@test.com";
-        final User user = new User("1234", email, "john14", Set.of(), Set.of());
-        final User boardOwner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
+        final User user = new User("1234", email, "john14", false, Set.of(), Set.of());
+        final User boardOwner = new User("12345", "some@test.com", "test", false, Set.of(), Set.of());
         final Board board = buildBoard(1, EnumStateDto.CREATED, 5, boardOwner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
@@ -214,8 +213,8 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test22@test.com";
-        final User boardOwner = new User("1234", email, "john14", Set.of(), Set.of());
-        final User user = new User("12345", "some@test.com", "test", Set.of(), Set.of());
+        final User boardOwner = new User("1234", email, "john14", false, Set.of(), Set.of());
+        final User user = new User("12345", "some@test.com", "test", false, Set.of(), Set.of());
         final Board board = buildBoard(1, EnumStateDto.CREATED, 5, boardOwner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
@@ -233,8 +232,8 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test22@test.com";
-        final User user = new User("1234", email, "john14", Set.of(), Set.of());
-        final User boardOwner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
+        final User user = new User("1234", email, "john14", false, Set.of(), Set.of());
+        final User boardOwner = new User("12345", "some@test.com", "test", false, Set.of(), Set.of());
         final Board board = buildBoard(1, EnumStateDto.VOTING, 5, boardOwner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
 
@@ -251,8 +250,8 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test22@test.com";
-        final User user = new User("1234", email, "john14", Set.of(), Set.of());
-        final User owner = new User("12345", "some@test.com", "test", Set.of(), Set.of());
+        final User user = new User("1234", email, "john14", false, Set.of(), Set.of());
+        final User owner = new User("12345", "some@test.com", "test", false, Set.of(), Set.of());
         final Board board = buildBoard(1, EnumStateDto.CREATED, 5, owner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, owner, List.of());
 
@@ -270,7 +269,7 @@ class BoardCardServiceTest {
         final Integer cardId = 1;
         final String email = "test22@test.com";
         final String uid = "1234";
-        final User user = new User(uid, email, "john14", Set.of(), Set.of());
+        final User user = new User(uid, email, "john14", false, Set.of(), Set.of());
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -303,7 +302,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final String expectedExceptionMessage = "Card not found";
 
         //when
@@ -322,7 +321,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.CREATED, 5, user, Set.of(), Set.of());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
         final String expectedExceptionMessage = "Board not exist";
@@ -344,8 +343,8 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User creator = new User("123", "some@example.com", "somename", Set.of(), Set.of());
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User creator = new User("123", "some@example.com", "somename", false, Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.CREATED, 5, creator, Set.of(), Set.of());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, creator, List.of());
         final String expectedExceptionMessage = "User not assigned to board";
@@ -367,7 +366,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.CREATED, 5, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -390,7 +389,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.VOTING, 5, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -417,7 +416,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.VOTING, 5, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.SUCCESS, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -445,7 +444,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.VOTING, 10, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -476,8 +475,8 @@ class BoardCardServiceTest {
         final Integer cardId = 1;
         final String email = "test@example.com";
         final String fakeEmail = "fakeTest@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
-        final User fakeUser = new User("5678", fakeEmail, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
+        final User fakeUser = new User("5678", fakeEmail, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.VOTING, 10, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -498,7 +497,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.VOTING, 10, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -519,7 +518,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.CREATED, 10, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -540,7 +539,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.VOTING, 2, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -561,7 +560,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.VOTING, 10, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -584,7 +583,7 @@ class BoardCardServiceTest {
         // given
         final Integer cardId = 1;
         final String email = "test@example.com";
-        final User user = new User("1234", email, "somename", Set.of(), Set.of());
+        final User user = new User("1234", email, "somename", false, Set.of(), Set.of());
         final Board board = buildBoard(2, EnumStateDto.VOTING, 4, user, Set.of(user), new HashSet<>());
         final BoardCard card = buildBoardCard(cardId, board, BoardCardsColumn.FAILURES, user, List.of());
         board.setBoardCards(Set.of(card));
@@ -615,7 +614,7 @@ class BoardCardServiceTest {
     }
 
     private BoardCard buildBoardCard(final int id, final Board board, final BoardCardsColumn column, final User user,
-                                     List<BoardCardAction> actions) {
+                                     final List<BoardCardAction> actions) {
         return BoardCard.builder()
                 .id(id)
                 .board(board)
