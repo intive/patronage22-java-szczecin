@@ -2,12 +2,13 @@ package com.intive.patronage22.szczecin.retroboard.dto;
 
 import com.intive.patronage22.szczecin.retroboard.exception.NotAcceptableException;
 import org.junit.jupiter.api.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 class EnumStateDtoTest {
 
     @Test
