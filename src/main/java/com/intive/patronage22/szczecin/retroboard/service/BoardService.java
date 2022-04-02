@@ -1,6 +1,14 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.*;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumnDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDetailsDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
+import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.UserDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotAcceptableException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
@@ -172,7 +180,7 @@ public class BoardService {
             throw new BadRequestException("User is not the board owner.");
         }
 
-        final List<User> users = userRepository.findAllByEmailIn(emailsToAssign);
+        final List<User> users = userRepository.findAllNotDeactivatedByEmailIn(emailsToAssign);
 
         board.getUsers().addAll(users);
         boardRepository.save(board);

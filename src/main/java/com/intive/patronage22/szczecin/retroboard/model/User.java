@@ -6,7 +6,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
@@ -28,6 +33,9 @@ public class User implements Serializable {
 
     @Column(name = "display_name", length = 64)
     private String displayName;
+
+    @Column(name = "deleted")
+    private boolean deleted;
 
     @ManyToMany(mappedBy = "users")
     private Set<Board> userBoards = new HashSet<>();
