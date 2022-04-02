@@ -67,37 +67,33 @@ class BoardServiceTest {
     UserService userService;
 
     @Test
-    void getUserBoardsShouldReturnOk() {
+    void getUserBoardsShouldReturnSortedListByIdWhenUserExists() {
         //given
         final String uid = "1234";
         final String email = "John@test.pl";
         final User user = new User(uid, email, "john14", Set.of(), Set.of());
-        final Board board = Board.builder()
-                .id(1)
-                .name("board name")
-                .state(EnumStateDto.CREATED)
-                .creator(user)
-                .users(Set.of())
-                .boardCards(Set.of())
-                .build();
-        user.setUserBoards(Set.of(board));
+        final var board = buildBoard(10, EnumStateDto.CREATED, user, Set.of(), 0);
+        final var board1 = buildBoard(20, EnumStateDto.CREATED, user, Set.of(), 0);
+        user.setUserBoards(Set.of(board, board1));
 
         //when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
         final List<BoardDto> boards = boardService.getUserBoards(email);
 
         //then
-        assertEquals(boards.get(0).getId(), board.getId());
-        assertEquals(boards.get(0).getName(), board.getName());
-        assertEquals(boards.get(0).getState(), board.getState());
+        assertEquals(boards.get(0).getId(), board1.getId());
+        assertEquals(boards.get(0).getName(), board1.getName());
+        assertEquals(boards.get(0).getState(), board1.getState());
+
+        assertEquals(boards.get(1).getId(), board.getId());
+        assertEquals(boards.get(1).getName(), board.getName());
+        assertEquals(boards.get(1).getState(), board.getState());
     }
 
     @Test
     void getUserBoardsShouldThrowBadRequestWhenEmailIsBlank() {
         //given
         final String email = "";
-
-        //when
 
         //then
         assertThrows(BadRequestException.class, () -> boardService.getUserBoards(email));
@@ -107,8 +103,6 @@ class BoardServiceTest {
     void getUserBoardsShouldThrowBadRequestWhenEmailIsNull() {
         //given
         final String email = null;
-
-        //when
 
         //then
         assertThrows(BadRequestException.class, () -> boardService.getUserBoards(email));
