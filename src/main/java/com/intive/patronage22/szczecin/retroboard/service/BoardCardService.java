@@ -57,7 +57,7 @@ public class BoardCardService {
 
         boardCardsRepository.save(boardCard);
 
-        return BoardCardDto.createFrom(boardCard);
+        return BoardCardDto.createFrom(boardCard, 0, 0);
     }
 
     @Transactional
