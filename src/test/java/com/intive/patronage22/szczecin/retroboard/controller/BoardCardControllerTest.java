@@ -92,7 +92,7 @@ class BoardCardControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isCreated())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.*", hasSize(5)))
+                .andExpect(jsonPath("$.*", hasSize(7)))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(responseDto.getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()

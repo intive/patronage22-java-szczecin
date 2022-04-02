@@ -42,14 +42,24 @@ public class BoardCardDto {
     @Schema(description = "Board card action text")
     List<String> actionTexts;
 
-    public static BoardCardDto createFrom(final BoardCard boardCard) {
+    @Schema(description = "Sum of all votes for card")
+    Integer votes;
+
+    @Schema(description = "Sum of all votes given by user for card")
+    Integer userVotes;
+
+    public static BoardCardDto createFrom(final BoardCard boardCard,
+                                          final int numberOfVotes, final int numberOfUserVotes) {
         return BoardCardDto.builder()
                 .id(boardCard.getId())
                 .cardText(boardCard.getText())
                 .columnId(boardCard.getColumn().getColumnId())
                 .boardCardCreator(boardCard.getCreator().getEmail())
-                .actionTexts(
-                        boardCard.getBoardCardActions().stream().map(BoardCardAction::getText)
-                                .collect(Collectors.toList())).build();
+                .actionTexts(boardCard.getBoardCardActions().stream()
+                        .map(BoardCardAction::getText)
+                        .collect(Collectors.toList()))
+                .votes(numberOfVotes)
+                .userVotes(numberOfUserVotes)
+                .build();
     }
 }

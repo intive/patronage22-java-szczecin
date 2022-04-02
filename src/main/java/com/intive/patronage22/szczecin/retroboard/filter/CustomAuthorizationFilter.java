@@ -18,9 +18,12 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
-import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.*;
+import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.URL_LOGIN;
+import static com.intive.patronage22.szczecin.retroboard.configuration.security.WebSecurityConfig.URL_REGISTER;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpStatus.FORBIDDEN;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -46,7 +49,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 try {
-                    final String token = authorizationHeader.substring("Bearer ".length());
+                    final String token = authorizationHeader.substring("Bearer " .length());
                     final FirebaseToken firebaseToken = firebaseAuth.verifyIdToken(token);
 
                     final var authenticationToken =
@@ -55,13 +58,15 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                                     null,
                                     new HashSet<>());
 
+                    firebaseAuth.getUserByEmail(authenticationToken.getName());
+
                     final Optional<User> optionalUser = userRepository.findUserByEmail(firebaseToken.getEmail());
 
-                    if(optionalUser.isEmpty()){
+                    if (optionalUser.isEmpty()) {
                         final User user = new User(firebaseToken.getUid(),
-                                firebaseToken.getEmail(), firebaseToken.getName(), Set.of(), Set.of());
+                                firebaseToken.getEmail(), firebaseToken.getName(), false, Set.of(), Set.of());
                         userRepository.save(user);
-                        log.info("{} added to database",firebaseToken.getEmail());
+                        log.info("{} added to database", firebaseToken.getEmail());
                     }
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);

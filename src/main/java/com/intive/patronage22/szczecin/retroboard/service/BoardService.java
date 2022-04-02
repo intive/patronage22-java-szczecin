@@ -1,6 +1,14 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.*;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumnDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDataDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDetailsDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardPatchDto;
+import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.UserDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotAcceptableException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
@@ -8,6 +16,7 @@ import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
 import com.intive.patronage22.szczecin.retroboard.model.User;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
+import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import com.intive.patronage22.szczecin.retroboard.validation.BoardValidator;
@@ -33,6 +42,7 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final BoardCardsRepository boardCardsRepository;
+    private final BoardCardsVotesRepository boardCardsVotesRepository;
     private final BoardValidator boardValidator;
 
     @Transactional(readOnly = true)
@@ -67,12 +77,15 @@ public class BoardService {
         final List<BoardCardDto> kudosBoardCardsDtos = new ArrayList<>();
 
         boardCards.forEach(boardCard -> {
+            final int numberOfVotes = boardCardsVotesRepository.getVotesByBoardAndCard(board, boardCard).orElse(0);
+            final int numberOfUserVotes =
+                    boardCardsVotesRepository.getVotesByBoardAndCardAndUser(board, boardCard, user).orElse(0);
             if (boardCard.getColumn().equals(BoardCardsColumn.SUCCESS)) {
-                successBoardCardsDtos.add(BoardCardDto.createFrom(boardCard));
+                successBoardCardsDtos.add(BoardCardDto.createFrom(boardCard, numberOfVotes, numberOfUserVotes));
             } else if (boardCard.getColumn().equals(BoardCardsColumn.FAILURES)) {
-                failuresBoardCardsDtos.add(BoardCardDto.createFrom(boardCard));
+                failuresBoardCardsDtos.add(BoardCardDto.createFrom(boardCard, numberOfVotes, numberOfUserVotes));
             } else {
-                kudosBoardCardsDtos.add(BoardCardDto.createFrom(boardCard));
+                kudosBoardCardsDtos.add(BoardCardDto.createFrom(boardCard, numberOfVotes, numberOfUserVotes));
             }
         });
 
@@ -167,7 +180,7 @@ public class BoardService {
             throw new BadRequestException("User is not the board owner.");
         }
 
-        final List<User> users = userRepository.findAllByEmailIn(emailsToAssign);
+        final List<User> users = userRepository.findAllNotDeactivatedByEmailIn(emailsToAssign);
 
         board.getUsers().addAll(users);
         boardRepository.save(board);
