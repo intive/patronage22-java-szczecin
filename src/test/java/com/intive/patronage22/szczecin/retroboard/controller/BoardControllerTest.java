@@ -242,9 +242,12 @@ class BoardControllerTest {
         //given
         final int boardId = 1;
         final String creatorEmail = "test@example.com";
-        final List<BoardCardDto> successBoardCardsDtos = List.of(new BoardCardDto(1, "success", 0, creatorEmail, List.of("test success")));
-        final List<BoardCardDto> failuresBoardCardsDtos = List.of(new BoardCardDto(2, "failure", 1, creatorEmail, List.of("test failure")));
-        final List<BoardCardDto> kudosBoardCardsDtos = List.of(new BoardCardDto(3, "kudos", 2, creatorEmail, List.of("test kudos")));
+        final List<BoardCardDto> successBoardCardsDtos = List.of(new BoardCardDto(1, "success", 0, creatorEmail, List.of("test success"),
+                4,2));
+        final List<BoardCardDto> failuresBoardCardsDtos = List.of(new BoardCardDto(2, "failure", 1, creatorEmail, List.of("test failure"),
+                0, 0));
+        final List<BoardCardDto> kudosBoardCardsDtos = List.of(new BoardCardDto(3, "kudos", 2, creatorEmail, List.of("test kudos"),
+                1, 1));
         final List<BoardDetailsDto> boardDetailsDtos =
                 List.of(BoardDetailsDto.createFrom(BoardCardsColumn.SUCCESS.getColumnId(), successBoardCardsDtos),
                         BoardDetailsDto.createFrom(BoardCardsColumn.FAILURES.getColumnId(), failuresBoardCardsDtos),
@@ -273,6 +276,10 @@ class BoardControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(boardDetailsDtos.get(0).getBoardCards().get(0).getActionTexts().get(0))))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains("\"votes\":" + boardDetailsDtos.get(0).getBoardCards().get(0).getVotes())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains("\"userVotes\":"+ boardDetailsDtos.get(0).getBoardCards().get(0).getUserVotes())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(boardDetailsDtos.get(1).getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(boardDetailsDtos.get(1).getBoardCards().get(0).getId().toString())))
@@ -283,6 +290,10 @@ class BoardControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(boardDetailsDtos.get(1).getBoardCards().get(0).getActionTexts().get(0))))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains("\"votes\":" + boardDetailsDtos.get(1).getBoardCards().get(0).getVotes())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains("\"userVotes\":"+ boardDetailsDtos.get(1).getBoardCards().get(0).getUserVotes())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(boardDetailsDtos.get(2).getId().toString())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(boardDetailsDtos.get(2).getBoardCards().get(0).getId().toString())))
@@ -291,7 +302,11 @@ class BoardControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(boardDetailsDtos.get(2).getBoardCards().get(0).getBoardCardCreator())))
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(boardDetailsDtos.get(2).getBoardCards().get(0).getActionTexts().get(0))));
+                        .contains(boardDetailsDtos.get(2).getBoardCards().get(0).getActionTexts().get(0))))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains("\"votes\":" + boardDetailsDtos.get(2).getBoardCards().get(0).getVotes())))
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains("\"userVotes\":"+ boardDetailsDtos.get(2).getBoardCards().get(0).getUserVotes())));
     }
 
     @Test
