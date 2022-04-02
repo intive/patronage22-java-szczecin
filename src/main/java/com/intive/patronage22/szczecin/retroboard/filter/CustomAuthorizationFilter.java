@@ -49,7 +49,7 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
 
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 try {
-                    final String token = authorizationHeader.substring("Bearer ".length());
+                    final String token = authorizationHeader.substring("Bearer " .length());
                     final FirebaseToken firebaseToken = firebaseAuth.verifyIdToken(token);
 
                     final var authenticationToken =
@@ -58,13 +58,15 @@ public class CustomAuthorizationFilter extends OncePerRequestFilter {
                                     null,
                                     new HashSet<>());
 
+                    firebaseAuth.getUserByEmail(authenticationToken.getName());
+
                     final Optional<User> optionalUser = userRepository.findUserByEmail(firebaseToken.getEmail());
 
-                    if(optionalUser.isEmpty()){
+                    if (optionalUser.isEmpty()) {
                         final User user = new User(firebaseToken.getUid(),
                                 firebaseToken.getEmail(), firebaseToken.getName(), false, Set.of(), Set.of());
                         userRepository.save(user);
-                        log.info("{} added to database",firebaseToken.getEmail());
+                        log.info("{} added to database", firebaseToken.getEmail());
                     }
 
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);
