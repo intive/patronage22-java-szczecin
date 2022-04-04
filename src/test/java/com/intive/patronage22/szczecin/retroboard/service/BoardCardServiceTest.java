@@ -587,7 +587,7 @@ class BoardCardServiceTest {
     }
 
     @Test
-    @DisplayName("When addCardAction() is called and the user is not found -> Not found Exception is thrown.")
+    @DisplayName("When addCardAction() is called and the user is not found -> User not found Exception is thrown.")
     void addCardActionThrowsUserNotFoundIfUserIsNotProvided() {
         //given
         when(userRepository.findUserByEmail(any())).thenReturn(Optional.empty());
