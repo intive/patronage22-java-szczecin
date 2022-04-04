@@ -148,14 +148,11 @@ public class BoardCardService {
         final BoardCard card = boardCardsRepository.findById(cardId)
                 .orElseThrow(() -> new NotFoundException("Card not found"));
 
-        final Board board = boardRepository.findById(card.getBoard().getId())
-                .orElseThrow(() -> new NotFoundException("Board not found"));
-
-        if (!board.getCreator().equals(user)) {
+        if (!card.getBoard().getCreator().equals(user)) {
             throw new BadRequestException("User is not the board owner");
         }
 
-        if (EnumStateDto.ACTIONS.equals(board.getState())) {
+        if (EnumStateDto.ACTIONS.equals(card.getBoard().getState())) {
 
             final BoardCardAction boardCardAction = BoardCardAction.builder()
                     .card(card)

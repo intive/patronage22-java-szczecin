@@ -3,6 +3,7 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardActionDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardActionRequestDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
@@ -402,22 +403,24 @@ class BoardCardControllerTest {
     void addCardActionShouldReturnCreated() throws Exception {
         //given
         final int cardId = 1;
-        final BoardCardActionRequestDto cardActionText = new BoardCardActionRequestDto("test text");
+        final String text = "test text";
+        final BoardCardActionRequestDto cardActionText = new BoardCardActionRequestDto(text);
         final String addCardActionUrl = url + "/" + cardId + "/actions";
         final FirebaseToken firebaseToken = mock(FirebaseToken.class);
 
         //when
         when(firebaseToken.getEmail()).thenReturn(email);
         when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
-        when(boardCardService.addCardAction(cardId, email, cardActionText)).thenReturn(null);
+        when(boardCardService.addCardAction(cardId, email, cardActionText)).thenReturn(new BoardCardActionDto(1,cardId,text));
 
         //then
         mockMvc.perform(post(addCardActionUrl)
                         .header(AUTHORIZATION, "Bearer " + providedAccessToken)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{ \"text\":\"" + "test text" + "\" }")
+                        .content("{ \"text\":\"" + text + "\" }")
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isCreated());
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.*", hasSize(3)));
     }
 
     @Test
