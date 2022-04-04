@@ -7,9 +7,11 @@ import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
 import com.intive.patronage22.szczecin.retroboard.model.Board;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
+import com.intive.patronage22.szczecin.retroboard.model.BoardCardAction;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotes;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotesKey;
 import com.intive.patronage22.szczecin.retroboard.model.User;
+import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsActionsRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
@@ -29,6 +31,7 @@ public class BoardCardService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final BoardCardsVotesRepository boardCardsVotesRepository;
+    private final BoardCardsActionsRepository boardCardsActionsRepository;
 
     @Transactional
     public BoardCardDto createBoardCard(final BoardCardDto boardCardDto, final Integer boardId, final String email) {
@@ -144,5 +147,23 @@ public class BoardCardService {
         }
         vote.setVotes(vote.getVotes() - 1);
         return Map.of("remainingVotes", card.getBoard().getMaximumNumberOfVotes()-vote.getVotes());
+    }
+
+    @Transactional
+    public void removeAction(final Integer actionId, final String email) {
+
+        final BoardCardAction boardCardAction = boardCardsActionsRepository.findById(actionId)
+                .orElseThrow(() -> new NotFoundException("Action not found"));
+
+        final User user = userRepository
+                .findUserByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
+
+        if (!user.equals(boardCardAction.getCard().getBoard().getCreator()))
+            throw new BadRequestException("Not allowed to remove action");
+
+        if (!EnumStateDto.ACTIONS.equals(boardCardAction.getCard().getBoard().getState()))
+            throw new BadRequestException("Not allowed to remove action");
+
+        boardCardsActionsRepository.deleteById(actionId);
     }
 }

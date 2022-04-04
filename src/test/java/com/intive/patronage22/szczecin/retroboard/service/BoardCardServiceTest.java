@@ -11,13 +11,13 @@ import com.intive.patronage22.szczecin.retroboard.model.BoardCardAction;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotes;
 import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotesKey;
 import com.intive.patronage22.szczecin.retroboard.model.User;
+import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsActionsRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
 import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -26,8 +26,6 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.HashSet;
 import java.util.List;
@@ -60,6 +58,9 @@ class BoardCardServiceTest {
 
     @MockBean
     private BoardCardsVotesRepository boardCardsVotesRepository;
+
+    @MockBean
+    private BoardCardsActionsRepository boardCardsActionsRepository;
 
     private static Stream<Arguments> provideInputsForBoardCardsColumnValidation() {
         return Stream.of(
@@ -598,6 +599,102 @@ class BoardCardServiceTest {
         //then
         assertEquals(Map.of("remainingVotes", 4), boardCardService.removeVote(cardId, email));
         verify(boardCardsVotesRepository).delete(any());
+    }
+
+    @Test
+    void removeActionShouldPassWhenOwnerTriesToRemoveExistingActionInRightBoardsState() {
+        // given
+        final Integer actionId = 1;
+        final String email = "some@test.com";
+        final User user = new User("1234", email, "some", false, Set.of(), Set.of());
+        final Board board = buildBoard(1, EnumStateDto.ACTIONS, 0, user, Set.of(), Set.of());
+        final BoardCard boardCard = buildBoardCard(1, board, BoardCardsColumn.SUCCESS, user, List.of());
+        final BoardCardAction action = new BoardCardAction(actionId, boardCard, "sometext");
+
+        // when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsActionsRepository.findById(actionId)).thenReturn(Optional.of(action));
+
+        // then
+        boardCardService.removeAction(actionId, email);
+        verify(boardCardsActionsRepository).deleteById(actionId);
+    }
+
+    @Test
+    void removeActionShouldFailWhenOwnerTriesToRemoveExistingActionInWrongBoardsState() {
+        // given
+        final Integer actionId = 1;
+        final String email = "some@test.com";
+        final User user = new User("1234", email, "some", false, Set.of(), Set.of());
+        final Board board = buildBoard(1, EnumStateDto.DONE, 0, user, Set.of(), Set.of());
+        final BoardCard boardCard = buildBoardCard(1, board, BoardCardsColumn.SUCCESS, user, List.of());
+        final BoardCardAction action = new BoardCardAction(actionId, boardCard, "sometext");
+        final String expectedMessage = "Not allowed to remove action";
+
+        // when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsActionsRepository.findById(actionId)).thenReturn(Optional.of(action));
+
+        // then
+        final BadRequestException e = assertThrows(BadRequestException.class,
+                () -> boardCardService.removeAction(actionId, email));
+        assertEquals(expectedMessage, e.getMessage());
+    }
+
+    @Test
+    void removeActionShouldFailWhenUserTriesToRemoveExistingActionInRightBoardsState() {
+        // given
+        final Integer actionId = 1;
+        final String email = "some@test.com";
+        final User owner = new User("1234", "owner@test.com", "owner", false, Set.of(), Set.of());
+        final User user = new User("12345", email, "some", false, Set.of(), Set.of());
+        final Board board = buildBoard(1, EnumStateDto.ACTIONS, 0, owner, Set.of(), Set.of());
+        final BoardCard boardCard = buildBoardCard(1, board, BoardCardsColumn.SUCCESS, owner, List.of());
+        final BoardCardAction action = new BoardCardAction(actionId, boardCard, "sometext");
+        final String expectedMessage = "Not allowed to remove action";
+
+        // when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsActionsRepository.findById(actionId)).thenReturn(Optional.of(action));
+
+        // then
+        final BadRequestException e = assertThrows(BadRequestException.class,
+                () -> boardCardService.removeAction(actionId, email));
+        assertEquals(expectedMessage, e.getMessage());
+    }
+
+    @Test
+    void removeActionShouldFailWhenUserTriesToRemoveExistingActionInWrongBoardsState() {
+        // given
+        final Integer actionId = 1;
+        final String email = "some@test.com";
+        final User owner = new User("1234", "owner@test.com", "owner", false, Set.of(), Set.of());
+        final User user = new User("12345", email, "some", false, Set.of(), Set.of());
+        final Board board = buildBoard(1, EnumStateDto.DONE, 0, owner, Set.of(), Set.of());
+        final BoardCard boardCard = buildBoardCard(1, board, BoardCardsColumn.SUCCESS, owner, List.of());
+        final BoardCardAction action = new BoardCardAction(actionId, boardCard, "sometext");
+        final String expectedMessage = "Not allowed to remove action";
+
+        // when
+        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
+        when(boardCardsActionsRepository.findById(actionId)).thenReturn(Optional.of(action));
+
+        // then
+        final BadRequestException e = assertThrows(BadRequestException.class,
+                () -> boardCardService.removeAction(actionId, email));
+        assertEquals(expectedMessage, e.getMessage());
+    }
+
+    @Test
+    void removeActionShouldFailWhenActionDoesNotExist() {
+        // given
+        final Integer actionId = 1;
+
+        // when
+        when(boardCardsActionsRepository.findById(actionId)).thenReturn(Optional.empty());
+
+        // then
+        assertThrows(NotFoundException.class, () -> boardCardService.removeAction(actionId, any()));
     }
 
     private Board buildBoard(final int id, final EnumStateDto state, final int numberOfVotes, final User user,
