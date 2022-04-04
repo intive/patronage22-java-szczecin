@@ -617,7 +617,11 @@ class BoardCardServiceTest {
 
         // then
         boardCardService.removeAction(actionId, email);
-        verify(boardCardsActionsRepository).deleteById(actionId);
+
+        final ArgumentCaptor<Integer> actionIdCaptor = ArgumentCaptor.forClass(Integer.class);
+        verify(boardCardsActionsRepository).deleteById(actionIdCaptor.capture());
+        
+        assertEquals(actionId, actionIdCaptor.getValue());
     }
 
     @Test
@@ -629,7 +633,7 @@ class BoardCardServiceTest {
         final Board board = buildBoard(1, EnumStateDto.DONE, 0, user, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(1, board, BoardCardsColumn.SUCCESS, user, List.of());
         final BoardCardAction action = new BoardCardAction(actionId, boardCard, "sometext");
-        final String expectedMessage = "Not allowed to remove action";
+        final String expectedMessage = "Wrong board's state";
 
         // when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -651,7 +655,7 @@ class BoardCardServiceTest {
         final Board board = buildBoard(1, EnumStateDto.ACTIONS, 0, owner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(1, board, BoardCardsColumn.SUCCESS, owner, List.of());
         final BoardCardAction action = new BoardCardAction(actionId, boardCard, "sometext");
-        final String expectedMessage = "Not allowed to remove action";
+        final String expectedMessage = "Not your board";
 
         // when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -673,7 +677,7 @@ class BoardCardServiceTest {
         final Board board = buildBoard(1, EnumStateDto.DONE, 0, owner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(1, board, BoardCardsColumn.SUCCESS, owner, List.of());
         final BoardCardAction action = new BoardCardAction(actionId, boardCard, "sometext");
-        final String expectedMessage = "Not allowed to remove action";
+        final String expectedMessage = "Not your board";
 
         // when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));

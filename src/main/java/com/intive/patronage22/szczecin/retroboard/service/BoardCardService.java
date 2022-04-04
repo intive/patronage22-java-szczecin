@@ -159,10 +159,10 @@ public class BoardCardService {
                 .findUserByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
 
         if (!user.equals(boardCardAction.getCard().getBoard().getCreator()))
-            throw new BadRequestException("Not allowed to remove action");
+            throw new BadRequestException("Not your board");
 
         if (!EnumStateDto.ACTIONS.equals(boardCardAction.getCard().getBoard().getState()))
-            throw new BadRequestException("Not allowed to remove action");
+            throw new BadRequestException("Wrong board's state");
 
         boardCardsActionsRepository.deleteById(actionId);
     }
