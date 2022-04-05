@@ -86,4 +86,17 @@ public class BoardCardController {
 
         return boardCardService.removeVote(cardId, authentication.getName());
     }
+
+    @DeleteMapping("actions/{id}")
+    @ResponseStatus(OK)
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Remove vote",
+               responses = {@ApiResponse(responseCode = "200", description = "Action removed"),
+                       @ApiResponse(responseCode = "400",
+                                    description = "No ownership or board's state is not ACTIONS"),
+                       @ApiResponse(responseCode = "404", description = "Action not found")})
+    public void removeActionFromTheCard(@PathVariable(name = "id") final Integer actionId,
+                                        final Authentication authentication) {
+
+        boardCardService.removeAction(actionId, authentication.getName());
+    }
 }
