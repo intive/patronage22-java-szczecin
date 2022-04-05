@@ -3,6 +3,8 @@ package com.intive.patronage22.szczecin.retroboard.controller;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.intive.patronage22.szczecin.retroboard.configuration.security.SecurityConfig;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardActionDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardActionRequestDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
@@ -33,9 +35,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest({BoardCardController.class, SecurityConfig.class})
 class BoardCardControllerTest {
@@ -396,6 +396,31 @@ class BoardCardControllerTest {
         mockMvc.perform(delete(voteUrl).header(AUTHORIZATION, "Bearer " + providedAccessToken))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResolvedException().getMessage().contains(exceptionMessage)));
+    }
+
+    @Test
+    @DisplayName("Add card action should return created.")
+    void addCardActionShouldReturnCreated() throws Exception {
+        //given
+        final int cardId = 1;
+        final String text = "test text";
+        final BoardCardActionRequestDto cardActionText = new BoardCardActionRequestDto(text);
+        final String addCardActionUrl = url + "/" + cardId + "/actions";
+        final FirebaseToken firebaseToken = mock(FirebaseToken.class);
+
+        //when
+        when(firebaseToken.getEmail()).thenReturn(email);
+        when(firebaseAuth.verifyIdToken(providedAccessToken)).thenReturn(firebaseToken);
+        when(boardCardService.addCardAction(cardId, email, cardActionText)).thenReturn(new BoardCardActionDto(1,cardId,text));
+
+        //then
+        mockMvc.perform(post(addCardActionUrl)
+                        .header(AUTHORIZATION, "Bearer " + providedAccessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{ \"text\":\"" + text + "\" }")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.*", hasSize(3)));
     }
 
     @Test

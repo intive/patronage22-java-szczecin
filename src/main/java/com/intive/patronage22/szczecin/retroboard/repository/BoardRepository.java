@@ -7,6 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,4 +17,6 @@ public interface BoardRepository extends CrudRepository<Board, Integer> {
     Optional<Board> findBoardByIdAndCreatorOrAssignedUser(@Param("id") final Integer id,
                                                           @Param("user") final User user);
 
+    @Query(value = "SELECT b FROM Board b WHERE (b.creator=:user or :user IN elements(b.users))")
+    Optional<List<Board>> findBoardByCreatorOrAssignedUser(@Param("user") final User user);
 }

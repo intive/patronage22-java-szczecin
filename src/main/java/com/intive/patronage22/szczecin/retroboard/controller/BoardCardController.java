@@ -1,5 +1,7 @@
 package com.intive.patronage22.szczecin.retroboard.controller;
 
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardActionDto;
+import com.intive.patronage22.szczecin.retroboard.dto.BoardCardActionRequestDto;
 import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
 import com.intive.patronage22.szczecin.retroboard.service.BoardCardService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,13 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Map;
@@ -87,13 +83,29 @@ public class BoardCardController {
         return boardCardService.removeVote(cardId, authentication.getName());
     }
 
+    @PostMapping("/{id}/actions")
+    @ResponseStatus(CREATED)
+    @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Add Card Action",
+            responses = {@ApiResponse(responseCode = "201", description = "Card action added"),
+                    @ApiResponse(responseCode = "400",
+                            description = "User is not the owner of the board/state is not actions."),
+                    @ApiResponse(responseCode = "404",
+                            description = "Card does not exist")
+            })
+    public BoardCardActionDto addCardAction(
+            @PathVariable(name = "id") final Integer cardId,
+            @RequestBody @Valid final BoardCardActionRequestDto boardCardActionText,
+            final Authentication authentication) {
+        return boardCardService.addCardAction(cardId, authentication.getName(), boardCardActionText);
+    }
+
     @DeleteMapping("actions/{id}")
     @ResponseStatus(OK)
     @Operation(security = @SecurityRequirement(name = "tokenAuth"), summary = "Remove vote",
-               responses = {@ApiResponse(responseCode = "200", description = "Action removed"),
-                       @ApiResponse(responseCode = "400",
-                                    description = "No ownership or board's state is not ACTIONS"),
-                       @ApiResponse(responseCode = "404", description = "Action not found")})
+            responses = {@ApiResponse(responseCode = "200", description = "Action removed"),
+                    @ApiResponse(responseCode = "400",
+                            description = "No ownership or board's state is not ACTIONS"),
+                    @ApiResponse(responseCode = "404", description = "Action not found")})
     public void removeActionFromTheCard(@PathVariable(name = "id") final Integer actionId,
                                         final Authentication authentication) {
 

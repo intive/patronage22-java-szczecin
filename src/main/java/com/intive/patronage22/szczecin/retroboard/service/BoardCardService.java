@@ -1,21 +1,10 @@
 package com.intive.patronage22.szczecin.retroboard.service;
 
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardDto;
-import com.intive.patronage22.szczecin.retroboard.dto.BoardCardsColumn;
-import com.intive.patronage22.szczecin.retroboard.dto.EnumStateDto;
+import com.intive.patronage22.szczecin.retroboard.dto.*;
 import com.intive.patronage22.szczecin.retroboard.exception.BadRequestException;
 import com.intive.patronage22.szczecin.retroboard.exception.NotFoundException;
-import com.intive.patronage22.szczecin.retroboard.model.Board;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCard;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCardAction;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotes;
-import com.intive.patronage22.szczecin.retroboard.model.BoardCardVotesKey;
-import com.intive.patronage22.szczecin.retroboard.model.User;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsActionsRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardCardsVotesRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.BoardRepository;
-import com.intive.patronage22.szczecin.retroboard.repository.UserRepository;
+import com.intive.patronage22.szczecin.retroboard.model.*;
+import com.intive.patronage22.szczecin.retroboard.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -147,6 +136,35 @@ public class BoardCardService {
         }
         vote.setVotes(vote.getVotes() - 1);
         return Map.of("remainingVotes", card.getBoard().getMaximumNumberOfVotes()-vote.getVotes());
+    }
+
+    @Transactional
+    public BoardCardActionDto addCardAction
+            (final Integer cardId, final String email, final BoardCardActionRequestDto boardCardActionText) {
+
+        final User user = userRepository.findUserByEmail(email)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
+        final BoardCard card = boardCardsRepository.findById(cardId)
+                .orElseThrow(() -> new NotFoundException("Card not found"));
+
+        if (!card.getBoard().getCreator().equals(user)) {
+            throw new BadRequestException("User is not the board owner");
+        }
+
+        if (EnumStateDto.ACTIONS.equals(card.getBoard().getState())) {
+
+            final BoardCardAction boardCardAction = BoardCardAction.builder()
+                    .card(card)
+                    .text(boardCardActionText.getText())
+                    .build();
+
+            boardCardsActionsRepository.save(boardCardAction);
+
+            return BoardCardActionDto.createFrom(boardCardAction);
+        } else {
+            throw new BadRequestException("State is not actions");
+        }
     }
 
     @Transactional
