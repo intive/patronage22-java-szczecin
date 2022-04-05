@@ -159,7 +159,7 @@ public class BoardCardService {
                 .findUserByEmail(email).orElseThrow(() -> new BadRequestException("User not found"));
 
         if (!user.equals(boardCardAction.getCard().getBoard().getCreator()))
-            throw new BadRequestException("Not your board");
+            throw new BadRequestException("You are not owner");
 
         if (!EnumStateDto.ACTIONS.equals(boardCardAction.getCard().getBoard().getState()))
             throw new BadRequestException("Wrong board's state");

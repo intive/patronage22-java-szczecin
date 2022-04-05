@@ -399,7 +399,7 @@ class BoardCardControllerTest {
     }
 
     @Test
-    void removeActionShouldPassInHappyPath() throws Exception {
+    void removeActionShouldReturnOk() throws Exception {
         // given
         final Integer actionId = 1;
         final String actionsUrl = url + "/actions/" + actionId;

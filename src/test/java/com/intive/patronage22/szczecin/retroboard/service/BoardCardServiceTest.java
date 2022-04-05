@@ -602,7 +602,9 @@ class BoardCardServiceTest {
     }
 
     @Test
-    void removeActionShouldPassWhenOwnerTriesToRemoveExistingActionInRightBoardsState() {
+    @DisplayName("When Board's state is ACTIONS and owner of the board tries to remove action, " +
+                 "then it should succeed")
+    void removeActionShouldPassWhenOwnerTriesToRemoveExistingActionWhenBoardStateIsActions() {
         // given
         final Integer actionId = 1;
         final String email = "some@test.com";
@@ -625,7 +627,7 @@ class BoardCardServiceTest {
     }
 
     @Test
-    void removeActionShouldFailWhenOwnerTriesToRemoveExistingActionInWrongBoardsState() {
+    void removeActionShouldFailWhenBoardStateIsNotActions() {
         // given
         final Integer actionId = 1;
         final String email = "some@test.com";
@@ -646,7 +648,7 @@ class BoardCardServiceTest {
     }
 
     @Test
-    void removeActionShouldFailWhenUserTriesToRemoveExistingActionInRightBoardsState() {
+    void removeActionShouldFailWhenUserIsNotOwner() {
         // given
         final Integer actionId = 1;
         final String email = "some@test.com";
@@ -655,7 +657,7 @@ class BoardCardServiceTest {
         final Board board = buildBoard(1, EnumStateDto.ACTIONS, 0, owner, Set.of(), Set.of());
         final BoardCard boardCard = buildBoardCard(1, board, BoardCardsColumn.SUCCESS, owner, List.of());
         final BoardCardAction action = new BoardCardAction(actionId, boardCard, "sometext");
-        final String expectedMessage = "Not your board";
+        final String expectedMessage = "You are not owner";
 
         // when
         when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
@@ -666,29 +668,7 @@ class BoardCardServiceTest {
                 () -> boardCardService.removeAction(actionId, email));
         assertEquals(expectedMessage, e.getMessage());
     }
-
-    @Test
-    void removeActionShouldFailWhenUserTriesToRemoveExistingActionInWrongBoardsState() {
-        // given
-        final Integer actionId = 1;
-        final String email = "some@test.com";
-        final User owner = new User("1234", "owner@test.com", "owner", false, Set.of(), Set.of());
-        final User user = new User("12345", email, "some", false, Set.of(), Set.of());
-        final Board board = buildBoard(1, EnumStateDto.DONE, 0, owner, Set.of(), Set.of());
-        final BoardCard boardCard = buildBoardCard(1, board, BoardCardsColumn.SUCCESS, owner, List.of());
-        final BoardCardAction action = new BoardCardAction(actionId, boardCard, "sometext");
-        final String expectedMessage = "Not your board";
-
-        // when
-        when(userRepository.findUserByEmail(email)).thenReturn(Optional.of(user));
-        when(boardCardsActionsRepository.findById(actionId)).thenReturn(Optional.of(action));
-
-        // then
-        final BadRequestException e = assertThrows(BadRequestException.class,
-                () -> boardCardService.removeAction(actionId, email));
-        assertEquals(expectedMessage, e.getMessage());
-    }
-
+    
     @Test
     void removeActionShouldFailWhenActionDoesNotExist() {
         // given
