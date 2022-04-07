@@ -10,7 +10,5 @@ import java.util.List;
 @Repository
 public interface BoardCardsRepository extends CrudRepository<BoardCard, Integer> {
 
-    List<BoardCard> findAllByBoardIdAndCreatorOrderByIdAsc(final Integer boardId, final User user);
-
     List<BoardCard> findAllByBoardIdOrderByIdAsc(final Integer id);
 }
