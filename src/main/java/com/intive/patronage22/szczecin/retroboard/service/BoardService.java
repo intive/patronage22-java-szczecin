@@ -68,9 +68,9 @@ public class BoardService {
         final Board board = boardRepository.findBoardByIdAndCreatorOrAssignedUser(boardId, user)
                 .orElseThrow(() -> new BadRequestException("User has no access to board"));
 
-        final List<BoardCard> boardCards = board.getState().equals(EnumStateDto.CREATED) ?
-                boardCardsRepository.findAllByBoardIdAndCreatorOrderByIdAsc(boardId, user) :
-                boardCardsRepository.findAllByBoardIdOrderByIdAsc(boardId);
+//        final List<BoardCard> boardCards = board.getState().equals(EnumStateDto.CREATED) ?
+//                boardCardsRepository.findAllByBoardIdAndCreatorOrderByIdAsc(boardId, user) :
+        final List<BoardCard> boardCards = boardCardsRepository.findAllByBoardIdOrderByIdAsc(boardId);
 
         final List<BoardCardDto> successBoardCardsDtos = new ArrayList<>();
         final List<BoardCardDto> failuresBoardCardsDtos = new ArrayList<>();
